@@ -584,6 +584,100 @@ input[type=range]::-webkit-slider-thumb{
 .toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
 
 /* ════════════════════════════════
+   PHOTO MODULE
+════════════════════════════════ */
+.photo-upload-zone{
+  border:2px dashed var(--border2);border-radius:var(--r2);
+  padding:20px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--s2);
+  position:relative;overflow:hidden;
+}
+.photo-upload-zone:active{border-color:var(--acc);background:var(--s3)}
+.photo-upload-zone .puz-icon{font-size:32px;margin-bottom:6px}
+.photo-upload-zone .puz-label{font-size:13px;font-weight:600;color:var(--txt2)}
+.photo-upload-zone .puz-sub{font-size:11px;color:var(--txt3);margin-top:3px}
+.photo-upload-zone input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
+.photo-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;
+}
+.photo-thumb{
+  position:relative;aspect-ratio:1;border-radius:var(--r3);overflow:hidden;
+  background:var(--s3);cursor:pointer;
+}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-thumb .pt-del{
+  position:absolute;top:4px;right:4px;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(239,68,68,.9);color:#fff;
+  border:none;font-size:13px;line-height:1;
+  display:grid;place-items:center;cursor:pointer;
+  opacity:0;transition:opacity .2s;
+}
+.photo-thumb:hover .pt-del{opacity:1}
+.photo-thumb .pt-del{opacity:.7}/* always show on mobile */
+.photo-count-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);
+  border-radius:20px;padding:3px 10px;
+  font-size:12px;font-weight:600;color:var(--acc);
+}
+
+/* photo viewer modal */
+.photo-viewer{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.95);z-index:500;
+  flex-direction:column;
+}
+.photo-viewer.open{display:flex}
+.pv-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;flex-shrink:0;
+}
+.pv-title{font-size:14px;font-weight:600;color:#fff}
+.pv-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:4px}
+.pv-img-wrap{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:16px;overflow:hidden;
+}
+.pv-img-wrap img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;border-radius:8px;
+}
+.pv-strip{
+  display:flex;gap:8px;padding:12px 16px;
+  overflow-x:auto;flex-shrink:0;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  background:rgba(0,0,0,.5);
+  padding-bottom:calc(12px + env(safe-area-inset-bottom));
+}
+.pv-strip::-webkit-scrollbar{display:none}
+.pv-thumb{
+  width:56px;height:56px;flex-shrink:0;
+  border-radius:6px;overflow:hidden;cursor:pointer;
+  border:2px solid transparent;transition:border-color .15s;
+}
+.pv-thumb.active{border-color:var(--acc)}
+.pv-thumb img{width:100%;height:100%;object-fit:cover}
+.pv-nav{
+  display:flex;gap:12px;justify-content:center;
+  padding:10px;flex-shrink:0;
+}
+.pv-nav button{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:#fff;border-radius:8px;padding:10px 20px;
+  font-size:20px;cursor:pointer;
+}
+
+/* NC table photo indicator */
+.has-photos{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:11px;color:var(--acc);
+}
+
+/* ════════════════════════════════
    DESKTOP ENHANCEMENTS  ≥ 640px
 ════════════════════════════════ */
 @media(min-width:640px){
@@ -595,6 +689,9 @@ input[type=range]::-webkit-slider-thumb{
   .modal{max-width:480px;border-radius:var(--r) var(--r) 0 0}
   .more-drawer{max-width:720px;left:50%;transform:translateX(-50%) translateY(100%)}
   .more-drawer.open{transform:translateX(-50%) translateY(0)}
+  .photo-grid{grid-template-columns:repeat(4,1fr)}
+  .photo-thumb .pt-del{opacity:0}
+  .photo-thumb:hover .pt-del{opacity:1}
 }
 
 /* ════════════════════════════════
@@ -652,7 +749,7 @@ input[type=range]::-webkit-slider-thumb{
 
 @media print{
   body,html{height:auto;overflow:visible}
-  .app,.topbar,.bottom-nav,.more-drawer,#toast,.modal-ov,#more-overlay{display:none!important}
+  .app,.topbar,.bottom-nav,.more-drawer,#toast,.modal-ov,#more-overlay,.photo-viewer{display:none!important}
   #print-overlay{display:block!important;position:static!important;background:#fff!important;padding:0!important}
   #print-overlay > div:first-child{display:none!important}
   #print-content{padding:0}
@@ -1243,6 +1340,22 @@ input[type=range]::-webkit-slider-thumb{
             <option value="fechada">✅ Fechada</option>
           </select>
         </div>
+
+        <!-- PHOTO MODULE -->
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+            <span>📸 Fotografias da Anomalia</span>
+            <span id="nc-photo-count" class="photo-count-badge" style="display:none">0 fotos</span>
+          </label>
+          <div class="photo-upload-zone" id="nc-photo-zone">
+            <input type="file" accept="image/*" multiple capture="environment" id="nc-photo-input" onchange="handlePhotoInput(event,'nc')">
+            <div class="puz-icon">📷</div>
+            <div class="puz-label">Tirar foto ou escolher da galeria</div>
+            <div class="puz-sub">Suporta múltiplas imagens · JPG, PNG</div>
+          </div>
+          <div class="photo-grid" id="nc-photo-grid" style="display:none"></div>
+        </div>
+
         <button class="btn btn-primary" onclick="saveNC()">💾 Guardar NC</button>
       </div>
       <div class="card">
@@ -1256,7 +1369,7 @@ input[type=range]::-webkit-slider-thumb{
           </select>
         </div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Data</th><th>Área</th><th>Grav.</th><th>Estado</th><th></th></tr></thead>
+          <thead><tr><th>Data</th><th>Área</th><th>Grav.</th><th>Estado</th><th>📸</th><th></th></tr></thead>
           <tbody id="nc-tbody"></tbody>
         </table></div>
       </div>
@@ -1704,6 +1817,23 @@ input[type=range]::-webkit-slider-thumb{
 </div>
 <div id="more-overlay" style="display:none;position:fixed;inset:0;z-index:170" onclick="closeMore()"></div>
 
+<!-- ── PHOTO VIEWER ── -->
+<div class="photo-viewer" id="photo-viewer">
+  <div class="pv-header">
+    <div class="pv-title" id="pv-title">Fotografias da NC</div>
+    <button class="pv-close" onclick="closePhotoViewer()">✕</button>
+  </div>
+  <div class="pv-img-wrap">
+    <img id="pv-main-img" src="" alt="Fotografia da anomalia">
+  </div>
+  <div class="pv-nav">
+    <button onclick="pvNav(-1)">‹</button>
+    <span id="pv-counter" style="color:#fff;font-size:13px;align-self:center;min-width:60px;text-align:center"></span>
+    <button onclick="pvNav(1)">›</button>
+  </div>
+  <div class="pv-strip" id="pv-strip"></div>
+</div>
+
 <!-- ── TOAST ── -->
 <div id="toast"></div>
 
@@ -1900,9 +2030,13 @@ function saveNC(){
   const desc=document.getElementById('nc-desc').value;
   if(!desc){toast('Descreva a não conformidade','warn');return}
   const grav=document.getElementById('nc-grav').value;
-  const r=DB.push('nc',{datetime:document.getElementById('nc-dt').value,area:document.getElementById('nc-area').value,gravidade:grav,colaborador:document.getElementById('nc-colab').value,descricao:desc,causa:document.getElementById('nc-causa').value,accaoImediata:document.getElementById('nc-aci').value,accaoPreventiva:document.getElementById('nc-ap').value,prazo:document.getElementById('nc-prazo').value,estado:document.getElementById('nc-est').value});
-  toast('NC guardada!');renderNcTbl();
+  const r=DB.push('nc',{datetime:document.getElementById('nc-dt').value,area:document.getElementById('nc-area').value,gravidade:grav,colaborador:document.getElementById('nc-colab').value,descricao:desc,causa:document.getElementById('nc-causa').value,accaoImediata:document.getElementById('nc-aci').value,accaoPreventiva:document.getElementById('nc-ap').value,prazo:document.getElementById('nc-prazo').value,estado:document.getElementById('nc-est').value,fotos:ncPendingPhotos.slice()});
+  toast('NC guardada!'+(ncPendingPhotos.length?` · ${ncPendingPhotos.length} foto(s) anexada(s)`:''));
+  renderNcTbl();
   document.getElementById('nc-desc').value='';document.getElementById('nc-causa').value='';document.getElementById('nc-aci').value='';document.getElementById('nc-ap').value='';
+  // Reset photos
+  ncPendingPhotos=[];
+  renderPhotoGrid('nc', ncPendingPhotos);
   setNow('nc-dt');updateDashStats();
 
   // Immediate email for NC
@@ -2093,11 +2227,15 @@ function renderNcTbl(){
   const gm={menor:'<span class="badge b-warn">🟡</span>',maior:'<span class="badge b-orange">🟠</span>',critica:'<span class="badge b-fail">🔴</span>'};
   const em={aberta:'<span class="badge b-fail">Aberta</span>','em-curso':'<span class="badge b-warn">Em curso</span>',fechada:'<span class="badge b-ok">Fechada</span>'};
   const el=document.getElementById('nc-tbody');if(!el)return;
-  el.innerHTML=d.length?d.map(r=>`<tr>
+  el.innerHTML=d.length?d.map(r=>{
+    const nf=(r.fotos||[]).length;
+    const photoBtn=nf>0?`<button class="btn-icon" style="width:32px;height:32px;font-size:13px;color:var(--acc)" onclick="viewNcPhotos('${r.id}')">📸<span style="font-size:9px;display:block;margin-top:-2px">${nf}</span></button>`:'<span style="color:var(--txt3);font-size:12px">—</span>';
+    return`<tr>
     <td>${fd(r.datetime)}</td><td>${r.area||'—'}</td>
     <td>${gm[r.gravidade]||'—'}</td><td>${em[r.estado]||r.estado}</td>
+    <td style="text-align:center">${photoBtn}</td>
     <td>${delBtn('nc',r.id)}</td>
-  </tr>`).join(''):`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
+  </tr>`}).join(''):`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
 }
 
 // ═══════════════════════════════════════════
@@ -2725,12 +2863,28 @@ function buildNcSection(data, summary){
   } else {
     data.forEach(r=>{
       const gc=r.gravidade==='critica'?'critica':r.gravidade==='maior'?'maior':'';
-      html+=`<div class="rpt-nc-card ${gc}">
+      const fotos=r.fotos||[];
+      let fotosHtml='';
+      if(fotos.length){
+        fotosHtml=`<div style="margin-top:10px">
+          <div style="font-size:8.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:6px">
+            📸 Fotografias da Anomalia (${fotos.length})
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${fotos.map((b64,i)=>`<div style="page-break-inside:avoid">
+              <img src="${b64}" alt="Foto ${i+1}" style="width:180px;height:135px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;display:block">
+              <div style="font-size:8pt;color:#94a3b8;text-align:center;margin-top:3px">Foto ${i+1}</div>
+            </div>`).join('')}
+          </div>
+        </div>`;
+      }
+      html+=`<div class="rpt-nc-card ${gc}" style="page-break-inside:avoid">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div>
             <span style="font-weight:700;font-size:11pt">${r.area?.toUpperCase()||'—'}</span>
             <span style="margin-left:8px">${BADGE[r.gravidade]||''}</span>
             <span style="margin-left:8px">${BADGE[r.estado]||''}</span>
+            ${fotos.length?`<span style="margin-left:8px;font-size:8.5pt;color:#3b82f6">📸 ${fotos.length} foto${fotos.length>1?'s':''}</span>`:''}
           </div>
           <span style="font-size:9pt;color:#64748b">${fd(r.datetime)}</span>
         </div>
@@ -2740,6 +2894,7 @@ function buildNcSection(data, summary){
         <div class="rpt-detail-row"><span class="rpt-detail-lbl">Acção preventiva</span><span class="rpt-detail-val">${r.accaoPreventiva||'—'}</span></div>
         <div class="rpt-detail-row"><span class="rpt-detail-lbl">Prazo resolução</span><span class="rpt-detail-val">${fdo(r.prazo)||'—'}</span></div>
         <div class="rpt-detail-row"><span class="rpt-detail-lbl">Detectado por</span><span class="rpt-detail-val">${r.colaborador||'—'}</span></div>
+        ${fotosHtml}
       </div>`;
     });
   }
@@ -2873,6 +3028,152 @@ function updatePdfPreview(){
   const period=(de&&ate)?`${fdo(de)} a ${fdo(ate)}`:(de?`a partir de ${fdo(de)}`:(ate?`até ${fdo(ate)}`:'todos os registos'));
   document.getElementById('pdf-preview-text').textContent=`${total} registos encontrados · ${period}`;
 }
+
+// ═══════════════════════════════════════════
+// PHOTO MODULE
+// ═══════════════════════════════════════════
+let ncPendingPhotos = []; // array of base64 strings for current NC being created
+let pvPhotos = [];        // current viewer photos
+let pvIndex  = 0;
+
+function handlePhotoInput(evt, ctx){
+  const files = Array.from(evt.target.files);
+  if(!files.length) return;
+
+  const MAX_SIZE = 800; // px — resize for storage efficiency
+  let processed = 0;
+
+  files.forEach(file => {
+    if(!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        // Resize via canvas
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if(w > MAX_SIZE || h > MAX_SIZE){
+          if(w > h){ h = Math.round(h * MAX_SIZE / w); w = MAX_SIZE; }
+          else      { w = Math.round(w * MAX_SIZE / h); h = MAX_SIZE; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const b64 = canvas.toDataURL('image/jpeg', 0.78);
+
+        if(ctx === 'nc'){
+          ncPendingPhotos.push(b64);
+          renderPhotoGrid('nc', ncPendingPhotos);
+        }
+        processed++;
+        if(processed === files.length) toast(`${processed} foto(s) adicionada(s)!`,'ok');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // reset input so same file can be re-selected
+  evt.target.value = '';
+}
+
+function renderPhotoGrid(ctx, photos){
+  const grid = document.getElementById(ctx+'-photo-grid');
+  const countBadge = document.getElementById(ctx+'-photo-count');
+  if(!grid) return;
+
+  if(!photos.length){
+    grid.style.display = 'none';
+    if(countBadge) countBadge.style.display = 'none';
+    return;
+  }
+
+  grid.style.display = 'grid';
+  if(countBadge){
+    countBadge.style.display = 'inline-flex';
+    countBadge.textContent = `${photos.length} foto${photos.length>1?'s':''}`;
+  }
+
+  grid.innerHTML = photos.map((b64, i) => `
+    <div class="photo-thumb" onclick="previewPendingPhoto(${i},'${ctx}')">
+      <img src="${b64}" alt="Foto ${i+1}">
+      <button class="pt-del" onclick="event.stopPropagation();removePendingPhoto(${i},'${ctx}')">×</button>
+    </div>`).join('');
+}
+
+function removePendingPhoto(idx, ctx){
+  if(ctx === 'nc') ncPendingPhotos.splice(idx, 1);
+  renderPhotoGrid(ctx, ctx === 'nc' ? ncPendingPhotos : []);
+}
+
+function previewPendingPhoto(idx, ctx){
+  const photos = ctx === 'nc' ? ncPendingPhotos : [];
+  openPhotoViewer(photos, idx, 'Fotografias pendentes');
+}
+
+function viewNcPhotos(ncId){
+  const nc = DB.get('nc').find(r => r.id === ncId);
+  if(!nc || !nc.fotos || !nc.fotos.length){
+    toast('Sem fotografias neste registo','warn'); return;
+  }
+  openPhotoViewer(nc.fotos, 0, `NC — ${nc.area||''} · ${fd(nc.datetime)}`);
+}
+
+function openPhotoViewer(photos, startIdx, title){
+  if(!photos.length) return;
+  pvPhotos = photos;
+  pvIndex  = startIdx;
+  document.getElementById('pv-title').textContent = title;
+  document.getElementById('photo-viewer').classList.add('open');
+  renderPvMain();
+  renderPvStrip();
+}
+
+function closePhotoViewer(){
+  document.getElementById('photo-viewer').classList.remove('open');
+  pvPhotos = []; pvIndex = 0;
+}
+
+function renderPvMain(){
+  const img = document.getElementById('pv-main-img');
+  const ctr = document.getElementById('pv-counter');
+  img.src = pvPhotos[pvIndex];
+  ctr.textContent = `${pvIndex+1} / ${pvPhotos.length}`;
+  // highlight active strip thumb
+  document.querySelectorAll('.pv-thumb').forEach((t,i) => t.classList.toggle('active', i === pvIndex));
+}
+
+function renderPvStrip(){
+  const strip = document.getElementById('pv-strip');
+  strip.innerHTML = pvPhotos.map((b64, i) => `
+    <div class="pv-thumb${i===pvIndex?' active':''}" onclick="pvGoTo(${i})">
+      <img src="${b64}" alt="Foto ${i+1}">
+    </div>`).join('');
+}
+
+function pvNav(dir){
+  pvIndex = (pvIndex + dir + pvPhotos.length) % pvPhotos.length;
+  renderPvMain();
+  // scroll strip thumb into view
+  const thumbs = document.querySelectorAll('.pv-thumb');
+  if(thumbs[pvIndex]) thumbs[pvIndex].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
+
+function pvGoTo(i){ pvIndex = i; renderPvMain(); }
+
+// swipe support for photo viewer
+(function(){
+  let sx=0, sy=0;
+  document.addEventListener('touchstart', e=>{
+    if(!document.getElementById('photo-viewer').classList.contains('open')) return;
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
+  }, {passive:true});
+  document.addEventListener('touchend', e=>{
+    if(!document.getElementById('photo-viewer').classList.contains('open')) return;
+    const dx=e.changedTouches[0].clientX-sx;
+    const dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40) pvNav(dx<0?1:-1);
+  }, {passive:true});
+})();
 
 // ═══════════════════════════════════════════
 // INIT
