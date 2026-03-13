@@ -596,6 +596,72 @@ input[type=range]::-webkit-slider-thumb{
   .more-drawer{max-width:720px;left:50%;transform:translateX(-50%) translateY(100%)}
   .more-drawer.open{transform:translateX(-50%) translateY(0)}
 }
+
+/* ════════════════════════════════
+   PRINT STYLES
+════════════════════════════════ */
+#rpt{font-family:'Helvetica Neue',Arial,sans-serif;color:#111;background:#fff;font-size:11pt;line-height:1.5}
+#rpt .rpt-cover{page-break-after:always;padding:60px 40px;text-align:center;border:3px solid #1e3a8a;border-radius:8px;margin:20px}
+#rpt .rpt-logo{font-size:56px;margin-bottom:16px}
+#rpt .rpt-title{font-size:28pt;font-weight:800;color:#1e3a8a;margin-bottom:8px}
+#rpt .rpt-subtitle{font-size:14pt;color:#475569;margin-bottom:32px}
+#rpt .rpt-meta{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;margin-top:32px}
+#rpt .rpt-meta-item{text-align:center}
+#rpt .rpt-meta-item .val{font-size:13pt;font-weight:700;color:#1e3a8a}
+#rpt .rpt-meta-item .lbl{font-size:9pt;color:#64748b;margin-top:2px}
+#rpt .rpt-period{margin-top:32px;padding:16px 24px;background:#f1f5f9;border-radius:8px;font-size:12pt;color:#334155}
+#rpt .rpt-section{margin-bottom:36px;page-break-inside:avoid}
+#rpt .rpt-section-hd{background:#1e3a8a;color:#fff;padding:10px 16px;border-radius:4px 4px 0 0;font-size:13pt;font-weight:700;display:flex;align-items:center;gap:8px}
+#rpt .rpt-section-body{border:1px solid #e2e8f0;border-top:none;border-radius:0 0 4px 4px;overflow:hidden}
+#rpt table{width:100%;border-collapse:collapse;font-size:9.5pt}
+#rpt thead tr{background:#f8fafc}
+#rpt th{padding:8px 10px;text-align:left;font-size:8.5pt;letter-spacing:.5px;text-transform:uppercase;color:#475569;border-bottom:2px solid #e2e8f0;font-weight:700}
+#rpt td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:top}
+#rpt tr:last-child td{border-bottom:none}
+#rpt tr:nth-child(even) td{background:#fafbff}
+#rpt .ok{color:#16a34a;font-weight:700}
+#rpt .warn{color:#d97706;font-weight:700}
+#rpt .err{color:#dc2626;font-weight:700}
+#rpt .badge-ok{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:12px;font-size:8pt;font-weight:700}
+#rpt .badge-warn{background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:12px;font-size:8pt;font-weight:700}
+#rpt .badge-fail{background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:12px;font-size:8pt;font-weight:700}
+#rpt .badge-info{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:12px;font-size:8pt;font-weight:700}
+#rpt .rpt-stats{display:flex;gap:12px;padding:16px;flex-wrap:wrap}
+#rpt .rpt-stat{flex:1;min-width:100px;text-align:center;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px}
+#rpt .rpt-stat .n{font-size:20pt;font-weight:800;color:#1e3a8a}
+#rpt .rpt-stat .n.ok{color:#16a34a}
+#rpt .rpt-stat .n.err{color:#dc2626}
+#rpt .rpt-stat .n.warn{color:#d97706}
+#rpt .rpt-stat .l{font-size:8pt;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+#rpt .rpt-nc-card{border:1.5px solid #fecaca;border-radius:6px;padding:12px;margin:8px 12px;background:#fff5f5}
+#rpt .rpt-nc-card.critica{border-color:#dc2626;background:#fff1f1}
+#rpt .rpt-nc-card.maior{border-color:#f97316;background:#fff7ed}
+#rpt .rpt-detail-row{display:flex;gap:8px;padding:4px 0}
+#rpt .rpt-detail-lbl{font-size:9pt;font-weight:700;color:#64748b;min-width:120px;text-transform:uppercase;letter-spacing:.3px}
+#rpt .rpt-detail-val{font-size:10pt;color:#1e293b;flex:1}
+#rpt .rpt-footer{margin-top:32px;padding:12px 16px;background:#f1f5f9;border-radius:4px;font-size:8.5pt;color:#64748b;display:flex;justify-content:space-between;align-items:center}
+#rpt .rpt-sign{margin-top:48px;display:flex;gap:48px;padding:0 20px}
+#rpt .rpt-sign-box{flex:1;border-top:2px solid #334155;padding-top:8px;font-size:9pt;color:#475569}
+#rpt .empty-module{padding:20px;text-align:center;color:#94a3b8;font-style:italic;font-size:9.5pt}
+#rpt .chk-section{padding:8px 12px}
+#rpt .chk-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:9.5pt}
+#rpt .chk-item:last-child{border-bottom:none}
+#rpt .chk-box{width:18px;height:18px;border:2px solid #94a3b8;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10pt;margin-top:1px}
+#rpt .chk-box.ok{border-color:#16a34a;background:#dcfce7;color:#16a34a}
+#rpt .chk-box.nc{border-color:#dc2626;background:#fee2e2;color:#dc2626}
+
+@media print{
+  body,html{height:auto;overflow:visible}
+  .app,.topbar,.bottom-nav,.more-drawer,#toast,.modal-ov,#more-overlay{display:none!important}
+  #print-overlay{display:block!important;position:static!important;background:#fff!important;padding:0!important}
+  #print-overlay > div:first-child{display:none!important}
+  #print-content{padding:0}
+  #rpt{margin:0;padding:0}
+  @page{size:A4;margin:15mm 18mm 18mm}
+  #rpt .rpt-section{page-break-inside:avoid}
+  #rpt table{page-break-inside:auto}
+  #rpt tr{page-break-inside:avoid}
+}
 </style>
 </head>
 <body>
@@ -1198,9 +1264,71 @@ input[type=range]::-webkit-slider-thumb{
 
     <!-- ══════════ EXPORTAR ══════════ -->
     <div class="page" id="page-exp">
-      <div class="section-hd"><h2>📤 Exportar</h2><p>Backup e partilha de dados</p></div>
+      <div class="section-hd"><h2>📤 Exportar</h2><p>PDF para arquivo e inspecções · Backup de dados</p></div>
+
+      <!-- PDF REPORT -->
+      <div class="card" style="border-color:rgba(59,130,246,.3);background:linear-gradient(135deg,rgba(59,130,246,.04),rgba(99,102,241,.04))">
+        <div class="card-hd" style="margin-bottom:16px">
+          <div>
+            <div class="card-title" style="color:var(--acc)">📋 Relatório PDF</div>
+            <div class="card-sub">Para arquivo HACCP e inspecções da ASAE / DGAV</div>
+          </div>
+          <div style="font-size:28px">🖨️</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Módulo a incluir no PDF</label>
+          <select class="form-select" id="pdf-mod">
+            <option value="all">📦 Relatório Completo (todos os módulos)</option>
+            <option value="temp">🌡️ Temperaturas</option>
+            <option value="limp">🧹 Limpeza e Desinfecção</option>
+            <option value="oleo">🫙 Óleos de Fritura</option>
+            <option value="val">📅 Controlo de Validades</option>
+            <option value="sob">🍮 Confecção de Sobremesas</option>
+            <option value="rec">📦 Recepção de Mercadoria</option>
+            <option value="chk">✅ Check-lists Semanais</option>
+            <option value="nc">⚠️ Não Conformidades</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data Início</label>
+            <input type="date" class="form-input" id="pdf-de">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data Fim</label>
+            <input type="date" class="form-input" id="pdf-ate">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tipo de Relatório</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <label style="display:flex;align-items:flex-start;gap:10px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r3);padding:12px;cursor:pointer" id="pdf-type-full-lbl">
+              <input type="radio" name="pdf-type" id="pdf-type-full" value="full" checked style="margin-top:2px;accent-color:var(--acc)">
+              <div><div style="font-size:13px;font-weight:600">Relatório Completo</div><div style="font-size:11px;color:var(--txt3);margin-top:2px">Todos os dados com detalhe</div></div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:10px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r3);padding:12px;cursor:pointer" id="pdf-type-sum-lbl">
+              <input type="radio" name="pdf-type" id="pdf-type-sum" value="summary" style="margin-top:2px;accent-color:var(--acc)">
+              <div><div style="font-size:13px;font-weight:600">Resumo Executivo</div><div style="font-size:11px;color:var(--txt3);margin-top:2px">Estatísticas e desvios</div></div>
+            </label>
+          </div>
+        </div>
+
+        <div id="pdf-preview-info" class="alert alert-info" style="margin-bottom:12px">
+          <span>ℹ️</span>
+          <span id="pdf-preview-text">Seleccione módulo e datas para gerar o relatório.</span>
+        </div>
+
+        <button class="btn btn-primary" onclick="generatePDF()" style="font-size:15px;padding:15px">
+          🖨️ Gerar e Imprimir PDF
+        </button>
+      </div>
+
+      <!-- DATA EXPORT -->
       <div class="card">
-        <div class="card-title" style="margin-bottom:12px">Exportar Dados</div>
+        <div class="card-title" style="margin-bottom:12px">💾 Exportar Dados</div>
         <div class="form-group">
           <label class="form-label">Módulo</label>
           <select class="form-select" id="ex-mod">
@@ -1215,22 +1343,13 @@ input[type=range]::-webkit-slider-thumb{
             <option value="nc">NC</option>
           </select>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">De</label>
-            <input type="date" class="form-input" id="ex-de">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Até</label>
-            <input type="date" class="form-input" id="ex-ate">
-          </div>
-        </div>
         <div style="display:flex;flex-direction:column;gap:10px">
-          <button class="btn btn-primary" onclick="exportJSON()">📦 Exportar JSON (backup)</button>
+          <button class="btn btn-secondary" onclick="exportJSON()">📦 Exportar JSON (backup)</button>
           <button class="btn btn-secondary" onclick="exportCSV()">📊 Exportar CSV</button>
-          <button class="btn btn-secondary" onclick="exportHTML()">📄 Relatório HTML</button>
         </div>
       </div>
+
+      <!-- IMPORT -->
       <div class="card">
         <div class="card-title" style="margin-bottom:12px">📥 Importar</div>
         <div class="alert alert-warn">
@@ -1243,6 +1362,21 @@ input[type=range]::-webkit-slider-thumb{
         </button>
         <hr class="divider">
         <button class="btn btn-danger btn-sm" onclick="clearAll()" style="width:100%">🗑️ Limpar todos os dados</button>
+      </div>
+    </div>
+
+    <!-- ══════════ PRINT OVERLAY ══════════ -->
+    <div id="print-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9000;overflow-y:auto">
+      <div style="max-width:800px;margin:0 auto;padding:20px">
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="window.print()" style="flex:1">🖨️ Imprimir / Guardar como PDF</button>
+          <button class="btn btn-secondary" onclick="closePrintOverlay()" style="flex:1">✕ Fechar</button>
+        </div>
+        <div class="alert alert-info">
+          <span>💡</span>
+          <span>No diálogo de impressão, seleccione <strong>"Guardar como PDF"</strong> para criar um ficheiro PDF. Recomendado: papel A4, margens normais.</span>
+        </div>
+        <div id="print-content"></div>
       </div>
     </div>
 
@@ -1622,6 +1756,7 @@ function navigate(page){
   if(page==='rec'){setNow('rc-dt');populateColabs('rc-colab');renderRecTbl()}
   if(page==='chk'){setToday('ck-data');populateColabs('ck-colab');renderChkForm();renderChkTbl()}
   if(page==='nc'){setNow('nc-dt');populateColabs('nc-colab');renderNcTbl()}
+  if(page==='exp') updatePdfPreview();
   if(page==='cfg') loadCfg();
 }
 
@@ -2359,6 +2494,387 @@ function clearAll(){
 }
 
 // ═══════════════════════════════════════════
+// PDF REPORT GENERATOR
+// ═══════════════════════════════════════════
+
+function filterByDate(arr, de, ate, dateField){
+  return arr.filter(r => {
+    const d = (r[dateField] || r.datetime || r.data || r.createdAt || '').slice(0,10);
+    if(de && d < de) return false;
+    if(ate && d > ate) return false;
+    return true;
+  });
+}
+
+function rptBadge(val, map){ return map[val] || `<span>${val||'—'}</span>`; }
+
+const BADGE = {
+  confOk:  '<span class="badge-ok">✓ Conforme</span>',
+  confNc:  '<span class="badge-fail">✗ NC</span>',
+  confNa:  '<span style="color:#94a3b8">—</span>',
+  aceite:  '<span class="badge-ok">✅ Aceite</span>',
+  rejeitado:'<span class="badge-fail">❌ Rejeitado</span>',
+  cond:    '<span class="badge-warn">⚠️ Com cond.</span>',
+  ok:      '<span class="badge-ok">✅ OK</span>',
+  aviso:   '<span class="badge-warn">⚠️ A expirar</span>',
+  exp:     '<span class="badge-fail">❌ Expirado</span>',
+  ret:     '<span class="badge-info">🗑️ Retirado</span>',
+  menor:   '<span class="badge-warn">🟡 Menor</span>',
+  maior:   '<span class="badge-warn" style="background:#fed7aa;color:#9a3412">🟠 Maior</span>',
+  critica: '<span class="badge-fail">🔴 Crítica</span>',
+  aberta:  '<span class="badge-fail">Aberta</span>',
+  'em-curso':'<span class="badge-warn">Em curso</span>',
+  fechada: '<span class="badge-ok">Fechada</span>',
+};
+
+function buildSection(icon, title, content){
+  return `<div class="rpt-section">
+    <div class="rpt-section-hd">${icon} ${title}</div>
+    <div class="rpt-section-body">${content}</div>
+  </div>`;
+}
+
+function emptySection(){ return '<div class="empty-module">Sem registos para o período seleccionado.</div>'; }
+
+// ── TEMPERATURE SECTION ──
+function buildTempSection(data, summary){
+  if(!data.length) return emptySection();
+  const ok=data.filter(r=>r.conforme===true).length;
+  const nc=data.filter(r=>r.conforme===false).length;
+  const na=data.filter(r=>r.conforme===null||r.conforme===undefined).length;
+  let html=`<div class="rpt-stats">
+    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Total registos</div></div>
+    <div class="rpt-stat"><div class="n ok">${ok}</div><div class="l">Conformes</div></div>
+    <div class="rpt-stat"><div class="n ${nc>0?'err':'ok'}">${nc}</div><div class="l">Não conformes</div></div>
+    <div class="rpt-stat"><div class="n">${na}</div><div class="l">Sem limite def.</div></div>
+  </div>`;
+  if(!summary){
+    html+=`<table><thead><tr><th>Data / Hora</th><th>Equipamento</th><th>Temperatura</th><th>Limite</th><th>Estado</th><th>Colaborador</th><th>Acção Correctiva</th></tr></thead><tbody>`;
+    data.forEach(r=>{
+      const cls=r.conforme===true?'ok':r.conforme===false?'err':'';
+      const badge=r.conforme===true?BADGE.confOk:r.conforme===false?BADGE.confNc:BADGE.confNa;
+      const limite=(!isNaN(r.tmin)&&!isNaN(r.tmax))?`${r.tmin}°C / ${r.tmax}°C`:'—';
+      html+=`<tr><td>${fd(r.datetime)}</td><td>${r.equipamento||'—'}</td><td class="${cls}" style="font-weight:700">${r.temperatura}°C</td><td>${limite}</td><td>${badge}</td><td>${r.colaborador||'—'}</td><td>${r.accao||'—'}</td></tr>`;
+    });
+    html+='</tbody></table>';
+  }
+  return html;
+}
+
+// ── LIMPEZA SECTION ──
+function buildLimpSection(data, summary){
+  if(!data.length) return emptySection();
+  const ok=data.filter(r=>r.conformidade==='ok').length;
+  const nc=data.filter(r=>r.conformidade==='nc').length;
+  let html=`<div class="rpt-stats">
+    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Total registos</div></div>
+    <div class="rpt-stat"><div class="n ok">${ok}</div><div class="l">Conformes</div></div>
+    <div class="rpt-stat"><div class="n ${nc>0?'err':'ok'}">${nc}</div><div class="l">Não conformes</div></div>
+  </div>`;
+  if(!summary){
+    const cm={ok:BADGE.confOk,nc:BADGE.confNc,parc:'<span class="badge-warn">⚠️ Parcial</span>'};
+    html+=`<table><thead><tr><th>Data / Hora</th><th>Local / Zona</th><th>Tipo</th><th>Produto</th><th>Colaborador</th><th>Verificador</th><th>Conformidade</th></tr></thead><tbody>`;
+    data.forEach(r=>{html+=`<tr><td>${fd(r.datetime)}</td><td>${r.local||'—'}</td><td>${r.tipo||'—'}</td><td>${r.produto||'—'}</td><td>${r.colaborador||'—'}</td><td>${r.verificador||'—'}</td><td>${cm[r.conformidade]||'—'}</td></tr>`});
+    html+='</tbody></table>';
+  }
+  return html;
+}
+
+// ── ÓLEOS SECTION ──
+function buildOleoSection(data, summary){
+  if(!data.length) return emptySection();
+  const ok=data.filter(r=>r.conforme).length;
+  const nc=data.filter(r=>!r.conforme).length;
+  let html=`<div class="rpt-stats">
+    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Registos</div></div>
+    <div class="rpt-stat"><div class="n ok">${ok}</div><div class="l">Conformes ≤25%</div></div>
+    <div class="rpt-stat"><div class="n ${nc>0?'err':'ok'}">${nc}</div><div class="l">Acima do limite</div></div>
+  </div>`;
+  if(!summary){
+    html+=`<table><thead><tr><th>Data</th><th>Fritadeira</th><th>Valor Polar</th><th>T° Óleo</th><th>Método</th><th>Decisão</th><th>Colaborador</th></tr></thead><tbody>`;
+    data.forEach(r=>{html+=`<tr><td>${fdo(r.data)}</td><td>${r.equipamento||'—'}</td><td class="${r.conforme?'ok':'err'}" style="font-weight:700">${r.polar}%</td><td>${r.temperatura?r.temperatura+'°C':'—'}</td><td>${r.metodo||'—'}</td><td>${r.decisao||'—'}</td><td>${r.colaborador||'—'}</td></tr>`});
+    html+='</tbody></table>';
+  }
+  return html;
+}
+
+// ── VALIDADES SECTION ──
+function buildValSection(data, summary){
+  if(!data.length) return emptySection();
+  const ok=data.filter(r=>r.estado==='ok').length;
+  const aviso=data.filter(r=>r.estado==='aviso').length;
+  const exp=data.filter(r=>r.estado==='exp').length;
+  let html=`<div class="rpt-stats">
+    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Verificações</div></div>
+    <div class="rpt-stat"><div class="n ok">${ok}</div><div class="l">Dentro prazo</div></div>
+    <div class="rpt-stat"><div class="n warn">${aviso}</div><div class="l">A expirar</div></div>
+    <div class="rpt-stat"><div class="n ${exp>0?'err':'ok'}">${exp}</div><div class="l">Expirados</div></div>
+  </div>`;
+  if(!summary){
+    const em={ok:BADGE.ok,aviso:BADGE.aviso,exp:BADGE.exp,ret:BADGE.ret};
+    html+=`<table><thead><tr><th>Data Verif.</th><th>Produto</th><th>Validade</th><th>Lote</th><th>Armazenamento</th><th>Quantidade</th><th>Estado</th><th>Colaborador</th></tr></thead><tbody>`;
+    data.forEach(r=>{html+=`<tr><td>${fdo(r.data)}</td><td>${r.produto||'—'}</td><td>${fdo(r.validade)}</td><td>${r.lote||'—'}</td><td>${r.local||'—'}</td><td>${r.qtd||'—'}</td><td>${em[r.estado]||r.estado}</td><td>${r.colaborador||'—'}</td></tr>`});
+    html+='</tbody></table>';
+  }
+  return html;
+}
+
+// ── SOBREMESAS SECTION ──
+function buildSobSection(data, summary){
+  if(!data.length) return emptySection();
+  const cm={ok:BADGE.confOk,obs:'<span class="badge-warn">⚠️ Obs.</span>',nc:BADGE.confNc};
+  let html=`<div class="rpt-stats">
+    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Confecções</div></div>
+    <div class="rpt-stat"><div class="n ok">${data.filter(r=>r.conformidade==='ok').length}</div><div class="l">Conformes</div></div>
+    <div class="rpt-stat"><div class="n ${data.filter(r=>r.conformidade==='nc').length>0?'err':'ok'}">${data.filter(r=>r.conformidade==='nc').length}</div><div class="l">NC</div></div>
+  </div>`;
+  if(!summary){
+    html+=`<table><thead><tr><th>Data / Hora</th><th>Sobremesa</th><th>Qtd.</th><th>T°Conf.</th><th>T°Arm.</th><th>Consumir até</th><th>Alergénios</th><th>Conform.</th><th>Colaborador</th></tr></thead><tbody>`;
+    data.forEach(r=>{html+=`<tr><td>${fd(r.datetime)}</td><td>${r.tipo||'—'}</td><td>${r.qtd||'—'}</td><td>${r.tempConf?r.tempConf+'°C':'—'}</td><td>${r.tempArm?r.tempArm+'°C':'—'}</td><td>${fd(r.validade)}</td><td style="font-size:8.5pt">${r.alergenios||'—'}</td><td>${cm[r.conformidade]||'—'}</td><td>${r.colaborador||'—'}</td></tr>`});
+    html+='</tbody></table>';
+  }
+  return html;
+}
+
+// ── RECEPÇÃO SECTION ──
+function buildRecSection(data, summary){
+  if(!data.length) return emptySection();
+  const ac=data.filter(r=>r.decisao==='aceite').length;
+  const rj=data.filter(r=>r.decisao==='rejeitado').length;
+  const dm={aceite:BADGE.aceite,rejeitado:BADGE.rejeitado,cond:BADGE.cond};
+  let html=`<div class="rpt-stats">
+    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Recepções</div></div>
+    <div class="rpt-stat"><div class="n ok">${ac}</div><div class="l">Aceites</div></div>
+    <div class="rpt-stat"><div class="n ${rj>0?'err':'ok'}">${rj}</div><div class="l">Rejeitados</div></div>
+  </div>`;
+  if(!summary){
+    html+=`<table><thead><tr><th>Data / Hora</th><th>Fornecedor</th><th>Produto</th><th>Qtd.</th><th>T° Recep.</th><th>Decisão</th><th>Colaborador</th></tr></thead><tbody>`;
+    data.forEach(r=>{html+=`<tr><td>${fd(r.datetime)}</td><td>${r.fornecedor||'—'}</td><td>${r.produto||'—'}</td><td>${r.qtd||'—'}</td><td>${r.temperatura?r.temperatura+'°C':'—'}</td><td>${dm[r.decisao]||r.decisao}</td><td>${r.colaborador||'—'}</td></tr>`});
+    html+='</tbody></table>';
+  }
+  return html;
+}
+
+// ── CHECK-LIST SECTION ──
+function buildChkSection(data, summary){
+  if(!data.length) return emptySection();
+  const avg=data.length?Math.round(data.reduce((s,r)=>s+r.score,0)/data.length):0;
+  let html=`<div class="rpt-stats">
+    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Check-lists</div></div>
+    <div class="rpt-stat"><div class="n ${avg>=90?'ok':avg>=70?'warn':'err'}">${avg}%</div><div class="l">Score médio</div></div>
+    <div class="rpt-stat"><div class="n ${data.filter(r=>r.score<70).length>0?'err':'ok'}">${data.filter(r=>r.score<70).length}</div><div class="l">Abaixo de 70%</div></div>
+  </div>`;
+  if(summary){
+    html+=`<table><thead><tr><th>Data</th><th>Responsável</th><th>Score</th><th>OK</th><th>NC</th><th>Observações</th></tr></thead><tbody>`;
+    data.forEach(r=>{
+      const sc=r.score>=90?'ok':r.score>=70?'warn':'err';
+      html+=`<tr><td>${fdo(r.data)}</td><td>${r.colaborador||'—'}</td><td class="${sc}" style="font-weight:700">${r.score}%</td><td>${r.ok}</td><td>${r.nc}</td><td style="font-size:8.5pt">${r.obs||'—'}</td></tr>`;
+    });
+    html+='</tbody></table>';
+  } else {
+    // Full detail for each check-list
+    data.forEach(r=>{
+      const sc=r.score>=90?'ok':r.score>=70?'warn':'err';
+      html+=`<div style="padding:12px;border-bottom:1px solid #e2e8f0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:11pt">${fdo(r.data)} — ${r.colaborador||'—'}</strong>
+          <span class="badge-${r.score>=90?'ok':r.score>=70?'warn':'fail'}" style="font-size:11pt;padding:4px 12px">${r.score}%</span>
+        </div>`;
+      if(r.state && Object.keys(r.state).length){
+        html+='<div class="chk-section">';
+        Object.entries(CK_ITEMS_PDF).forEach(([cat,items])=>{
+          const catItems=items.filter(it=>r.state[it.id]);
+          if(!catItems.length)return;
+          html+=`<div style="font-size:9pt;font-weight:700;color:#475569;text-transform:uppercase;margin:6px 0 3px">${cat}</div>`;
+          items.forEach(it=>{
+            const st=r.state[it.id]||'';
+            if(st){
+              const cls=st==='ok'?'ok':'nc';
+              const icon=st==='ok'?'✓':'✗';
+              html+=`<div class="chk-item"><div class="chk-box ${cls}">${icon}</div><span>${it.l}</span></div>`;
+            }
+          });
+        });
+        html+='</div>';
+      }
+      if(r.obs) html+=`<div style="padding:6px 12px;font-size:9pt;color:#64748b;font-style:italic">Obs: ${r.obs}</div>`;
+      html+='</div>';
+    });
+  }
+  return html;
+}
+
+// ── NC SECTION ──
+function buildNcSection(data, summary){
+  if(!data.length) return emptySection();
+  const cr=data.filter(r=>r.gravidade==='critica').length;
+  const ma=data.filter(r=>r.gravidade==='maior').length;
+  const ab=data.filter(r=>r.estado==='aberta').length;
+  let html=`<div class="rpt-stats">
+    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Total NC</div></div>
+    <div class="rpt-stat"><div class="n ${cr>0?'err':'ok'}">${cr}</div><div class="l">Críticas</div></div>
+    <div class="rpt-stat"><div class="n ${ma>0?'warn':'ok'}">${ma}</div><div class="l">Maiores</div></div>
+    <div class="rpt-stat"><div class="n ${ab>0?'warn':'ok'}">${ab}</div><div class="l">Abertas</div></div>
+  </div>`;
+  if(summary){
+    html+=`<table><thead><tr><th>Data</th><th>Área</th><th>Gravidade</th><th>Descrição</th><th>Estado</th><th>Prazo</th></tr></thead><tbody>`;
+    data.forEach(r=>{
+      html+=`<tr><td>${fd(r.datetime)}</td><td>${r.area||'—'}</td><td>${BADGE[r.gravidade]||r.gravidade}</td><td style="font-size:9pt">${(r.descricao||'').slice(0,80)}</td><td>${BADGE[r.estado]||r.estado}</td><td>${fdo(r.prazo)}</td></tr>`;
+    });
+    html+='</tbody></table>';
+  } else {
+    data.forEach(r=>{
+      const gc=r.gravidade==='critica'?'critica':r.gravidade==='maior'?'maior':'';
+      html+=`<div class="rpt-nc-card ${gc}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <span style="font-weight:700;font-size:11pt">${r.area?.toUpperCase()||'—'}</span>
+            <span style="margin-left:8px">${BADGE[r.gravidade]||''}</span>
+            <span style="margin-left:8px">${BADGE[r.estado]||''}</span>
+          </div>
+          <span style="font-size:9pt;color:#64748b">${fd(r.datetime)}</span>
+        </div>
+        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Descrição</span><span class="rpt-detail-val">${r.descricao||'—'}</span></div>
+        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Causa</span><span class="rpt-detail-val">${r.causa||'—'}</span></div>
+        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Acção imediata</span><span class="rpt-detail-val">${r.accaoImediata||'—'}</span></div>
+        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Acção preventiva</span><span class="rpt-detail-val">${r.accaoPreventiva||'—'}</span></div>
+        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Prazo resolução</span><span class="rpt-detail-val">${fdo(r.prazo)||'—'}</span></div>
+        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Detectado por</span><span class="rpt-detail-val">${r.colaborador||'—'}</span></div>
+      </div>`;
+    });
+  }
+  return html;
+}
+
+// Reference CK_ITEMS for PDF build (mirror of checklist structure)
+const CK_ITEMS_PDF = {
+  'Instalações':[{id:'i1',l:'Paredes e tecto sem humidade ou bolores'},{id:'i2',l:'Pavimento limpo e em bom estado'},{id:'i3',l:'Ventilação adequada e filtros limpos'},{id:'i4',l:'Iluminação adequada e protegida'},{id:'i5',l:'Lavatórios de mãos equipados'},{id:'i6',l:'Zona de lixo adequada e identificada'}],
+  'Equipamentos':[{id:'e1',l:'Frigoríficos a funcionar correctamente'},{id:'e2',l:'Congeladores a ≤ -18°C'},{id:'e3',l:'Equipamentos de confecção limpos'},{id:'e4',l:'Superfícies de trabalho desinfectadas'},{id:'e5',l:'Termómetros calibrados disponíveis'}],
+  'Higiene Pessoal':[{id:'h1',l:'Colaboradores com farda limpa e adequada'},{id:'h2',l:'Higienização de mãos correcta'},{id:'h3',l:'Sem adornos na zona de manipulação'},{id:'h4',l:'Colaboradores sem sintomas de doença'},{id:'h5',l:'Fichas de saúde actualizadas'}],
+  'Boas Práticas':[{id:'p1',l:'Separação alimentos crus/cozinhados'},{id:'p2',l:'Alimentos correctamente etiquetados'},{id:'p3',l:'FIFO em uso'},{id:'p4',l:'Descongelação em frigorífico'},{id:'p5',l:'Arrefecimento rápido aplicado'},{id:'p6',l:'Validades verificadas diariamente'}],
+  'Documentação':[{id:'d1',l:'Registos de temperatura em dia'},{id:'d2',l:'Registos de limpeza preenchidos'},{id:'d3',l:'Plano HACCP disponível'},{id:'d4',l:'Certificados de desinsetização em arquivo'},{id:'d5',l:'Mapa de alergénios actualizado'}]
+};
+
+function generatePDF(){
+  const modulo = document.getElementById('pdf-mod').value;
+  const de = document.getElementById('pdf-de').value;
+  const ate = document.getElementById('pdf-ate').value;
+  const isSummary = document.getElementById('pdf-type-sum').checked;
+  const cfg = DB.getObj('config');
+
+  // Gather data
+  const getData = (k) => {
+    const arr = DB.get(k);
+    return de || ate ? filterByDate(arr, de, ate, k==='oleo'||k==='val'||k==='chk'?'data':'datetime') : arr;
+  };
+
+  const modules = {
+    temp: { icon:'🌡️', title:'Controlo de Temperaturas', build: buildTempSection },
+    limp: { icon:'🧹', title:'Limpeza e Desinfecção',    build: buildLimpSection },
+    oleo: { icon:'🫙', title:'Óleos de Fritura',          build: buildOleoSection },
+    val:  { icon:'📅', title:'Controlo de Validades',     build: buildValSection  },
+    sob:  { icon:'🍮', title:'Confecção de Sobremesas',   build: buildSobSection  },
+    rec:  { icon:'📦', title:'Recepção de Mercadoria',    build: buildRecSection  },
+    chk:  { icon:'✅', title:'Check-list Semanal HACCP',  build: buildChkSection  },
+    nc:   { icon:'⚠️', title:'Não Conformidades',         build: buildNcSection   },
+  };
+
+  const selected = modulo === 'all' ? Object.keys(modules) : [modulo];
+
+  // Build period string
+  const periodStr = (de && ate) ? `${fdo(de)} a ${fdo(ate)}` :
+                    de ? `A partir de ${fdo(de)}` :
+                    ate ? `Até ${fdo(ate)}` : 'Todos os registos';
+
+  // Count total records
+  let totalRecords = 0;
+  selected.forEach(k => totalRecords += getData(k).length);
+
+  if(totalRecords === 0){
+    toast('Sem registos para o período seleccionado.','warn');
+    return;
+  }
+
+  // Cover page
+  const now = new Date();
+  const geradoEm = now.toLocaleString('pt-PT',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const tipoStr = isSummary ? 'Resumo Executivo' : 'Relatório Completo';
+  const moduloStr = modulo === 'all' ? 'Todos os Módulos' : modules[modulo]?.title || modulo;
+
+  let html = `<div id="rpt">
+  <div class="rpt-cover">
+    <div class="rpt-logo">🛡️</div>
+    <div class="rpt-title">Registo HACCP</div>
+    <div class="rpt-subtitle">${tipoStr} — ${moduloStr}</div>
+    <div class="rpt-meta">
+      <div class="rpt-meta-item"><div class="val">${cfg.nome||'—'}</div><div class="lbl">Estabelecimento</div></div>
+      <div class="rpt-meta-item"><div class="val">${cfg.nif||'—'}</div><div class="lbl">NIF</div></div>
+      <div class="rpt-meta-item"><div class="val">${cfg.responsavel||'—'}</div><div class="lbl">Responsável HACCP</div></div>
+      <div class="rpt-meta-item"><div class="val">${totalRecords}</div><div class="lbl">Total de registos</div></div>
+    </div>
+    <div class="rpt-period">📅 Período: ${periodStr}</div>
+    <div style="margin-top:16px;font-size:9pt;color:#64748b">Gerado em ${geradoEm} · HACCP Pro</div>
+  </div>`;
+
+  // Sections
+  selected.forEach(k => {
+    const m = modules[k];
+    if(!m) return;
+    const data = getData(k);
+    const content = m.build(data, isSummary);
+    html += buildSection(m.icon, m.title, content);
+  });
+
+  // Signature block (for inspection purposes)
+  html += `<div class="rpt-sign">
+    <div class="rpt-sign-box">
+      <div>Responsável HACCP</div>
+      <div style="margin-top:4px;font-size:8.5pt;color:#94a3b8">${cfg.responsavel||'_________________'}</div>
+    </div>
+    <div class="rpt-sign-box">
+      <div>Data de Verificação</div>
+      <div style="margin-top:4px;font-size:8.5pt;color:#94a3b8">_____ / _____ / _______</div>
+    </div>
+    <div class="rpt-sign-box">
+      <div>Assinatura</div>
+    </div>
+  </div>
+  <div class="rpt-footer">
+    <span>${cfg.nome||'Estabelecimento'} ${cfg.nif?'· NIF '+cfg.nif:''} ${cfg.morada?'· '+cfg.morada:''}</span>
+    <span>HACCP Pro · ${geradoEm}</span>
+  </div>
+  </div>`;
+
+  document.getElementById('print-content').innerHTML = html;
+  document.getElementById('print-overlay').style.display = 'block';
+  document.getElementById('scroll-area').scrollTop = 0;
+
+  // Update preview info
+  document.getElementById('pdf-preview-text').textContent =
+    `Pronto: ${totalRecords} registos · ${periodStr} · ${tipoStr}`;
+}
+
+function closePrintOverlay(){
+  document.getElementById('print-overlay').style.display = 'none';
+  document.getElementById('print-content').innerHTML = '';
+}
+
+function updatePdfPreview(){
+  const de = document.getElementById('pdf-de')?.value;
+  const ate = document.getElementById('pdf-ate')?.value;
+  const modulo = document.getElementById('pdf-mod')?.value;
+  if(!de && !ate){ document.getElementById('pdf-preview-text').textContent='Seleccione módulo e datas para gerar o relatório.'; return; }
+  const selected = modulo==='all'?['temp','limp','oleo','val','sob','rec','chk','nc']:[modulo];
+  let total=0;
+  selected.forEach(k=>{
+    const arr=DB.get(k);
+    total+=(de||ate)?filterByDate(arr,de,ate,k==='oleo'||k==='val'||k==='chk'?'data':'datetime').length:arr.length;
+  });
+  const period=(de&&ate)?`${fdo(de)} a ${fdo(ate)}`:(de?`a partir de ${fdo(de)}`:(ate?`até ${fdo(ate)}`:'todos os registos'));
+  document.getElementById('pdf-preview-text').textContent=`${total} registos encontrados · ${period}`;
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 function init(){
@@ -2367,6 +2883,23 @@ function init(){
     new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});
 
   navigate('dash');
+
+  // PDF preview live update
+  setTimeout(()=>{
+    ['pdf-mod','pdf-de','pdf-ate'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.addEventListener('change', updatePdfPreview);
+    });
+    // Set default dates for PDF (last 30 days)
+    const pdfAte=document.getElementById('pdf-ate');
+    const pdfDe=document.getElementById('pdf-de');
+    if(pdfAte&&!pdfAte.value){
+      const today=new Date();
+      pdfAte.value=today.toISOString().slice(0,10);
+      today.setDate(today.getDate()-30);
+      if(pdfDe&&!pdfDe.value) pdfDe.value=today.toISOString().slice(0,10);
+    }
+  }, 200);
 
   // Schedule checker (every minute)
   setInterval(checkDailyReportSchedule, 60000);
