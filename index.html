@@ -2,9 +2,10 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f1117">
 <title>HACCP Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,12 +40,20 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
+html{
+  overscroll-behavior:none;
+  overscroll-behavior-y:none;
+  -webkit-overflow-scrolling:auto;
+}
 body{
   font-family:'Inter',sans-serif;
   background:var(--bg);
   color:var(--txt);
   font-size:15px;
   -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+  overscroll-behavior-y:none;
+  touch-action:pan-x pan-y;
 }
 
 /* ════════════════════════════════
@@ -104,8 +113,9 @@ body{
   flex:1;overflow-y:auto;overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
   padding:16px 16px 24px;
-  /* leave room for bottom nav */
   padding-bottom:calc(var(--nav-h) + 24px);
+  overscroll-behavior:contain;
+  overscroll-behavior-y:contain;
 }
 
 /* ── BOTTOM NAV ── */
@@ -678,6 +688,95 @@ input[type=range]::-webkit-slider-thumb{
 }
 
 /* ════════════════════════════════
+   LAUNCHER DASHBOARD
+════════════════════════════════ */
+.kpi-strip{
+  display:flex;align-items:stretch;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
+  margin-bottom:14px;
+}
+.kpi-item{
+  flex:1;padding:12px 6px;text-align:center;
+}
+.kpi-sep{width:1px;background:var(--border);flex-shrink:0}
+.kpi-val{
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px;font-weight:700;line-height:1;
+}
+.kpi-item.c-blue .kpi-val{color:var(--acc)}
+.kpi-item.c-green .kpi-val{color:var(--green)}
+.kpi-item.c-yellow .kpi-val{color:var(--yellow)}
+.kpi-item.c-red .kpi-val{color:var(--red)}
+.kpi-lbl{font-size:10px;color:var(--txt3);margin-top:4px;line-height:1.2}
+
+.launcher-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-bottom:14px;
+}
+.lnch-btn{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px 12px 14px;
+  display:flex;flex-direction:column;
+  align-items:center;gap:8px;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:all .15s;position:relative;
+  overflow:hidden;
+}
+.lnch-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--lc,var(--acc)),transparent 70%);
+  opacity:.06;pointer-events:none;
+}
+.lnch-btn::after{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:3px;
+  background:var(--lc,var(--acc));
+  border-radius:var(--r) var(--r) 0 0;
+}
+.lnch-btn:active{transform:scale(.95);background:var(--s2)}
+.lnch-icon-wrap{
+  width:64px;height:64px;
+  background:color-mix(in srgb,var(--lc,var(--acc)) 15%,var(--s2));
+  border-radius:18px;
+  display:grid;place-items:center;
+  border:1px solid color-mix(in srgb,var(--lc,var(--acc)) 25%,var(--border));
+  flex-shrink:0;
+}
+.lnch-icon{font-size:30px;line-height:1}
+.lnch-label{
+  font-family:'Syne',sans-serif;
+  font-size:13px;font-weight:700;
+  color:var(--txt);text-align:center;
+  line-height:1.2;
+}
+.lnch-count{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;font-weight:600;
+  padding:2px 10px;border-radius:20px;
+  background:var(--s2);
+  color:var(--txt2);
+  border:1px solid var(--border);
+  min-width:36px;text-align:center;
+}
+.lnch-count-nc{
+  background:rgba(239,68,68,.15);
+  color:var(--red);
+  border-color:rgba(239,68,68,.3);
+}
+
+@media(min-width:480px){
+  .launcher-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(min-width:640px){
+  .launcher-grid{grid-template-columns:repeat(4,1fr)}
+  .kpi-val{font-size:26px}
+}
+
+/* ════════════════════════════════
    DESKTOP ENHANCEMENTS  ≥ 640px
 ════════════════════════════════ */
 @media(min-width:640px){
@@ -784,46 +883,126 @@ input[type=range]::-webkit-slider-thumb{
 
     <!-- ══════════ DASHBOARD ══════════ -->
     <div class="page active" id="page-dash">
+
+      <!-- Alert banner (config warning) -->
       <div id="dash-alert"></div>
-      <div class="stats-grid">
-        <div class="stat-card c-blue">
-          <div class="stat-icon">🌡️</div>
-          <div class="stat-val" id="s-temp">0</div>
-          <div class="stat-lbl">Temp. hoje</div>
+
+      <!-- KPI strip -->
+      <div class="kpi-strip">
+        <div class="kpi-item c-blue">
+          <div class="kpi-val" id="s-temp">0</div>
+          <div class="kpi-lbl">🌡️ Temp.</div>
         </div>
-        <div class="stat-card c-green">
-          <div class="stat-icon">🧹</div>
-          <div class="stat-val" id="s-limp">0</div>
-          <div class="stat-lbl">Limpezas hoje</div>
+        <div class="kpi-sep"></div>
+        <div class="kpi-item c-green">
+          <div class="kpi-val" id="s-limp">0</div>
+          <div class="kpi-lbl">🧹 Limpeza</div>
         </div>
-        <div class="stat-card c-yellow">
-          <div class="stat-icon">⚠️</div>
-          <div class="stat-val" id="s-nc">0</div>
-          <div class="stat-lbl">NC abertas</div>
+        <div class="kpi-sep"></div>
+        <div class="kpi-item c-yellow">
+          <div class="kpi-val" id="s-nc">0</div>
+          <div class="kpi-lbl">⚠️ NC aber.</div>
         </div>
-        <div class="stat-card c-red">
-          <div class="stat-icon">📅</div>
-          <div class="stat-val" id="s-val">0</div>
-          <div class="stat-lbl">Validades</div>
+        <div class="kpi-sep"></div>
+        <div class="kpi-item c-red">
+          <div class="kpi-val" id="s-val">0</div>
+          <div class="kpi-lbl">📅 Validades</div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-hd">
-          <div>
-            <div class="card-title">Actividade Recente</div>
-            <div class="card-sub">Últimos registos inseridos</div>
+      <!-- Module launcher grid -->
+      <div class="launcher-grid">
+
+        <button class="lnch-btn" onclick="navigate('temp')">
+          <div class="lnch-icon-wrap" style="--lc:#3b82f6">
+            <span class="lnch-icon">🌡️</span>
           </div>
+          <span class="lnch-label">Temperaturas</span>
+          <span class="lnch-count" id="lc-temp">—</span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('limp')">
+          <div class="lnch-icon-wrap" style="--lc:#22c55e">
+            <span class="lnch-icon">🧹</span>
+          </div>
+          <span class="lnch-label">Limpeza</span>
+          <span class="lnch-count" id="lc-limp">—</span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('oleo');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#f97316">
+            <span class="lnch-icon">🫙</span>
+          </div>
+          <span class="lnch-label">Óleos</span>
+          <span class="lnch-count" id="lc-oleo">—</span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('val');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#eab308">
+            <span class="lnch-icon">📅</span>
+          </div>
+          <span class="lnch-label">Validades</span>
+          <span class="lnch-count" id="lc-val">—</span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('sob');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#a855f7">
+            <span class="lnch-icon">🍮</span>
+          </div>
+          <span class="lnch-label">Sobremesas</span>
+          <span class="lnch-count" id="lc-sob">—</span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('rec');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#06b6d4">
+            <span class="lnch-icon">📦</span>
+          </div>
+          <span class="lnch-label">Recepção</span>
+          <span class="lnch-count" id="lc-rec">—</span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('chk');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#10b981">
+            <span class="lnch-icon">✅</span>
+          </div>
+          <span class="lnch-label">Check-list</span>
+          <span class="lnch-count" id="lc-chk">—</span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('nc')">
+          <div class="lnch-icon-wrap" style="--lc:#ef4444">
+            <span class="lnch-icon">⚠️</span>
+          </div>
+          <span class="lnch-label">Não Conform.</span>
+          <span class="lnch-count lnch-count-nc" id="lc-nc">—</span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('exp');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#6366f1">
+            <span class="lnch-icon">📤</span>
+          </div>
+          <span class="lnch-label">Exportar PDF</span>
+          <span class="lnch-count" style="background:transparent"></span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('cfg')">
+          <div class="lnch-icon-wrap" style="--lc:#64748b">
+            <span class="lnch-icon">⚙️</span>
+          </div>
+          <span class="lnch-label">Configurações</span>
+          <span class="lnch-count" style="background:transparent"></span>
+        </button>
+
+      </div>
+
+      <!-- Last activity -->
+      <div class="card" style="margin-top:4px">
+        <div class="card-hd" style="margin-bottom:10px">
+          <div class="card-title" style="font-size:14px">Actividade Recente</div>
         </div>
         <div id="dash-feed"></div>
       </div>
 
-      <div class="card">
-        <div class="card-hd">
-          <div class="card-title">Temperaturas Hoje</div>
-        </div>
-        <div id="dash-temps"></div>
-      </div>
     </div>
 
     <!-- ══════════ TEMPERATURAS ══════════ -->
@@ -2250,7 +2429,7 @@ function renderDash(){
   // Check for welcome
   const alertEl=document.getElementById('dash-alert');
   if(!cfg.nome){
-    alertEl.innerHTML=`<div class="alert alert-info"><span>👋</span><span>Configure o seu estabelecimento em <a href="#" onclick="navigate('cfg')" style="color:var(--acc)">Configurações</a> para começar.</span></div>`;
+    alertEl.innerHTML=`<div class="alert alert-info"><span>👋</span><span>Configure o estabelecimento em <a href="#" onclick="navigate('cfg')" style="color:var(--acc)">Configurações</a> para começar.</span></div>`;
   } else {alertEl.innerHTML='';}
 
   // Activity feed
@@ -2259,7 +2438,7 @@ function renderDash(){
     .forEach(m=>DB.get(m.k).slice(0,2).forEach(r=>feed.push({...r,_i:m.i,_l:m.l})));
   feed.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
   const feedEl=document.getElementById('dash-feed');
-  feedEl.innerHTML=feed.length?feed.slice(0,8).map(r=>`
+  feedEl.innerHTML=feed.length?feed.slice(0,6).map(r=>`
     <div class="feed-item">
       <div class="feed-icon">${r._i}</div>
       <div class="feed-content">
@@ -2267,22 +2446,38 @@ function renderDash(){
         <div class="feed-meta">${fd(r.createdAt)} · ${r.colaborador||'—'}</div>
       </div>
     </div>`).join(''):`<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Sem actividade</div><div class="empty-sub">Os registos aparecem aqui</div></div>`;
-
-  // Today temps
-  const today=new Date().toISOString().slice(0,10);
-  const temps=DB.get('temp').filter(r=>r.datetime?.startsWith(today));
-  const tempsEl=document.getElementById('dash-temps');
-  tempsEl.innerHTML=temps.length?`<table><tbody>${temps.slice(0,5).map(r=>`<tr><td>${r.equipamento||'—'}</td><td class="${r.conforme===true?'t-ok':r.conforme===false?'t-bad':'t-na'}">${r.temperatura}°C</td><td>${r.conforme===true?'✅':r.conforme===false?'❌':'—'}</td></tr>`).join('')}</tbody></table>`:
-    `<div class="empty"><div class="empty-icon">🌡️</div><div class="empty-title">Sem temperaturas hoje</div></div>`;
 }
 
 function updateDashStats(){
   const today=new Date().toISOString().slice(0,10);
-  document.getElementById('s-temp').textContent=DB.get('temp').filter(r=>r.datetime?.startsWith(today)).length;
-  document.getElementById('s-limp').textContent=DB.get('limp').filter(r=>r.datetime?.startsWith(today)).length;
-  document.getElementById('s-nc').textContent=DB.get('nc').filter(r=>r.estado!=='fechada').length;
-  const upcoming=DB.get('val').filter(r=>{if(!r.validade)return false;const days=(new Date(r.validade)-new Date())/86400000;return days>=0&&days<=7}).length;
-  document.getElementById('s-val').textContent=upcoming;
+  // KPI strip
+  const nTemp=DB.get('temp').filter(r=>r.datetime?.startsWith(today)).length;
+  const nLimp=DB.get('limp').filter(r=>r.datetime?.startsWith(today)).length;
+  const nNcAb=DB.get('nc').filter(r=>r.estado!=='fechada').length;
+  const nVal=DB.get('val').filter(r=>{if(!r.validade)return false;const d=(new Date(r.validade)-new Date())/86400000;return d>=0&&d<=7}).length;
+  document.getElementById('s-temp').textContent=nTemp;
+  document.getElementById('s-limp').textContent=nLimp;
+  document.getElementById('s-nc').textContent=nNcAb;
+  document.getElementById('s-val').textContent=nVal;
+
+  // Launcher counts — show total records, highlight today where relevant
+  const fmtCount = (n, nToday) => nToday!==null ? (nToday>0?`${nToday} hoje`:`${n} total`) : (n>0?`${n}`:'0');
+  const setLC = (id, val) => { const e=document.getElementById(id); if(e) e.textContent=val; };
+
+  setLC('lc-temp', nTemp>0?`${nTemp} hoje`:`${DB.get('temp').length} total`);
+  setLC('lc-limp', nLimp>0?`${nLimp} hoje`:`${DB.get('limp').length} total`);
+  setLC('lc-oleo', DB.get('oleo').length > 0 ? `${DB.get('oleo').length} reg.` : '0');
+  const valExp=DB.get('val').filter(r=>r.estado==='exp'||r.estado==='aviso').length;
+  setLC('lc-val',  valExp>0?`${valExp} alertas`:`${DB.get('val').length} total`);
+  setLC('lc-sob',  DB.get('sob').length > 0 ? `${DB.get('sob').length} reg.` : '0');
+  setLC('lc-rec',  DB.get('rec').length > 0 ? `${DB.get('rec').length} reg.` : '0');
+  const chkTotal=DB.get('chk').length;
+  setLC('lc-chk',  chkTotal > 0 ? `${chkTotal} feitas` : '0');
+  const ncEl=document.getElementById('lc-nc');
+  if(ncEl){
+    ncEl.textContent=nNcAb>0?`${nNcAb} abertas`:(DB.get('nc').length>0?`${DB.get('nc').length} total`:'0');
+    ncEl.classList.toggle('lnch-count-nc', nNcAb>0);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -3179,6 +3374,19 @@ function pvGoTo(i){ pvIndex = i; renderPvMain(); }
 // INIT
 // ═══════════════════════════════════════════
 function init(){
+  // ── Prevent pull-to-refresh & overscroll in WebView ──
+  document.body.addEventListener('touchmove', function(e){
+    // Allow scrolling only inside .scroll-area; block everywhere else
+    let el = e.target;
+    let insideScroll = false;
+    while(el && el !== document.body){
+      if(el.classList && (el.classList.contains('scroll-area') || el.classList.contains('modal') || el.classList.contains('more-drawer') || el.classList.contains('tab-row') || el.classList.contains('pv-strip') || el.classList.contains('table-wrap'))){
+        insideScroll = true; break;
+      }
+      el = el.parentElement;
+    }
+    if(!insideScroll) e.preventDefault();
+  }, {passive: false});
   // Date chip
   document.getElementById('date-chip').textContent=
     new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});
