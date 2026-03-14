@@ -847,16 +847,28 @@ input[type=range]::-webkit-slider-thumb{
 #rpt .chk-box.nc{border-color:#dc2626;background:#fee2e2;color:#dc2626}
 
 @media print{
-  body,html{height:auto;overflow:visible}
-  .app,.topbar,.bottom-nav,.more-drawer,#toast,.modal-ov,#more-overlay,.photo-viewer{display:none!important}
-  #print-overlay{display:block!important;position:static!important;background:#fff!important;padding:0!important}
-  #print-overlay > div:first-child{display:none!important}
-  #print-content{padding:0}
-  #rpt{margin:0;padding:0}
-  @page{size:A4;margin:15mm 18mm 18mm}
-  #rpt .rpt-section{page-break-inside:avoid}
-  #rpt table{page-break-inside:auto}
-  #rpt tr{page-break-inside:avoid}
+  /* Hide everything except the print overlay content */
+  body > *:not(#print-overlay){ display:none!important }
+  #print-overlay{
+    display:block!important;
+    position:static!important;
+    background:#fff!important;
+    overflow:visible!important;
+    padding:0!important;
+  }
+  #print-ui{ display:none!important }
+  #print-content{
+    display:block!important;
+    background:#fff!important;
+    padding:0!important;
+    border-radius:0!important;
+  }
+  body,html{ height:auto!important;overflow:visible!important; }
+  @page{ size:A4 portrait; margin:12mm 15mm 15mm }
+  #rpt .rpt-section{ page-break-inside:avoid }
+  #rpt table{ page-break-inside:auto }
+  #rpt tr{ page-break-inside:avoid; page-break-after:auto }
+  #rpt .rpt-nc-card{ page-break-inside:avoid }
 }
 </style>
 </head>
@@ -1657,21 +1669,6 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
-    <!-- ══════════ PRINT OVERLAY ══════════ -->
-    <div id="print-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9000;overflow-y:auto">
-      <div style="max-width:800px;margin:0 auto;padding:20px">
-        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="window.print()" style="flex:1">🖨️ Imprimir / Guardar como PDF</button>
-          <button class="btn btn-secondary" onclick="closePrintOverlay()" style="flex:1">✕ Fechar</button>
-        </div>
-        <div class="alert alert-info">
-          <span>💡</span>
-          <span>No diálogo de impressão, seleccione <strong>"Guardar como PDF"</strong> para criar um ficheiro PDF. Recomendado: papel A4, margens normais.</span>
-        </div>
-        <div id="print-content"></div>
-      </div>
-    </div>
-
     <!-- ══════════ CONFIGURAÇÕES ══════════ -->
     <div class="page" id="page-cfg">
       <div class="section-hd"><h2>⚙️ Configurações</h2><p>Personalização do sistema HACCP</p></div>
@@ -1981,6 +1978,21 @@ input[type=range]::-webkit-slider-thumb{
   </nav>
 
 </div><!-- /app -->
+
+<!-- ══════════ PRINT OVERLAY — fora do .app para impressão correcta ══════════ -->
+<div id="print-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9000;overflow-y:auto;-webkit-overflow-scrolling:touch">
+  <div id="print-ui" style="max-width:800px;margin:0 auto;padding:16px">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:10;border-bottom:1px solid var(--border)">
+      <button class="btn btn-primary" onclick="doPrint()" style="flex:1;font-size:15px">🖨️ Imprimir / Guardar como PDF</button>
+      <button class="btn btn-secondary" onclick="closePrintOverlay()" style="flex:1">✕ Fechar pré-visualização</button>
+    </div>
+    <div class="alert alert-info" style="margin-bottom:16px">
+      <span>💡</span>
+      <span>No diálogo de impressão escolha <strong>"Guardar como PDF"</strong>. Recomendado: A4, orientação retrato, margens normais, activar "Gráficos de fundo".</span>
+    </div>
+    <div id="print-content" style="background:#fff;border-radius:8px;overflow:hidden"></div>
+  </div>
+</div>
 
 <!-- ── MORE DRAWER ── -->
 <div class="more-drawer" id="more-drawer">
@@ -3196,12 +3208,20 @@ function generatePDF(){
   </div>`;
 
   document.getElementById('print-content').innerHTML = html;
-  document.getElementById('print-overlay').style.display = 'block';
-  document.getElementById('scroll-area').scrollTop = 0;
+
+  // Show overlay
+  const overlay = document.getElementById('print-overlay');
+  overlay.style.display = 'block';
+  overlay.scrollTop = 0;
 
   // Update preview info
   document.getElementById('pdf-preview-text').textContent =
     `Pronto: ${totalRecords} registos · ${periodStr} · ${tipoStr}`;
+}
+
+function doPrint(){
+  // Small delay to let browser settle before opening print dialog
+  setTimeout(() => window.print(), 120);
 }
 
 function closePrintOverlay(){
