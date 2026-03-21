@@ -688,6 +688,40 @@ input[type=range]::-webkit-slider-thumb{
 }
 
 /* ════════════════════════════════
+   ONBOARDING
+════════════════════════════════ */
+.ob-feature{
+  display:flex;align-items:flex-start;gap:14px;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px;
+}
+.ob-feat-icon{
+  width:40px;height:40px;flex-shrink:0;
+  border-radius:10px;font-size:20px;
+  display:grid;place-items:center;
+}
+.ob-feat-title{font-size:14px;font-weight:600;margin-bottom:3px}
+.ob-feat-sub{font-size:12px;color:var(--txt3);line-height:1.4}
+.ob-step{
+  display:flex;align-items:flex-start;gap:14px;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px;
+}
+.ob-step-n{
+  width:32px;height:32px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  border-radius:50%;color:#fff;font-weight:800;font-size:15px;
+  display:grid;place-items:center;
+}
+.ob-step-t{font-size:14px;font-weight:600;margin-bottom:3px}
+.ob-step-s{font-size:12px;color:var(--txt3);line-height:1.4}
+.ob-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--border2);transition:all .2s;
+}
+.ob-dot.active{width:24px;border-radius:4px;background:var(--acc)}
+
+/* ════════════════════════════════
    LAUNCHER DASHBOARD
 ════════════════════════════════ */
 .kpi-strip{
@@ -874,6 +908,114 @@ input[type=range]::-webkit-slider-thumb{
 </head>
 <body>
 <div class="app">
+
+  <!-- ══ ONBOARDING OVERLAY ══ -->
+  <div id="onboarding" style="display:none;position:fixed;inset:0;z-index:8000;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <div style="max-width:480px;margin:0 auto;padding:32px 20px 100px">
+
+      <!-- slides container -->
+      <div id="ob-slides">
+
+        <!-- Slide 1 — Boas-vindas -->
+        <div class="ob-slide active" id="ob-0">
+          <div style="text-align:center;padding:20px 0 32px">
+            <div style="font-size:72px;margin-bottom:16px">🛡️</div>
+            <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:10px;line-height:1.2">
+              Bem-vindo ao<br>HACCP Pro
+            </div>
+            <div style="font-size:15px;color:var(--txt2);line-height:1.6;margin-bottom:28px">
+              A solução digital completa para a gestão de segurança alimentar do seu restaurante.
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;text-align:left">
+              <div class="ob-feature">
+                <div class="ob-feat-icon" style="background:rgba(59,130,246,.15)">✅</div>
+                <div>
+                  <div class="ob-feat-title">Cumpre normas HACCP</div>
+                  <div class="ob-feat-sub">Reg. CE 852/2004 · ASAE · DGAV · Codex Alimentarius</div>
+                </div>
+              </div>
+              <div class="ob-feature">
+                <div class="ob-feat-icon" style="background:rgba(239,68,68,.15)">🚫</div>
+                <div>
+                  <div class="ob-feat-title">Evite multas e coimas</div>
+                  <div class="ob-feat-sub">Registos automáticos prontos para qualquer inspecção</div>
+                </div>
+              </div>
+              <div class="ob-feature">
+                <div class="ob-feat-icon" style="background:rgba(34,197,94,.15)">📋</div>
+                <div>
+                  <div class="ob-feat-title">Registos legais automáticos</div>
+                  <div class="ob-feat-sub">Temperaturas, limpezas, óleos, validades e muito mais</div>
+                </div>
+              </div>
+              <div class="ob-feature">
+                <div class="ob-feat-icon" style="background:rgba(99,102,241,.15)">📄</div>
+                <div>
+                  <div class="ob-feat-title">Exportação para inspecções</div>
+                  <div class="ob-feat-sub">Relatório PDF profissional em segundos</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2 — Módulos -->
+        <div class="ob-slide" id="ob-1" style="display:none">
+          <div style="text-align:center;padding:20px 0 24px">
+            <div style="font-size:52px;margin-bottom:12px">📱</div>
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">10 Módulos de Registo</div>
+            <div style="font-size:14px;color:var(--txt2);margin-bottom:24px">Tudo o que precisa numa só app</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${[['🌡️','Temperaturas','Frio e quente'],['🧹','Limpeza','Desinfecção'],['🫙','Óleos','Fritura'],['📅','Validades','Prazos'],['🍮','Sobremesas','Confecção'],['📦','Recepção','Mercadoria'],['✅','Check-list','Semanal'],['⚠️','Não Conform.','Ocorrências'],['📸','Fotografias','Anomalias'],['📤','PDF','Inspecções']].map(([i,t,s])=>`
+              <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:center">
+                <span style="font-size:22px">${i}</span>
+                <div>
+                  <div style="font-size:13px;font-weight:600">${t}</div>
+                  <div style="font-size:11px;color:var(--txt3)">${s}</div>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>
+
+        <!-- Slide 3 — Configuração -->
+        <div class="ob-slide" id="ob-2" style="display:none">
+          <div style="text-align:center;padding:20px 0 24px">
+            <div style="font-size:52px;margin-bottom:12px">⚙️</div>
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">Configure em 2 minutos</div>
+            <div style="font-size:14px;color:var(--txt2);margin-bottom:24px">Personalize a app para o seu negócio</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="ob-step"><div class="ob-step-n">1</div><div><div class="ob-step-t">Dados da empresa</div><div class="ob-step-s">Nome, NIF, responsável HACCP, morada</div></div></div>
+            <div class="ob-step"><div class="ob-step-n">2</div><div><div class="ob-step-t">Equipamentos de frio e quente</div><div class="ob-step-s">Câmaras, frigoríficos, fornos — com limites de temperatura</div></div></div>
+            <div class="ob-step"><div class="ob-step-n">3</div><div><div class="ob-step-t">Locais e zonas de limpeza</div><div class="ob-step-s">Cozinha, casa de banho, câmaras...</div></div></div>
+            <div class="ob-step"><div class="ob-step-n">4</div><div><div class="ob-step-t">Colaboradores</div><div class="ob-step-s">Nome e função de cada membro da equipa</div></div></div>
+            <div class="ob-step"><div class="ob-step-n">5</div><div><div class="ob-step-t">Email para relatórios</div><div class="ob-step-s">Resumo diário automático + alertas de NC crítica</div></div></div>
+          </div>
+          <div class="alert alert-ok" style="margin-top:20px">
+            <span>💡</span>
+            <span>Pode sempre alterar as configurações mais tarde em <strong>⚙️ Configurações</strong>.</span>
+          </div>
+        </div>
+
+      </div><!-- /ob-slides -->
+
+      <!-- Navigation -->
+      <div style="position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div style="display:flex;gap:6px" id="ob-dots">
+          <div class="ob-dot active" id="od-0"></div>
+          <div class="ob-dot" id="od-1"></div>
+          <div class="ob-dot" id="od-2"></div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost btn-sm" onclick="skipOnboarding()" id="ob-skip">Saltar</button>
+          <button class="btn btn-primary btn-sm" onclick="obNext()" id="ob-next" style="min-width:100px">Próximo →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- ══ /ONBOARDING ══ -->
 
   <!-- ── TOP BAR ── -->
   <div class="topbar">
@@ -2854,32 +2996,30 @@ function filterByDate(arr, de, ate, dateField){
 function rptBadge(val, map){ return map[val] || `<span>${val||'—'}</span>`; }
 
 const BADGE = {
-  confOk:  '<span class="badge-ok">✓ Conforme</span>',
-  confNc:  '<span class="badge-fail">✗ NC</span>',
+  confOk:  '<span class="b-ok">✓ Conforme</span>',
+  confNc:  '<span class="b-fail">✗ NC</span>',
   confNa:  '<span style="color:#94a3b8">—</span>',
-  aceite:  '<span class="badge-ok">✅ Aceite</span>',
-  rejeitado:'<span class="badge-fail">❌ Rejeitado</span>',
-  cond:    '<span class="badge-warn">⚠️ Com cond.</span>',
-  ok:      '<span class="badge-ok">✅ OK</span>',
-  aviso:   '<span class="badge-warn">⚠️ A expirar</span>',
-  exp:     '<span class="badge-fail">❌ Expirado</span>',
-  ret:     '<span class="badge-info">🗑️ Retirado</span>',
-  menor:   '<span class="badge-warn">🟡 Menor</span>',
-  maior:   '<span class="badge-warn" style="background:#fed7aa;color:#9a3412">🟠 Maior</span>',
-  critica: '<span class="badge-fail">🔴 Crítica</span>',
-  aberta:  '<span class="badge-fail">Aberta</span>',
-  'em-curso':'<span class="badge-warn">Em curso</span>',
-  fechada: '<span class="badge-ok">Fechada</span>',
+  aceite:  '<span class="b-ok">✅ Aceite</span>',
+  rejeitado:'<span class="b-fail">❌ Rejeitado</span>',
+  cond:    '<span class="b-warn">⚠️ Com cond.</span>',
+  ok:      '<span class="b-ok">✅ OK</span>',
+  aviso:   '<span class="b-warn">⚠️ A expirar</span>',
+  exp:     '<span class="b-fail">❌ Expirado</span>',
+  ret:     '<span class="b-info">🗑️ Retirado</span>',
+  menor:   '<span class="b-warn">🟡 Menor</span>',
+  maior:   '<span class="b-warn" style="background:#fed7aa;color:#9a3412">🟠 Maior</span>',
+  critica: '<span class="b-fail">🔴 Crítica</span>',
+  aberta:  '<span class="b-fail">Aberta</span>',
+  'em-curso':'<span class="b-warn">Em curso</span>',
+  fechada: '<span class="b-ok">Fechada</span>',
 };
 
 function buildSection(icon, title, content){
-  return `<div class="rpt-section">
-    <div class="rpt-section-hd">${icon} ${title}</div>
-    <div class="rpt-section-body">${content}</div>
-  </div>`;
+  // Used only by old overlay path — new path builds inline. Keep for compat.
+  return `<div class="section">${content}</div>`;
 }
 
-function emptySection(){ return '<div class="empty-module">Sem registos para o período seleccionado.</div>'; }
+function emptySection(){ return '<div class="empty-msg">Sem registos para o período seleccionado.</div>'; }
 
 // ── TEMPERATURE SECTION ──
 function buildTempSection(data, summary){
@@ -2887,11 +3027,11 @@ function buildTempSection(data, summary){
   const ok=data.filter(r=>r.conforme===true).length;
   const nc=data.filter(r=>r.conforme===false).length;
   const na=data.filter(r=>r.conforme===null||r.conforme===undefined).length;
-  let html=`<div class="rpt-stats">
-    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Total registos</div></div>
-    <div class="rpt-stat"><div class="n ok">${ok}</div><div class="l">Conformes</div></div>
-    <div class="rpt-stat"><div class="n ${nc>0?'err':'ok'}">${nc}</div><div class="l">Não conformes</div></div>
-    <div class="rpt-stat"><div class="n">${na}</div><div class="l">Sem limite def.</div></div>
+  let html=`<div class="stats-row">
+    <div class="stat-box"><div class="n">${data.length}</div><div class="l">Total registos</div></div>
+    <div class="stat-box"><div class="n ok">${ok}</div><div class="l">Conformes</div></div>
+    <div class="stat-box"><div class="n ${nc>0?'err':'ok'}">${nc}</div><div class="l">Não conformes</div></div>
+    <div class="stat-box"><div class="n">${na}</div><div class="l">Sem limite def.</div></div>
   </div>`;
   if(!summary){
     html+=`<table><thead><tr><th>Data / Hora</th><th>Equipamento</th><th>Temperatura</th><th>Limite</th><th>Estado</th><th>Colaborador</th><th>Acção Correctiva</th></tr></thead><tbody>`;
@@ -2911,13 +3051,13 @@ function buildLimpSection(data, summary){
   if(!data.length) return emptySection();
   const ok=data.filter(r=>r.conformidade==='ok').length;
   const nc=data.filter(r=>r.conformidade==='nc').length;
-  let html=`<div class="rpt-stats">
-    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Total registos</div></div>
-    <div class="rpt-stat"><div class="n ok">${ok}</div><div class="l">Conformes</div></div>
-    <div class="rpt-stat"><div class="n ${nc>0?'err':'ok'}">${nc}</div><div class="l">Não conformes</div></div>
+  let html=`<div class="stats-row">
+    <div class="stat-box"><div class="n">${data.length}</div><div class="l">Total registos</div></div>
+    <div class="stat-box"><div class="n ok">${ok}</div><div class="l">Conformes</div></div>
+    <div class="stat-box"><div class="n ${nc>0?'err':'ok'}">${nc}</div><div class="l">Não conformes</div></div>
   </div>`;
   if(!summary){
-    const cm={ok:BADGE.confOk,nc:BADGE.confNc,parc:'<span class="badge-warn">⚠️ Parcial</span>'};
+    const cm={ok:BADGE.confOk,nc:BADGE.confNc,parc:'<span class="b-warn">⚠️ Parcial</span>'};
     html+=`<table><thead><tr><th>Data / Hora</th><th>Local / Zona</th><th>Tipo</th><th>Produto</th><th>Colaborador</th><th>Verificador</th><th>Conformidade</th></tr></thead><tbody>`;
     data.forEach(r=>{html+=`<tr><td>${fd(r.datetime)}</td><td>${r.local||'—'}</td><td>${r.tipo||'—'}</td><td>${r.produto||'—'}</td><td>${r.colaborador||'—'}</td><td>${r.verificador||'—'}</td><td>${cm[r.conformidade]||'—'}</td></tr>`});
     html+='</tbody></table>';
@@ -2930,10 +3070,10 @@ function buildOleoSection(data, summary){
   if(!data.length) return emptySection();
   const ok=data.filter(r=>r.conforme).length;
   const nc=data.filter(r=>!r.conforme).length;
-  let html=`<div class="rpt-stats">
-    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Registos</div></div>
-    <div class="rpt-stat"><div class="n ok">${ok}</div><div class="l">Conformes ≤25%</div></div>
-    <div class="rpt-stat"><div class="n ${nc>0?'err':'ok'}">${nc}</div><div class="l">Acima do limite</div></div>
+  let html=`<div class="stats-row">
+    <div class="stat-box"><div class="n">${data.length}</div><div class="l">Registos</div></div>
+    <div class="stat-box"><div class="n ok">${ok}</div><div class="l">Conformes ≤25%</div></div>
+    <div class="stat-box"><div class="n ${nc>0?'err':'ok'}">${nc}</div><div class="l">Acima do limite</div></div>
   </div>`;
   if(!summary){
     html+=`<table><thead><tr><th>Data</th><th>Fritadeira</th><th>Valor Polar</th><th>T° Óleo</th><th>Método</th><th>Decisão</th><th>Colaborador</th></tr></thead><tbody>`;
@@ -2949,11 +3089,11 @@ function buildValSection(data, summary){
   const ok=data.filter(r=>r.estado==='ok').length;
   const aviso=data.filter(r=>r.estado==='aviso').length;
   const exp=data.filter(r=>r.estado==='exp').length;
-  let html=`<div class="rpt-stats">
-    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Verificações</div></div>
-    <div class="rpt-stat"><div class="n ok">${ok}</div><div class="l">Dentro prazo</div></div>
-    <div class="rpt-stat"><div class="n warn">${aviso}</div><div class="l">A expirar</div></div>
-    <div class="rpt-stat"><div class="n ${exp>0?'err':'ok'}">${exp}</div><div class="l">Expirados</div></div>
+  let html=`<div class="stats-row">
+    <div class="stat-box"><div class="n">${data.length}</div><div class="l">Verificações</div></div>
+    <div class="stat-box"><div class="n ok">${ok}</div><div class="l">Dentro prazo</div></div>
+    <div class="stat-box"><div class="n warn">${aviso}</div><div class="l">A expirar</div></div>
+    <div class="stat-box"><div class="n ${exp>0?'err':'ok'}">${exp}</div><div class="l">Expirados</div></div>
   </div>`;
   if(!summary){
     const em={ok:BADGE.ok,aviso:BADGE.aviso,exp:BADGE.exp,ret:BADGE.ret};
@@ -2967,11 +3107,11 @@ function buildValSection(data, summary){
 // ── SOBREMESAS SECTION ──
 function buildSobSection(data, summary){
   if(!data.length) return emptySection();
-  const cm={ok:BADGE.confOk,obs:'<span class="badge-warn">⚠️ Obs.</span>',nc:BADGE.confNc};
-  let html=`<div class="rpt-stats">
-    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Confecções</div></div>
-    <div class="rpt-stat"><div class="n ok">${data.filter(r=>r.conformidade==='ok').length}</div><div class="l">Conformes</div></div>
-    <div class="rpt-stat"><div class="n ${data.filter(r=>r.conformidade==='nc').length>0?'err':'ok'}">${data.filter(r=>r.conformidade==='nc').length}</div><div class="l">NC</div></div>
+  const cm={ok:BADGE.confOk,obs:'<span class="b-warn">⚠️ Obs.</span>',nc:BADGE.confNc};
+  let html=`<div class="stats-row">
+    <div class="stat-box"><div class="n">${data.length}</div><div class="l">Confecções</div></div>
+    <div class="stat-box"><div class="n ok">${data.filter(r=>r.conformidade==='ok').length}</div><div class="l">Conformes</div></div>
+    <div class="stat-box"><div class="n ${data.filter(r=>r.conformidade==='nc').length>0?'err':'ok'}">${data.filter(r=>r.conformidade==='nc').length}</div><div class="l">NC</div></div>
   </div>`;
   if(!summary){
     html+=`<table><thead><tr><th>Data / Hora</th><th>Sobremesa</th><th>Qtd.</th><th>T°Conf.</th><th>T°Arm.</th><th>Consumir até</th><th>Alergénios</th><th>Conform.</th><th>Colaborador</th></tr></thead><tbody>`;
@@ -2987,10 +3127,10 @@ function buildRecSection(data, summary){
   const ac=data.filter(r=>r.decisao==='aceite').length;
   const rj=data.filter(r=>r.decisao==='rejeitado').length;
   const dm={aceite:BADGE.aceite,rejeitado:BADGE.rejeitado,cond:BADGE.cond};
-  let html=`<div class="rpt-stats">
-    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Recepções</div></div>
-    <div class="rpt-stat"><div class="n ok">${ac}</div><div class="l">Aceites</div></div>
-    <div class="rpt-stat"><div class="n ${rj>0?'err':'ok'}">${rj}</div><div class="l">Rejeitados</div></div>
+  let html=`<div class="stats-row">
+    <div class="stat-box"><div class="n">${data.length}</div><div class="l">Recepções</div></div>
+    <div class="stat-box"><div class="n ok">${ac}</div><div class="l">Aceites</div></div>
+    <div class="stat-box"><div class="n ${rj>0?'err':'ok'}">${rj}</div><div class="l">Rejeitados</div></div>
   </div>`;
   if(!summary){
     html+=`<table><thead><tr><th>Data / Hora</th><th>Fornecedor</th><th>Produto</th><th>Qtd.</th><th>T° Recep.</th><th>Decisão</th><th>Colaborador</th></tr></thead><tbody>`;
@@ -3004,10 +3144,10 @@ function buildRecSection(data, summary){
 function buildChkSection(data, summary){
   if(!data.length) return emptySection();
   const avg=data.length?Math.round(data.reduce((s,r)=>s+r.score,0)/data.length):0;
-  let html=`<div class="rpt-stats">
-    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Check-lists</div></div>
-    <div class="rpt-stat"><div class="n ${avg>=90?'ok':avg>=70?'warn':'err'}">${avg}%</div><div class="l">Score médio</div></div>
-    <div class="rpt-stat"><div class="n ${data.filter(r=>r.score<70).length>0?'err':'ok'}">${data.filter(r=>r.score<70).length}</div><div class="l">Abaixo de 70%</div></div>
+  let html=`<div class="stats-row">
+    <div class="stat-box"><div class="n">${data.length}</div><div class="l">Check-lists</div></div>
+    <div class="stat-box"><div class="n ${avg>=90?'ok':avg>=70?'warn':'err'}">${avg}%</div><div class="l">Score médio</div></div>
+    <div class="stat-box"><div class="n ${data.filter(r=>r.score<70).length>0?'err':'ok'}">${data.filter(r=>r.score<70).length}</div><div class="l">Abaixo de 70%</div></div>
   </div>`;
   if(summary){
     html+=`<table><thead><tr><th>Data</th><th>Responsável</th><th>Score</th><th>OK</th><th>NC</th><th>Observações</th></tr></thead><tbody>`;
@@ -3055,11 +3195,11 @@ function buildNcSection(data, summary){
   const cr=data.filter(r=>r.gravidade==='critica').length;
   const ma=data.filter(r=>r.gravidade==='maior').length;
   const ab=data.filter(r=>r.estado==='aberta').length;
-  let html=`<div class="rpt-stats">
-    <div class="rpt-stat"><div class="n">${data.length}</div><div class="l">Total NC</div></div>
-    <div class="rpt-stat"><div class="n ${cr>0?'err':'ok'}">${cr}</div><div class="l">Críticas</div></div>
-    <div class="rpt-stat"><div class="n ${ma>0?'warn':'ok'}">${ma}</div><div class="l">Maiores</div></div>
-    <div class="rpt-stat"><div class="n ${ab>0?'warn':'ok'}">${ab}</div><div class="l">Abertas</div></div>
+  let html=`<div class="stats-row">
+    <div class="stat-box"><div class="n">${data.length}</div><div class="l">Total NC</div></div>
+    <div class="stat-box"><div class="n ${cr>0?'err':'ok'}">${cr}</div><div class="l">Críticas</div></div>
+    <div class="stat-box"><div class="n ${ma>0?'warn':'ok'}">${ma}</div><div class="l">Maiores</div></div>
+    <div class="stat-box"><div class="n ${ab>0?'warn':'ok'}">${ab}</div><div class="l">Abertas</div></div>
   </div>`;
   if(summary){
     html+=`<table><thead><tr><th>Data</th><th>Área</th><th>Gravidade</th><th>Descrição</th><th>Estado</th><th>Prazo</th></tr></thead><tbody>`;
@@ -3085,7 +3225,7 @@ function buildNcSection(data, summary){
           </div>
         </div>`;
       }
-      html+=`<div class="rpt-nc-card ${gc}" style="page-break-inside:avoid">
+      html+=`<div class="nc-card ${gc}" style="page-break-inside:avoid">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div>
             <span style="font-weight:700;font-size:11pt">${r.area?.toUpperCase()||'—'}</span>
@@ -3095,12 +3235,12 @@ function buildNcSection(data, summary){
           </div>
           <span style="font-size:9pt;color:#64748b">${fd(r.datetime)}</span>
         </div>
-        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Descrição</span><span class="rpt-detail-val">${r.descricao||'—'}</span></div>
-        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Causa</span><span class="rpt-detail-val">${r.causa||'—'}</span></div>
-        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Acção imediata</span><span class="rpt-detail-val">${r.accaoImediata||'—'}</span></div>
-        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Acção preventiva</span><span class="rpt-detail-val">${r.accaoPreventiva||'—'}</span></div>
-        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Prazo resolução</span><span class="rpt-detail-val">${fdo(r.prazo)||'—'}</span></div>
-        <div class="rpt-detail-row"><span class="rpt-detail-lbl">Detectado por</span><span class="rpt-detail-val">${r.colaborador||'—'}</span></div>
+        <div class="nc-row"><span class="nc-lbl">Descrição</span><span class="nc-val">${r.descricao||'—'}</span></div>
+        <div class="nc-row"><span class="nc-lbl">Causa</span><span class="nc-val">${r.causa||'—'}</span></div>
+        <div class="nc-row"><span class="nc-lbl">Acção imediata</span><span class="nc-val">${r.accaoImediata||'—'}</span></div>
+        <div class="nc-row"><span class="nc-lbl">Acção preventiva</span><span class="nc-val">${r.accaoPreventiva||'—'}</span></div>
+        <div class="nc-row"><span class="nc-lbl">Prazo resolução</span><span class="nc-val">${fdo(r.prazo)||'—'}</span></div>
+        <div class="nc-row"><span class="nc-lbl">Detectado por</span><span class="nc-val">${r.colaborador||'—'}</span></div>
         ${fotosHtml}
       </div>`;
     });
@@ -3124,31 +3264,27 @@ function generatePDF(){
   const isSummary = document.getElementById('pdf-type-sum').checked;
   const cfg = DB.getObj('config');
 
-  // Gather data
   const getData = (k) => {
     const arr = DB.get(k);
     return de || ate ? filterByDate(arr, de, ate, k==='oleo'||k==='val'||k==='chk'?'data':'datetime') : arr;
   };
 
   const modules = {
-    temp: { icon:'🌡️', title:'Controlo de Temperaturas', build: buildTempSection },
-    limp: { icon:'🧹', title:'Limpeza e Desinfecção',    build: buildLimpSection },
-    oleo: { icon:'🫙', title:'Óleos de Fritura',          build: buildOleoSection },
-    val:  { icon:'📅', title:'Controlo de Validades',     build: buildValSection  },
-    sob:  { icon:'🍮', title:'Confecção de Sobremesas',   build: buildSobSection  },
-    rec:  { icon:'📦', title:'Recepção de Mercadoria',    build: buildRecSection  },
-    chk:  { icon:'✅', title:'Check-list Semanal HACCP',  build: buildChkSection  },
-    nc:   { icon:'⚠️', title:'Não Conformidades',         build: buildNcSection   },
+    temp: { icon:'🌡️', title:'Controlo de Temperaturas',   ref:'Reg. CE 852/2004 — Anexo II, Cap. IX', build: buildTempSection },
+    limp: { icon:'🧹', title:'Limpeza e Desinfecção',       ref:'Reg. CE 852/2004 — Anexo II, Cap. I',  build: buildLimpSection },
+    oleo: { icon:'🫙', title:'Óleos de Fritura',            ref:'Dec. Lei 106/2005 — limite 25% polar',  build: buildOleoSection },
+    val:  { icon:'📅', title:'Controlo de Validades',       ref:'Reg. CE 178/2002 — Art. 14.º',         build: buildValSection  },
+    sob:  { icon:'🍮', title:'Confecção de Sobremesas',     ref:'Reg. CE 852/2004 — Boas Práticas',     build: buildSobSection  },
+    rec:  { icon:'📦', title:'Recepção de Mercadoria',      ref:'Reg. CE 178/2002 — Rastreabilidade',   build: buildRecSection  },
+    chk:  { icon:'✅', title:'Check-list Semanal HACCP',    ref:'Codex Alimentarius — Princípio 7',     build: buildChkSection  },
+    nc:   { icon:'⚠️', title:'Não Conformidades e Acções Correctivas', ref:'ISO 22000 — Cláusula 8.9', build: buildNcSection   },
   };
 
   const selected = modulo === 'all' ? Object.keys(modules) : [modulo];
-
-  // Build period string
   const periodStr = (de && ate) ? `${fdo(de)} a ${fdo(ate)}` :
                     de ? `A partir de ${fdo(de)}` :
-                    ate ? `Até ${fdo(ate)}` : 'Todos os registos';
+                    ate ? `Até ${fdo(ate)}` : 'Todos os registos disponíveis';
 
-  // Count total records
   let totalRecords = 0;
   selected.forEach(k => totalRecords += getData(k).length);
 
@@ -3157,66 +3293,445 @@ function generatePDF(){
     return;
   }
 
-  // Cover page
   const now = new Date();
   const geradoEm = now.toLocaleString('pt-PT',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const tipoStr = isSummary ? 'Resumo Executivo' : 'Relatório Completo';
-  const moduloStr = modulo === 'all' ? 'Todos os Módulos' : modules[modulo]?.title || modulo;
+  const moduloStr = modulo === 'all' ? 'Todos os Módulos HACCP' : modules[modulo]?.title || modulo;
+  const nomeEst = cfg.nome || 'Estabelecimento';
 
-  let html = `<div id="rpt">
-  <div class="rpt-cover">
-    <div class="rpt-logo">🛡️</div>
-    <div class="rpt-title">Registo HACCP</div>
-    <div class="rpt-subtitle">${tipoStr} — ${moduloStr}</div>
-    <div class="rpt-meta">
-      <div class="rpt-meta-item"><div class="val">${cfg.nome||'—'}</div><div class="lbl">Estabelecimento</div></div>
-      <div class="rpt-meta-item"><div class="val">${cfg.nif||'—'}</div><div class="lbl">NIF</div></div>
-      <div class="rpt-meta-item"><div class="val">${cfg.responsavel||'—'}</div><div class="lbl">Responsável HACCP</div></div>
-      <div class="rpt-meta-item"><div class="val">${totalRecords}</div><div class="lbl">Total de registos</div></div>
-    </div>
-    <div class="rpt-period">📅 Período: ${periodStr}</div>
-    <div style="margin-top:16px;font-size:9pt;color:#64748b">Gerado em ${geradoEm} · HACCP Pro</div>
-  </div>`;
+  // ── Compliance summary stats ──
+  const allNc = DB.get('nc');
+  const tempAll = getData('temp');
+  const ncAbertas = allNc.filter(r=>r.estado!=='fechada').length;
+  const tempConf = tempAll.filter(r=>r.conforme===true).length;
+  const tempTotal = tempAll.length;
+  const conformRate = tempTotal > 0 ? Math.round(tempConf/tempTotal*100) : 100;
 
-  // Sections
-  selected.forEach(k => {
-    const m = modules[k];
-    if(!m) return;
-    const data = getData(k);
-    const content = m.build(data, isSummary);
-    html += buildSection(m.icon, m.title, content);
-  });
+  // ── Build full standalone HTML for new window ──
+  const pdfHtml = `<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relatório HACCP — ${nomeEst}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    color:#1e293b;background:#f8fafc;
+    font-size:10pt;line-height:1.55;
+  }
 
-  // Signature block (for inspection purposes)
-  html += `<div class="rpt-sign">
-    <div class="rpt-sign-box">
-      <div>Responsável HACCP</div>
-      <div style="margin-top:4px;font-size:8.5pt;color:#94a3b8">${cfg.responsavel||'_________________'}</div>
-    </div>
-    <div class="rpt-sign-box">
-      <div>Data de Verificação</div>
-      <div style="margin-top:4px;font-size:8.5pt;color:#94a3b8">_____ / _____ / _______</div>
-    </div>
-    <div class="rpt-sign-box">
-      <div>Assinatura</div>
+  /* ── PRINT TOOLBAR (hidden on print) ── */
+  .toolbar{
+    position:sticky;top:0;z-index:100;
+    background:#1e3a8a;color:#fff;
+    padding:12px 24px;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;flex-wrap:wrap;
+    box-shadow:0 2px 12px rgba(0,0,0,.2);
+  }
+  .toolbar-left{display:flex;align-items:center;gap:12px}
+  .toolbar-logo{font-size:22px}
+  .toolbar-title{font-weight:700;font-size:14px}
+  .toolbar-sub{font-size:11px;opacity:.7;margin-top:1px}
+  .toolbar-btns{display:flex;gap:10px;flex-wrap:wrap}
+  .btn-print{
+    background:#22c55e;color:#fff;border:none;
+    padding:10px 24px;border-radius:8px;
+    font-size:14px;font-weight:700;cursor:pointer;
+    box-shadow:0 2px 8px rgba(34,197,94,.4);
+  }
+  .btn-print:hover{background:#16a34a}
+  .btn-close{
+    background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);
+    padding:10px 18px;border-radius:8px;
+    font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .print-tip{
+    background:#f0fdf4;border:1px solid #bbf7d0;
+    border-radius:8px;padding:12px 20px;
+    font-size:12px;color:#166534;
+    margin:16px 24px 0;
+    display:flex;gap:8px;align-items:flex-start;
+  }
+
+  /* ── DOCUMENT WRAPPER ── */
+  .doc{
+    max-width:800px;margin:24px auto;
+    background:#fff;
+    border-radius:8px;
+    box-shadow:0 4px 24px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+
+  /* ── COVER PAGE ── */
+  .cover{
+    background:linear-gradient(160deg,#1e3a8a 0%,#1e40af 50%,#1d4ed8 100%);
+    color:#fff;padding:56px 48px 48px;
+    position:relative;overflow:hidden;
+  }
+  .cover::before{
+    content:'';position:absolute;
+    right:-60px;top:-60px;
+    width:300px;height:300px;
+    background:rgba(255,255,255,.04);
+    border-radius:50%;
+  }
+  .cover::after{
+    content:'';position:absolute;
+    right:40px;bottom:-80px;
+    width:200px;height:200px;
+    background:rgba(255,255,255,.03);
+    border-radius:50%;
+  }
+  .cover-badge{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.4);
+    border-radius:20px;padding:5px 14px;
+    font-size:10px;font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;color:#86efac;
+    margin-bottom:24px;
+  }
+  .cover-shield{font-size:52px;margin-bottom:16px;display:block}
+  .cover-title{font-size:28pt;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
+  .cover-type{
+    font-size:13pt;opacity:.75;margin-bottom:32px;
+    font-weight:400;
+  }
+  .cover-divider{
+    border:none;border-top:1px solid rgba(255,255,255,.15);
+    margin:28px 0;
+  }
+  .cover-grid{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:20px;margin-bottom:28px;
+  }
+  .cover-field label{
+    display:block;font-size:8pt;
+    text-transform:uppercase;letter-spacing:1px;
+    opacity:.55;margin-bottom:4px;
+  }
+  .cover-field .val{font-size:12pt;font-weight:700}
+  .cover-period{
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:8px;padding:14px 18px;
+    display:flex;align-items:center;gap:10px;
+    font-size:11pt;
+  }
+  .cover-compliance{
+    display:flex;gap:16px;margin-top:28px;flex-wrap:wrap;
+  }
+  .compliance-chip{
+    display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:6px;padding:8px 14px;
+    font-size:9pt;
+  }
+
+  /* ── COMPLIANCE SUMMARY BAR ── */
+  .compliance-bar{
+    background:#f0fdf4;border-bottom:3px solid #22c55e;
+    padding:20px 32px;
+    display:flex;gap:24px;flex-wrap:wrap;align-items:center;
+  }
+  .compliance-bar-title{
+    font-size:10pt;font-weight:700;color:#166534;
+    margin-right:8px;white-space:nowrap;
+  }
+  .cb-stat{text-align:center;min-width:70px}
+  .cb-stat .n{font-size:18pt;font-weight:800;color:#1e3a8a;line-height:1}
+  .cb-stat .n.ok{color:#16a34a}
+  .cb-stat .n.warn{color:#d97706}
+  .cb-stat .n.err{color:#dc2626}
+  .cb-stat .l{font-size:7.5pt;color:#64748b;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+  .cb-sep{width:1px;background:#d1fae5;align-self:stretch}
+
+  /* ── SECTIONS ── */
+  .section{margin:0 32px 32px;padding-top:28px}
+  .section-hd{
+    display:flex;align-items:center;gap:12px;
+    border-bottom:2px solid #e2e8f0;
+    padding-bottom:10px;margin-bottom:16px;
+  }
+  .section-icon{
+    width:40px;height:40px;border-radius:10px;
+    background:#1e3a8a;color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;flex-shrink:0;
+  }
+  .section-title{font-size:14pt;font-weight:800;color:#1e293b}
+  .section-ref{font-size:8pt;color:#94a3b8;margin-top:2px}
+
+  /* ── STATS ROW ── */
+  .stats-row{
+    display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;
+  }
+  .stat-box{
+    flex:1;min-width:90px;
+    border:1px solid #e2e8f0;border-radius:8px;
+    padding:14px 12px;text-align:center;
+    background:#f8fafc;
+    border-top:3px solid #1e3a8a;
+  }
+  .stat-box.ok-t{border-top-color:#16a34a}
+  .stat-box.err-t{border-top-color:#dc2626}
+  .stat-box.warn-t{border-top-color:#d97706}
+  .stat-box .n{font-size:20pt;font-weight:800;color:#1e3a8a;line-height:1}
+  .stat-box.ok-t .n{color:#16a34a}
+  .stat-box.err-t .n{color:#dc2626}
+  .stat-box.warn-t .n{color:#d97706}
+  .stat-box .l{font-size:7.5pt;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.4px}
+
+  /* ── TABLES ── */
+  table{width:100%;border-collapse:collapse;font-size:9pt;margin-bottom:0}
+  thead tr{background:#1e3a8a}
+  th{
+    padding:9px 11px;text-align:left;
+    font-size:8pt;letter-spacing:.6px;
+    text-transform:uppercase;color:#fff;font-weight:700;
+  }
+  td{padding:9px 11px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:nth-child(even) td{background:#fafbff}
+  .t-ok{color:#16a34a;font-weight:700}
+  .t-err{color:#dc2626;font-weight:700}
+  .t-warn{color:#d97706;font-weight:700}
+
+  /* ── BADGES ── */
+  .b-ok{background:#dcfce7;color:#166534;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
+  .b-warn{background:#fef9c3;color:#854d0e;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
+  .b-fail{background:#fee2e2;color:#991b1b;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
+  .b-info{background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
+  .b-grey{background:#f1f5f9;color:#475569;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
+
+  /* ── NC CARDS ── */
+  .nc-card{
+    border:1.5px solid #fecaca;border-radius:8px;
+    padding:14px;margin-bottom:12px;background:#fff5f5;
+    page-break-inside:avoid;
+  }
+  .nc-card.critica{border-color:#dc2626;background:#fff1f1;border-left:4px solid #dc2626}
+  .nc-card.maior{border-color:#f97316;background:#fff7ed;border-left:4px solid #f97316}
+  .nc-card-hd{
+    display:flex;justify-content:space-between;
+    align-items:flex-start;margin-bottom:10px;gap:8px;
+  }
+  .nc-area{font-size:12pt;font-weight:800;color:#1e293b;text-transform:capitalize}
+  .nc-date{font-size:8.5pt;color:#64748b;white-space:nowrap}
+  .nc-row{display:flex;gap:8px;padding:3px 0}
+  .nc-lbl{font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#64748b;min-width:130px;flex-shrink:0;padding-top:1px}
+  .nc-val{font-size:9.5pt;color:#1e293b;flex:1}
+
+  /* ── CHECKLIST ── */
+  .chk-cat{font-size:9pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px}
+  .chk-item{display:flex;align-items:flex-start;gap:8px;padding:4px 0;border-bottom:1px solid #f8fafc;font-size:9pt}
+  .chk-item:last-child{border-bottom:none}
+  .chk-box{width:17px;height:17px;border:2px solid #cbd5e1;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9pt;margin-top:1px}
+  .chk-box.ok{border-color:#16a34a;background:#dcfce7;color:#16a34a}
+  .chk-box.nc{border-color:#dc2626;background:#fee2e2;color:#dc2626}
+
+  /* ── EMPTY ── */
+  .empty-msg{padding:20px;text-align:center;color:#94a3b8;font-style:italic;font-size:9pt;background:#fafafa;border-radius:6px}
+
+  /* ── SIGNATURE ── */
+  .sign-section{
+    margin:32px 32px 0;
+    padding:24px;
+    border:1.5px solid #e2e8f0;
+    border-radius:8px;
+    background:#fafafa;
+    page-break-inside:avoid;
+  }
+  .sign-title{font-size:10pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px}
+  .sign-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+  .sign-box{padding-top:40px;border-top:1.5px solid #334155}
+  .sign-box-lbl{font-size:8.5pt;color:#475569}
+  .sign-box-val{font-size:8pt;color:#94a3b8;margin-top:4px}
+
+  /* ── FOOTER ── */
+  .doc-footer{
+    margin:24px 32px 32px;
+    padding:12px 16px;
+    background:#f1f5f9;border-radius:6px;
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:8pt;color:#64748b;flex-wrap:wrap;gap:8px;
+  }
+  .footer-legal{font-size:7.5pt;color:#94a3b8;margin:0 32px 24px;line-height:1.5}
+
+  /* ── PRINT OVERRIDES ── */
+  @media print{
+    body{background:#fff}
+    .toolbar,.print-tip{display:none!important}
+    .doc{margin:0;border-radius:0;box-shadow:none;max-width:100%}
+    .section{margin:0 20mm 20px;padding-top:20px}
+    .cover{padding:40px 20mm 36px}
+    .compliance-bar{padding:16px 20mm}
+    .sign-section{margin:24px 20mm 0}
+    .doc-footer{margin:16px 20mm 20px}
+    .footer-legal{margin:0 20mm 16px}
+    @page{size:A4 portrait;margin:0}
+    table{page-break-inside:auto}
+    tr{page-break-inside:avoid}
+    .nc-card{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-left">
+    <div class="toolbar-logo">🛡️</div>
+    <div>
+      <div class="toolbar-title">HACCP Pro — Pré-visualização do Relatório</div>
+      <div class="toolbar-sub">${nomeEst} · ${totalRecords} registos · ${periodStr}</div>
     </div>
   </div>
-  <div class="rpt-footer">
-    <span>${cfg.nome||'Estabelecimento'} ${cfg.nif?'· NIF '+cfg.nif:''} ${cfg.morada?'· '+cfg.morada:''}</span>
+  <div class="toolbar-btns">
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+    <button class="btn-close" onclick="window.close()">✕ Fechar</button>
+  </div>
+</div>
+<div class="print-tip">
+  <span>💡</span>
+  <span><strong>Para guardar como PDF:</strong> No diálogo de impressão, em "Destino" escolha <strong>"Guardar como PDF"</strong>. Activar <strong>"Gráficos de fundo"</strong> para manter cores e badges. Formato A4, orientação Retrato.</span>
+</div>
+
+<div class="doc">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-badge">✅ Documento Oficial HACCP</div>
+    <span class="cover-shield">🛡️</span>
+    <div class="cover-title">Registo HACCP</div>
+    <div class="cover-type">${tipoStr} — ${moduloStr}</div>
+    <hr class="cover-divider">
+    <div class="cover-grid">
+      <div class="cover-field">
+        <label>Estabelecimento</label>
+        <div class="val">${cfg.nome||'Não configurado'}</div>
+      </div>
+      <div class="cover-field">
+        <label>NIF</label>
+        <div class="val">${cfg.nif||'—'}</div>
+      </div>
+      <div class="cover-field">
+        <label>Responsável HACCP</label>
+        <div class="val">${cfg.responsavel||'—'}</div>
+      </div>
+      <div class="cover-field">
+        <label>Consultor / Empresa</label>
+        <div class="val">${cfg.consultoria||'—'}</div>
+      </div>
+      <div class="cover-field">
+        <label>Morada</label>
+        <div class="val">${cfg.morada||'—'}</div>
+      </div>
+      <div class="cover-field">
+        <label>Total de Registos</label>
+        <div class="val">${totalRecords}</div>
+      </div>
+    </div>
+    <div class="cover-period">
+      📅 <strong>Período:</strong>&nbsp;${periodStr}
+    </div>
+    <div class="cover-compliance">
+      <div class="compliance-chip">✅ Reg. CE 852/2004</div>
+      <div class="compliance-chip">✅ Reg. CE 178/2002</div>
+      <div class="compliance-chip">✅ ASAE / DGAV</div>
+      <div class="compliance-chip">✅ Codex Alimentarius</div>
+    </div>
+    <div style="margin-top:20px;font-size:8.5pt;opacity:.5">Gerado em ${geradoEm} pelo sistema HACCP Pro</div>
+  </div>
+
+  <!-- COMPLIANCE SUMMARY -->
+  <div class="compliance-bar">
+    <div class="compliance-bar-title">📊 Resumo de Conformidade</div>
+    <div class="cb-stat">
+      <div class="n ok">${conformRate}%</div>
+      <div class="l">Taxa T° OK</div>
+    </div>
+    <div class="cb-sep"></div>
+    <div class="cb-stat">
+      <div class="n ${ncAbertas>0?'err':'ok'}">${ncAbertas}</div>
+      <div class="l">NC Abertas</div>
+    </div>
+    <div class="cb-sep"></div>
+    <div class="cb-stat">
+      <div class="n">${totalRecords}</div>
+      <div class="l">Registos Totais</div>
+    </div>
+    <div class="cb-sep"></div>
+    <div class="cb-stat">
+      <div class="n ok">${selected.length}</div>
+      <div class="l">Módulos</div>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  ${selected.map(k => {
+    const m = modules[k]; if(!m) return '';
+    const data = getData(k);
+    const sectionContent = m.build(data, isSummary);
+    return `<div class="section">
+      <div class="section-hd">
+        <div class="section-icon">${m.icon}</div>
+        <div>
+          <div class="section-title">${m.title}</div>
+          <div class="section-ref">${m.ref}</div>
+        </div>
+      </div>
+      ${sectionContent}
+    </div>`;
+  }).join('')}
+
+  <!-- SIGNATURE -->
+  <div class="sign-section">
+    <div class="sign-title">🖊️ Assinaturas e Validação</div>
+    <div class="sign-grid">
+      <div class="sign-box">
+        <div class="sign-box-lbl">Responsável HACCP</div>
+        <div class="sign-box-val">${cfg.responsavel||'_________________________'}</div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-box-lbl">Data de Verificação</div>
+        <div class="sign-box-val">_____ / _____ / _________</div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-box-lbl">Assinatura</div>
+        <div class="sign-box-val">&nbsp;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="doc-footer">
+    <span><strong>${nomeEst}</strong>${cfg.nif?' · NIF '+cfg.nif:''}${cfg.morada?' · '+cfg.morada:''}</span>
     <span>HACCP Pro · ${geradoEm}</span>
   </div>
-  </div>`;
+  <div class="footer-legal">
+    Este documento constitui registo oficial do sistema de segurança alimentar, produzido em conformidade com o Regulamento (CE) n.º 852/2004 do Parlamento Europeu e do Conselho, relativo à higiene dos géneros alimentícios. Os dados aqui registados são da responsabilidade do operador do estabelecimento identificado.
+  </div>
 
-  document.getElementById('print-content').innerHTML = html;
+</div><!-- /doc -->
+</body>
+</html>`;
 
-  // Show overlay
-  const overlay = document.getElementById('print-overlay');
-  overlay.style.display = 'block';
-  overlay.scrollTop = 0;
+  // ── Open in new window ──
+  const win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+  if(!win){
+    toast('O browser bloqueou a janela. Permita pop-ups para este site.','err');
+    return;
+  }
+  win.document.write(pdfHtml);
+  win.document.close();
 
-  // Update preview info
   document.getElementById('pdf-preview-text').textContent =
-    `Pronto: ${totalRecords} registos · ${periodStr} · ${tipoStr}`;
+    `✅ Pronto — ${totalRecords} registos · ${periodStr}`;
+  toast('📄 Relatório aberto numa nova janela!','ok');
 }
 
 function doPrint(){
@@ -3391,6 +3906,38 @@ function pvGoTo(i){ pvIndex = i; renderPvMain(); }
 })();
 
 // ═══════════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════════
+let obCurrent = 0;
+const OB_TOTAL = 3;
+
+function showOnboarding(){
+  document.getElementById('onboarding').style.display = 'block';
+}
+function skipOnboarding(){
+  document.getElementById('onboarding').style.display = 'none';
+  localStorage.setItem('h2_onboarded', '1');
+  navigate('cfg'); // send to config after skip
+}
+function obNext(){
+  if(obCurrent < OB_TOTAL - 1){
+    document.getElementById('ob-'+obCurrent).style.display = 'none';
+    document.getElementById('od-'+obCurrent).classList.remove('active');
+    obCurrent++;
+    document.getElementById('ob-'+obCurrent).style.display = 'block';
+    document.getElementById('od-'+obCurrent).classList.add('active');
+    if(obCurrent === OB_TOTAL - 1){
+      document.getElementById('ob-next').textContent = 'Começar ✓';
+      document.getElementById('ob-skip').style.display = 'none';
+    }
+  } else {
+    document.getElementById('onboarding').style.display = 'none';
+    localStorage.setItem('h2_onboarded', '1');
+    navigate('cfg');
+  }
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 function init(){
@@ -3412,6 +3959,11 @@ function init(){
     new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});
 
   navigate('dash');
+
+  // Show onboarding on first launch
+  if(!localStorage.getItem('h2_onboarded')){
+    setTimeout(showOnboarding, 300);
+  }
 
   // PDF preview live update
   setTimeout(()=>{
