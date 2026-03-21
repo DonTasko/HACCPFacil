@@ -740,6 +740,14 @@ input[type=range]::-webkit-slider-thumb{
   background:var(--border2);transition:all .2s;
 }
 .ob-dot.active{width:24px;border-radius:4px;background:var(--acc)}
+.ob-module-item{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:10px;padding:12px;
+  display:flex;gap:10px;align-items:center;
+}
+.ob-module-item span{font-size:22px;flex-shrink:0}
+.ob-module-item b{display:block;font-size:13px;font-weight:600;color:var(--txt)}
+.ob-module-item small{display:block;font-size:11px;color:var(--txt3);margin-top:2px}
 
 /* ════════════════════════════════
    LAUNCHER DASHBOARD
@@ -794,10 +802,10 @@ input[type=range]::-webkit-slider-thumb{
 .lnch-btn:active{transform:scale(.95);background:var(--s2)}
 .lnch-icon-wrap{
   width:64px;height:64px;
-  background:color-mix(in srgb,var(--lc,var(--acc)) 15%,var(--s2));
+  background:rgba(255,255,255,.07);
   border-radius:18px;
   display:grid;place-items:center;
-  border:1px solid color-mix(in srgb,var(--lc,var(--acc)) 25%,var(--border));
+  border:1px solid rgba(255,255,255,.1);
   flex-shrink:0;
 }
 .lnch-icon{font-size:30px;line-height:1}
@@ -901,15 +909,16 @@ input[type=range]::-webkit-slider-thumb{
 #rpt .chk-box.nc{border-color:#dc2626;background:#fee2e2;color:#dc2626}
 
 @media print{
-  /* Hide everything except the print overlay */
-  body > *{ display:none!important }
+  /* Esconder TUDO excepto o overlay de impressão */
+  body > * { display:none!important }
   #print-overlay{
     display:block!important;
-    position:static!important;
+    position:fixed!important;
+    inset:0!important;
     background:#fff!important;
     overflow:visible!important;
     padding:0!important;
-    z-index:auto!important;
+    z-index:99999!important;
   }
   #print-ui{ display:none!important }
   #print-content{
@@ -917,9 +926,14 @@ input[type=range]::-webkit-slider-thumb{
     background:#fff!important;
     border-radius:0!important;
     overflow:visible!important;
+    padding:0!important;
   }
-  /* The PDF HTML already has its own print CSS — this just ensures visibility */
-  @page{ size:A4 portrait; margin:0 }
+  /* Forçar fundo branco e texto preto para impressão */
+  #print-content *{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  @page{ size:A4 portrait; margin:10mm 12mm }
 }
 </style>
 </head>
@@ -984,14 +998,16 @@ input[type=range]::-webkit-slider-thumb{
             <div style="font-size:14px;color:var(--txt2);margin-bottom:24px">Tudo o que precisa numa só app</div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            ${[['🌡️','Temperaturas','Frio e quente'],['🧹','Limpeza','Desinfecção'],['🫙','Óleos','Fritura'],['📅','Validades','Prazos'],['🍮','Sobremesas','Confecção'],['📦','Recepção','Mercadoria'],['✅','Check-list','Semanal'],['⚠️','Não Conform.','Ocorrências'],['📸','Fotografias','Anomalias'],['📤','PDF','Inspecções']].map(([i,t,s])=>`
-              <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:center">
-                <span style="font-size:22px">${i}</span>
-                <div>
-                  <div style="font-size:13px;font-weight:600">${t}</div>
-                  <div style="font-size:11px;color:var(--txt3)">${s}</div>
-                </div>
-              </div>`).join('')}
+            <div class="ob-module-item"><span>🌡️</span><div><b>Temperaturas</b><small>Frio e quente</small></div></div>
+            <div class="ob-module-item"><span>🧹</span><div><b>Limpeza</b><small>Desinfecção</small></div></div>
+            <div class="ob-module-item"><span>🫙</span><div><b>Óleos</b><small>Fritura</small></div></div>
+            <div class="ob-module-item"><span>📅</span><div><b>Validades</b><small>Prazos</small></div></div>
+            <div class="ob-module-item"><span>🍮</span><div><b>Sobremesas</b><small>Confecção</small></div></div>
+            <div class="ob-module-item"><span>📦</span><div><b>Recepção</b><small>Mercadoria</small></div></div>
+            <div class="ob-module-item"><span>✅</span><div><b>Check-list</b><small>Semanal</small></div></div>
+            <div class="ob-module-item"><span>⚠️</span><div><b>Não Conform.</b><small>Ocorrências</small></div></div>
+            <div class="ob-module-item"><span>📸</span><div><b>Fotografias</b><small>Anomalias</small></div></div>
+            <div class="ob-module-item"><span>📄</span><div><b>Relatório PDF</b><small>Inspecções</small></div></div>
           </div>
         </div>
 
@@ -2143,12 +2159,15 @@ input[type=range]::-webkit-slider-thumb{
 <div id="print-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9000;overflow-y:auto;-webkit-overflow-scrolling:touch">
   <div id="print-ui" style="max-width:800px;margin:0 auto;padding:16px">
     <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:10;border-bottom:1px solid var(--border)">
-      <button class="btn btn-primary" onclick="window.print()" style="flex:1;font-size:15px;background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 4px 14px rgba(22,163,74,.3)">🖨️ Imprimir / Guardar como PDF</button>
+      <button class="btn btn-primary" onclick="doPrint()" style="flex:1;font-size:15px;background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 4px 14px rgba(22,163,74,.3)">🖨️ Imprimir / Guardar PDF</button>
       <button class="btn btn-secondary" onclick="closePrintOverlay()" style="flex:1">✕ Fechar</button>
     </div>
     <div class="alert alert-ok" style="margin-bottom:16px">
       <span>💡</span>
-      <span>No diálogo de impressão: <strong>Destino → Guardar como PDF</strong> · Activar <strong>Gráficos de fundo</strong> · Formato A4 Retrato.</span>
+      <div>
+        <strong>Android:</strong> toque em Imprimir → escolha <strong>"Guardar como PDF"</strong> ou a sua impressora.<br>
+        <strong>Browser:</strong> Ctrl+P → Destino → Guardar como PDF · Activar "Gráficos de fundo".
+      </div>
     </div>
     <div id="print-content" style="background:#fff;border-radius:8px;overflow:hidden"></div>
   </div>
@@ -2381,22 +2400,50 @@ function saveNC(){
   const desc=document.getElementById('nc-desc').value;
   if(!desc){toast('Descreva a não conformidade','warn');return}
   const grav=document.getElementById('nc-grav').value;
-  const r=DB.push('nc',{datetime:document.getElementById('nc-dt').value,area:document.getElementById('nc-area').value,gravidade:grav,colaborador:document.getElementById('nc-colab').value,descricao:desc,causa:document.getElementById('nc-causa').value,accaoImediata:document.getElementById('nc-aci').value,accaoPreventiva:document.getElementById('nc-ap').value,prazo:document.getElementById('nc-prazo').value,estado:document.getElementById('nc-est').value,fotos:ncPendingPhotos.slice()});
-  toast('NC guardada!'+(ncPendingPhotos.length?` · ${ncPendingPhotos.length} foto(s) anexada(s)`:''));
-  renderNcTbl();
-  document.getElementById('nc-desc').value='';document.getElementById('nc-causa').value='';document.getElementById('nc-aci').value='';document.getElementById('nc-ap').value='';
-  // Reset photos
-  ncPendingPhotos=[];
-  renderPhotoGrid('nc', ncPendingPhotos);
-  setNow('nc-dt');updateDashStats();
 
-  // Immediate email for NC
-  const cfg=DB.getObj('config');
-  if(cfg.emPrincipal){
-    if((grav==='critica'&&cfg.emNcCritica)||(grav==='maior'&&cfg.emNcMaior)){
-      triggerEmailAlert('nc',r);
+  // Limit photos if total size too large
+  let fotos=ncPendingPhotos.slice();
+  if(fotos.reduce((s,f)=>s+f.length,0)>3000000) fotos=fotos.slice(0,3);
+
+  const ncData={
+    datetime:document.getElementById('nc-dt').value,
+    area:document.getElementById('nc-area').value,
+    gravidade:grav,
+    colaborador:document.getElementById('nc-colab').value,
+    descricao:desc,
+    causa:document.getElementById('nc-causa').value,
+    accaoImediata:document.getElementById('nc-aci').value,
+    accaoPreventiva:document.getElementById('nc-ap').value,
+    prazo:document.getElementById('nc-prazo').value,
+    estado:document.getElementById('nc-est').value,
+    fotos:fotos
+  };
+
+  const _doSave=(withFotos)=>{
+    if(!withFotos) ncData.fotos=[];
+    try {
+      const r=DB.push('nc',ncData);
+      toast('NC guardada!'+(withFotos&&fotos.length?` · ${fotos.length} foto(s)`:'')+(withFotos?'':' (sem fotos — armazenamento cheio)'));
+      renderNcTbl();
+      document.getElementById('nc-desc').value='';
+      document.getElementById('nc-causa').value='';
+      document.getElementById('nc-aci').value='';
+      document.getElementById('nc-ap').value='';
+      ncPendingPhotos=[];
+      renderPhotoGrid('nc',ncPendingPhotos);
+      setNow('nc-dt');updateDashStats();
+      const cfg=DB.getObj('config');
+      if(cfg.emPrincipal&&((grav==='critica'&&cfg.emNcCritica)||(grav==='maior'&&cfg.emNcMaior)))
+        triggerEmailAlert('nc',r);
+    } catch(e){
+      if(withFotos&&(e.name==='QuotaExceededError'||e.code===22)){
+        _doSave(false);
+      } else {
+        toast('❌ Erro ao guardar. Liberte espaço em Exportar → Backup.','err');
+      }
     }
-  }
+  };
+  _doSave(true);
 }
 
 // ═══════════════════════════════════════════
@@ -3738,46 +3785,43 @@ function generatePDF(){
 </body>
 </html>`;
 
-  // ── BLOB URL — funciona em browser e WebView Android ──
-  try {
-    const blob = new Blob([pdfHtml], {type: 'text/html;charset=utf-8'});
-    const blobUrl = URL.createObjectURL(blob);
-
-    // Guardar URL no storage para a página de impressão aceder
-    sessionStorage.setItem('haccp_pdf_url', blobUrl);
-    sessionStorage.setItem('haccp_pdf_ready', '1');
-
-    // Tentar abrir nova janela (funciona em browser)
-    const win = window.open(blobUrl, '_blank');
-    if(win){
-      win.focus();
-      document.getElementById('pdf-preview-text').textContent = `✅ Pronto — ${totalRecords} registos · ${periodStr}`;
-      toast('📄 Relatório aberto! Use Ctrl+P / Imprimir para PDF.','ok');
-      return;
-    }
-  } catch(e){}
-
-  // ── FALLBACK — mostrar preview na app para imprimir ──
+  // ══════════════════════════════════════════════════
+  // IMPRESSÃO — COMPATÍVEL COM WEBVIEW ANDROID
+  // Estratégia: nunca usar window.open() ou Blob URLs
+  // Usar sempre o overlay interno com window.print()
+  // ══════════════════════════════════════════════════
   showPdfPreviewInApp(pdfHtml, totalRecords, periodStr);
 
   document.getElementById('pdf-preview-text').textContent =
-    `✅ Pronto — ${totalRecords} registos · ${periodStr}`;
-  toast('🖨️ Use o botão "Imprimir PDF" para guardar.','ok');
+    `✅ ${totalRecords} registos · ${periodStr}`;
+  toast('📋 Relatório pronto! Carregue em Imprimir.','ok');
 }
 
 function showPdfPreviewInApp(html, totalRecords, periodStr){
-  // Guardar HTML no sessionStorage e navegar para o overlay de impressão
-  try { sessionStorage.setItem('haccp_pdf_html', html); } catch(e){}
-
   const overlay = document.getElementById('print-overlay');
   const content = document.getElementById('print-content');
-  content.innerHTML = html;
+
+  // Injectar apenas o body do HTML do relatório (sem <html>/<head>)
+  // O CSS do relatório já está embutido no pdfHtml — extraímos e injectamos
+  const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
+  const bodyMatch  = html.match(/<body>([\s\S]*?)<\/body>/);
+
+  if(styleMatch && bodyMatch){
+    content.innerHTML =
+      `<style>${styleMatch[1]}</style>${bodyMatch[1]}`;
+  } else {
+    // fallback: injectar tudo
+    content.innerHTML = html;
+  }
+
   overlay.style.display = 'block';
   overlay.scrollTop = 0;
 }
 
 function doPrint(){
-  setTimeout(() => window.print(), 120);
+  // window.print() funciona em WebView Android (desde Android 4.4+)
+  // Imprime o que está visível — o overlay está em position:fixed e toma o ecrã todo
+  window.print();
 }
 
 function closePrintOverlay(){
@@ -3988,7 +4032,7 @@ function init(){
     let el = e.target;
     let insideScroll = false;
     while(el && el !== document.body){
-      if(el.classList && (el.classList.contains('scroll-area') || el.classList.contains('modal') || el.classList.contains('more-drawer') || el.classList.contains('tab-row') || el.classList.contains('pv-strip') || el.classList.contains('table-wrap'))){
+      if(el.classList && (el.classList.contains('scroll-area') || el.classList.contains('modal') || el.classList.contains('more-drawer') || el.classList.contains('tab-row') || el.classList.contains('pv-strip') || el.classList.contains('table-wrap') || el.id==='print-overlay' || el.id==='print-content' || el.id==='onboarding')){
         insideScroll = true; break;
       }
       el = el.parentElement;
