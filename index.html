@@ -3197,43 +3197,38 @@ function buildChkSection(data, summary){
   const avg=data.length?Math.round(data.reduce((s,r)=>s+r.score,0)/data.length):0;
   let html=`<div class="stats-row">
     <div class="stat-box"><div class="n">${data.length}</div><div class="l">Check-lists</div></div>
-    <div class="stat-box"><div class="n ${avg>=90?'ok':avg>=70?'warn':'err'}">${avg}%</div><div class="l">Score médio</div></div>
-    <div class="stat-box"><div class="n ${data.filter(r=>r.score<70).length>0?'err':'ok'}">${data.filter(r=>r.score<70).length}</div><div class="l">Abaixo de 70%</div></div>
+    <div class="stat-box ${avg>=90?'ok-t':avg>=70?'warn-t':'err-t'}"><div class="n ${avg>=90?'ok':avg>=70?'warn':'err'}">${avg}%</div><div class="l">Score médio</div></div>
+    <div class="stat-box ${data.filter(r=>r.score<70).length>0?'err-t':'ok-t'}"><div class="n ${data.filter(r=>r.score<70).length>0?'err':'ok'}">${data.filter(r=>r.score<70).length}</div><div class="l">Abaixo 70%</div></div>
   </div>`;
   if(summary){
-    html+=`<table><thead><tr><th>Data</th><th>Responsável</th><th>Score</th><th>OK</th><th>NC</th><th>Observações</th></tr></thead><tbody>`;
+    html+=`<table><thead><tr><th>Data</th><th>Responsável</th><th>Score</th><th>OK</th><th>NC</th><th>Obs.</th></tr></thead><tbody>`;
     data.forEach(r=>{
-      const sc=r.score>=90?'ok':r.score>=70?'warn':'err';
-      html+=`<tr><td>${fdo(r.data)}</td><td>${r.colaborador||'—'}</td><td class="${sc}" style="font-weight:700">${r.score}%</td><td>${r.ok}</td><td>${r.nc}</td><td style="font-size:8.5pt">${r.obs||'—'}</td></tr>`;
+      const sc=r.score>=90?'t-ok':r.score>=70?'t-warn':'t-err';
+      html+=`<tr><td>${fdo(r.data)}</td><td>${r.colaborador||'—'}</td><td class="${sc}" style="font-weight:700">${r.score}%</td><td>${r.ok}</td><td>${r.nc}</td><td>${r.obs||'—'}</td></tr>`;
     });
     html+='</tbody></table>';
   } else {
-    // Full detail for each check-list
     data.forEach(r=>{
-      const sc=r.score>=90?'ok':r.score>=70?'warn':'err';
-      html+=`<div style="padding:12px;border-bottom:1px solid #e2e8f0">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <strong style="font-size:11pt">${fdo(r.data)} — ${r.colaborador||'—'}</strong>
-          <span class="badge-${r.score>=90?'ok':r.score>=70?'warn':'fail'}" style="font-size:11pt;padding:4px 12px">${r.score}%</span>
+      const sc=r.score>=90?'ok':r.score>=70?'warn':'fail';
+      html+=`<div style="padding:5px 0 4px;border-bottom:1px solid #e2e8f0;margin-bottom:3px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <strong style="font-size:7.5pt">${fdo(r.data)} — ${r.colaborador||'—'}</strong>
+          <span class="chk-score ${sc}">${r.score}%</span>
         </div>`;
       if(r.state && Object.keys(r.state).length){
-        html+='<div class="chk-section">';
+        html+='<div class="chk-wrap">';
         Object.entries(CK_ITEMS_PDF).forEach(([cat,items])=>{
-          const catItems=items.filter(it=>r.state[it.id]);
-          if(!catItems.length)return;
-          html+=`<div style="font-size:9pt;font-weight:700;color:#475569;text-transform:uppercase;margin:6px 0 3px">${cat}</div>`;
-          items.forEach(it=>{
-            const st=r.state[it.id]||'';
-            if(st){
-              const cls=st==='ok'?'ok':'nc';
-              const icon=st==='ok'?'✓':'✗';
-              html+=`<div class="chk-item"><div class="chk-box ${cls}">${icon}</div><span>${it.l}</span></div>`;
-            }
+          const withState=items.filter(it=>r.state[it.id]);
+          if(!withState.length)return;
+          html+=`<div class="chk-cat">${cat}</div>`;
+          withState.forEach(it=>{
+            const st=r.state[it.id];
+            html+=`<div class="chk-item"><div class="chk-box ${st==='ok'?'ok':'nc'}">${st==='ok'?'✓':'✗'}</div><span>${it.l}</span></div>`;
           });
         });
         html+='</div>';
       }
-      if(r.obs) html+=`<div style="padding:6px 12px;font-size:9pt;color:#64748b;font-style:italic">Obs: ${r.obs}</div>`;
+      if(r.obs) html+=`<div style="font-size:7pt;color:#64748b;font-style:italic;margin-top:2px">Obs: ${r.obs}</div>`;
       html+='</div>';
     });
   }
@@ -3363,188 +3358,118 @@ function generatePDF(){
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Relatório HACCP — ${nomeEst}</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   body{
     font-family:'Helvetica Neue',Arial,sans-serif;
-    color:#1e293b;background:#f8fafc;
-    font-size:10pt;line-height:1.55;
+    color:#1e293b;background:#fff;
+    font-size:8.5pt;line-height:1.4;
   }
 
-  /* ── PRINT TOOLBAR (hidden on print) ── */
+  /* ── TOOLBAR (só ecrã) ── */
   .toolbar{
     position:sticky;top:0;z-index:100;
     background:#1e3a8a;color:#fff;
-    padding:12px 24px;
+    padding:8px 16px;
     display:flex;align-items:center;justify-content:space-between;
-    gap:12px;flex-wrap:wrap;
-    box-shadow:0 2px 12px rgba(0,0,0,.2);
+    gap:8px;flex-wrap:wrap;
   }
-  .toolbar-left{display:flex;align-items:center;gap:12px}
-  .toolbar-logo{font-size:22px}
-  .toolbar-title{font-weight:700;font-size:14px}
-  .toolbar-sub{font-size:11px;opacity:.7;margin-top:1px}
-  .toolbar-btns{display:flex;gap:10px;flex-wrap:wrap}
-  .btn-print{
-    background:#22c55e;color:#fff;border:none;
-    padding:10px 24px;border-radius:8px;
-    font-size:14px;font-weight:700;cursor:pointer;
-    box-shadow:0 2px 8px rgba(34,197,94,.4);
-  }
-  .btn-print:hover{background:#16a34a}
-  .btn-close{
-    background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);
-    padding:10px 18px;border-radius:8px;
-    font-size:13px;font-weight:600;cursor:pointer;
-  }
-  .print-tip{
-    background:#f0fdf4;border:1px solid #bbf7d0;
-    border-radius:8px;padding:12px 20px;
-    font-size:12px;color:#166534;
-    margin:16px 24px 0;
-    display:flex;gap:8px;align-items:flex-start;
-  }
+  .toolbar-left{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+  .toolbar-btns{display:flex;gap:8px}
+  .btn-print{background:#22c55e;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer}
+  .btn-close{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 14px;border-radius:6px;font-size:12px;cursor:pointer}
 
-  /* ── DOCUMENT WRAPPER ── */
-  .doc{
-    max-width:800px;margin:24px auto;
-    background:#fff;
-    border-radius:8px;
-    box-shadow:0 4px 24px rgba(0,0,0,.08);
-    overflow:hidden;
-  }
+  /* ── DOCUMENTO ── */
+  .doc{max-width:780px;margin:12px auto;background:#fff}
 
-  /* ── COVER PAGE ── */
+  /* ── CAPA COMPACTA ── */
   .cover{
-    background:linear-gradient(160deg,#1e3a8a 0%,#1e40af 50%,#1d4ed8 100%);
-    color:#fff;padding:56px 48px 48px;
-    position:relative;overflow:hidden;
+    background:#1e3a8a;
+    color:#fff;padding:16px 20px 14px;
+    display:flex;align-items:flex-start;gap:16px;
   }
-  .cover::before{
-    content:'';position:absolute;
-    right:-60px;top:-60px;
-    width:300px;height:300px;
-    background:rgba(255,255,255,.04);
-    border-radius:50%;
-  }
-  .cover::after{
-    content:'';position:absolute;
-    right:40px;bottom:-80px;
-    width:200px;height:200px;
-    background:rgba(255,255,255,.03);
-    border-radius:50%;
+  .cover-left{flex:1;min-width:0}
+  .cover-right{
+    flex-shrink:0;text-align:right;
+    font-size:7.5pt;opacity:.7;line-height:1.6;
   }
   .cover-badge{
-    display:inline-flex;align-items:center;gap:8px;
-    background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.4);
-    border-radius:20px;padding:5px 14px;
-    font-size:10px;font-weight:700;letter-spacing:1px;
-    text-transform:uppercase;color:#86efac;
-    margin-bottom:24px;
+    display:inline-block;
+    background:rgba(34,197,94,.25);border:1px solid rgba(34,197,94,.5);
+    border-radius:3px;padding:2px 8px;
+    font-size:6.5pt;font-weight:700;letter-spacing:.8px;
+    text-transform:uppercase;color:#86efac;margin-bottom:6px;
   }
-  .cover-shield{font-size:52px;margin-bottom:16px;display:block}
-  .cover-title{font-size:28pt;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
-  .cover-type{
-    font-size:13pt;opacity:.75;margin-bottom:32px;
-    font-weight:400;
+  .cover-title{font-size:16pt;font-weight:800;letter-spacing:-.3px;line-height:1.1;margin-bottom:2px}
+  .cover-type{font-size:9pt;opacity:.75;margin-bottom:10px}
+  .cover-meta{
+    display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;
+    font-size:7.5pt;
   }
-  .cover-divider{
-    border:none;border-top:1px solid rgba(255,255,255,.15);
-    margin:28px 0;
-  }
-  .cover-grid{
-    display:grid;grid-template-columns:1fr 1fr;
-    gap:20px;margin-bottom:28px;
-  }
-  .cover-field label{
-    display:block;font-size:8pt;
-    text-transform:uppercase;letter-spacing:1px;
-    opacity:.55;margin-bottom:4px;
-  }
-  .cover-field .val{font-size:12pt;font-weight:700}
-  .cover-period{
-    background:rgba(255,255,255,.1);
-    border:1px solid rgba(255,255,255,.15);
-    border-radius:8px;padding:14px 18px;
-    display:flex;align-items:center;gap:10px;
-    font-size:11pt;
-  }
-  .cover-compliance{
-    display:flex;gap:16px;margin-top:28px;flex-wrap:wrap;
-  }
-  .compliance-chip{
-    display:flex;align-items:center;gap:6px;
-    background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.15);
-    border-radius:6px;padding:8px 14px;
-    font-size:9pt;
+  .cover-meta .lbl{opacity:.55;text-transform:uppercase;letter-spacing:.5px}
+  .cover-meta .val{font-weight:700}
+  .cover-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .cover-chip{
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+    border-radius:3px;padding:2px 7px;font-size:6.5pt;
   }
 
-  /* ── COMPLIANCE SUMMARY BAR ── */
+  /* ── BARRA DE CONFORMIDADE ── */
   .compliance-bar{
-    background:#f0fdf4;border-bottom:3px solid #22c55e;
-    padding:20px 32px;
-    display:flex;gap:24px;flex-wrap:wrap;align-items:center;
+    background:#f0fdf4;border-bottom:2px solid #22c55e;
+    padding:6px 20px;
+    display:flex;gap:0;align-items:stretch;
   }
   .compliance-bar-title{
-    font-size:10pt;font-weight:700;color:#166534;
-    margin-right:8px;white-space:nowrap;
+    font-size:7.5pt;font-weight:700;color:#166534;
+    align-self:center;margin-right:16px;white-space:nowrap;
   }
-  .cb-stat{text-align:center;min-width:70px}
-  .cb-stat .n{font-size:18pt;font-weight:800;color:#1e3a8a;line-height:1}
+  .cb-stat{text-align:center;padding:4px 12px;border-left:1px solid #d1fae5}
+  .cb-stat .n{font-size:14pt;font-weight:800;color:#1e3a8a;line-height:1}
   .cb-stat .n.ok{color:#16a34a}
   .cb-stat .n.warn{color:#d97706}
   .cb-stat .n.err{color:#dc2626}
-  .cb-stat .l{font-size:7.5pt;color:#64748b;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
-  .cb-sep{width:1px;background:#d1fae5;align-self:stretch}
+  .cb-stat .l{font-size:6.5pt;color:#64748b;text-transform:uppercase;letter-spacing:.4px}
 
-  /* ── SECTIONS ── */
-  .section{margin:0 32px 32px;padding-top:28px}
+  /* ── SECÇÕES ── */
+  .section{margin:0 20px 12px;padding-top:10px}
   .section-hd{
-    display:flex;align-items:center;gap:12px;
-    border-bottom:2px solid #e2e8f0;
-    padding-bottom:10px;margin-bottom:16px;
+    display:flex;align-items:center;gap:8px;
+    border-bottom:1.5px solid #1e3a8a;
+    padding-bottom:5px;margin-bottom:8px;
   }
   .section-icon{
-    width:40px;height:40px;border-radius:10px;
+    width:22px;height:22px;border-radius:5px;
     background:#1e3a8a;color:#fff;
     display:flex;align-items:center;justify-content:center;
-    font-size:18px;flex-shrink:0;
+    font-size:12px;flex-shrink:0;
   }
-  .section-title{font-size:14pt;font-weight:800;color:#1e293b}
-  .section-ref{font-size:8pt;color:#94a3b8;margin-top:2px}
+  .section-title{font-size:10pt;font-weight:800;color:#1e293b}
+  .section-ref{font-size:6.5pt;color:#94a3b8;margin-left:auto;align-self:flex-end;padding-bottom:1px}
 
   /* ── STATS ROW ── */
-  .stats-row{
-    display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;
-  }
+  .stats-row{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
   .stat-box{
-    flex:1;min-width:90px;
-    border:1px solid #e2e8f0;border-radius:8px;
-    padding:14px 12px;text-align:center;
-    background:#f8fafc;
-    border-top:3px solid #1e3a8a;
+    flex:1;min-width:60px;
+    border:1px solid #e2e8f0;border-radius:5px;
+    padding:6px 8px;text-align:center;
+    background:#f8fafc;border-top:2px solid #1e3a8a;
   }
   .stat-box.ok-t{border-top-color:#16a34a}
   .stat-box.err-t{border-top-color:#dc2626}
   .stat-box.warn-t{border-top-color:#d97706}
-  .stat-box .n{font-size:20pt;font-weight:800;color:#1e3a8a;line-height:1}
+  .stat-box .n{font-size:14pt;font-weight:800;color:#1e3a8a;line-height:1}
   .stat-box.ok-t .n{color:#16a34a}
   .stat-box.err-t .n{color:#dc2626}
   .stat-box.warn-t .n{color:#d97706}
-  .stat-box .l{font-size:7.5pt;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.4px}
+  .stat-box .l{font-size:6.5pt;color:#64748b;margin-top:2px;text-transform:uppercase;letter-spacing:.3px}
 
-  /* ── TABLES ── */
-  table{width:100%;border-collapse:collapse;font-size:9pt;margin-bottom:0}
+  /* ── TABELAS ── */
+  table{width:100%;border-collapse:collapse;font-size:7.5pt}
   thead tr{background:#1e3a8a}
-  th{
-    padding:9px 11px;text-align:left;
-    font-size:8pt;letter-spacing:.6px;
-    text-transform:uppercase;color:#fff;font-weight:700;
-  }
-  td{padding:9px 11px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:top}
+  th{padding:5px 7px;text-align:left;font-size:6.5pt;letter-spacing:.5px;text-transform:uppercase;color:#fff;font-weight:700}
+  td{padding:4px 7px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:top}
   tr:last-child td{border-bottom:none}
   tr:nth-child(even) td{background:#fafbff}
   .t-ok{color:#16a34a;font-weight:700}
@@ -3552,87 +3477,93 @@ function generatePDF(){
   .t-warn{color:#d97706;font-weight:700}
 
   /* ── BADGES ── */
-  .b-ok{background:#dcfce7;color:#166534;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
-  .b-warn{background:#fef9c3;color:#854d0e;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
-  .b-fail{background:#fee2e2;color:#991b1b;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
-  .b-info{background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
-  .b-grey{background:#f1f5f9;color:#475569;padding:2px 9px;border-radius:20px;font-size:8pt;font-weight:700;white-space:nowrap}
+  .b-ok{background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px;font-size:6.5pt;font-weight:700;white-space:nowrap;display:inline-block}
+  .b-warn{background:#fef9c3;color:#854d0e;padding:1px 6px;border-radius:3px;font-size:6.5pt;font-weight:700;white-space:nowrap;display:inline-block}
+  .b-fail{background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:3px;font-size:6.5pt;font-weight:700;white-space:nowrap;display:inline-block}
+  .b-info{background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;font-size:6.5pt;font-weight:700;white-space:nowrap;display:inline-block}
+  .b-grey{background:#f1f5f9;color:#475569;padding:1px 6px;border-radius:3px;font-size:6.5pt;font-weight:700;white-space:nowrap;display:inline-block}
 
-  /* ── NC CARDS ── */
+  /* ── NC CARDS (compactos) ── */
   .nc-card{
-    border:1.5px solid #fecaca;border-radius:8px;
-    padding:14px;margin-bottom:12px;background:#fff5f5;
+    border:1px solid #fecaca;border-radius:5px;
+    padding:7px 9px;margin-bottom:6px;background:#fff5f5;
     page-break-inside:avoid;
+    display:grid;grid-template-columns:1fr 1fr;gap:0 16px;
   }
-  .nc-card.critica{border-color:#dc2626;background:#fff1f1;border-left:4px solid #dc2626}
-  .nc-card.maior{border-color:#f97316;background:#fff7ed;border-left:4px solid #f97316}
+  .nc-card.critica{border-color:#dc2626;background:#fff1f1;border-left:3px solid #dc2626}
+  .nc-card.maior{border-color:#f97316;background:#fff7ed;border-left:3px solid #f97316}
   .nc-card-hd{
-    display:flex;justify-content:space-between;
-    align-items:flex-start;margin-bottom:10px;gap:8px;
+    grid-column:1/-1;
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:5px;gap:8px;
+    padding-bottom:4px;border-bottom:1px solid rgba(0,0,0,.06);
   }
-  .nc-area{font-size:12pt;font-weight:800;color:#1e293b;text-transform:capitalize}
-  .nc-date{font-size:8.5pt;color:#64748b;white-space:nowrap}
-  .nc-row{display:flex;gap:8px;padding:3px 0}
-  .nc-lbl{font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#64748b;min-width:130px;flex-shrink:0;padding-top:1px}
-  .nc-val{font-size:9.5pt;color:#1e293b;flex:1}
+  .nc-area{font-size:8.5pt;font-weight:800;color:#1e293b;text-transform:capitalize}
+  .nc-date{font-size:7pt;color:#64748b;white-space:nowrap}
+  .nc-row{display:flex;gap:6px;padding:2px 0}
+  .nc-lbl{font-size:6.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#64748b;min-width:90px;flex-shrink:0}
+  .nc-val{font-size:7.5pt;color:#1e293b;flex:1}
+  .nc-photos{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;padding-top:5px;border-top:1px solid rgba(0,0,0,.06)}
+  .nc-photos img{width:100px;height:75px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}
 
   /* ── CHECKLIST ── */
-  .chk-cat{font-size:9pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px}
-  .chk-item{display:flex;align-items:flex-start;gap:8px;padding:4px 0;border-bottom:1px solid #f8fafc;font-size:9pt}
-  .chk-item:last-child{border-bottom:none}
-  .chk-box{width:17px;height:17px;border:2px solid #cbd5e1;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9pt;margin-top:1px}
+  .chk-wrap{column-count:2;column-gap:16px}
+  .chk-cat{font-size:7pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px;margin:6px 0 3px;break-after:avoid;column-span:none}
+  .chk-item{display:flex;align-items:flex-start;gap:5px;padding:2px 0;font-size:7.5pt;break-inside:avoid}
+  .chk-box{width:13px;height:13px;border:1.5px solid #cbd5e1;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8pt;margin-top:1px}
   .chk-box.ok{border-color:#16a34a;background:#dcfce7;color:#16a34a}
   .chk-box.nc{border-color:#dc2626;background:#fee2e2;color:#dc2626}
+  .chk-score{display:inline-block;padding:1px 8px;border-radius:3px;font-weight:700;font-size:8pt;margin-left:6px}
+  .chk-score.ok{background:#dcfce7;color:#166534}
+  .chk-score.warn{background:#fef9c3;color:#854d0e}
+  .chk-score.fail{background:#fee2e2;color:#991b1b}
 
   /* ── EMPTY ── */
-  .empty-msg{padding:20px;text-align:center;color:#94a3b8;font-style:italic;font-size:9pt;background:#fafafa;border-radius:6px}
+  .empty-msg{padding:10px;text-align:center;color:#94a3b8;font-style:italic;font-size:8pt}
 
-  /* ── SIGNATURE ── */
+  /* ── ASSINATURAS ── */
   .sign-section{
-    margin:32px 32px 0;
-    padding:24px;
-    border:1.5px solid #e2e8f0;
-    border-radius:8px;
-    background:#fafafa;
-    page-break-inside:avoid;
+    margin:10px 20px 0;
+    padding:10px 14px;
+    border:1px solid #e2e8f0;border-radius:5px;
+    background:#fafafa;page-break-inside:avoid;
   }
-  .sign-title{font-size:10pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px}
-  .sign-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
-  .sign-box{padding-top:40px;border-top:1.5px solid #334155}
-  .sign-box-lbl{font-size:8.5pt;color:#475569}
-  .sign-box-val{font-size:8pt;color:#94a3b8;margin-top:4px}
+  .sign-title{font-size:7.5pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px}
+  .sign-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .sign-box{padding-top:28px;border-top:1px solid #334155}
+  .sign-box-lbl{font-size:7.5pt;color:#475569}
+  .sign-box-val{font-size:7pt;color:#94a3b8;margin-top:3px}
 
-  /* ── FOOTER ── */
+  /* ── RODAPÉ ── */
   .doc-footer{
-    margin:24px 32px 32px;
-    padding:12px 16px;
-    background:#f1f5f9;border-radius:6px;
+    margin:8px 20px 10px;
+    padding:6px 10px;
+    background:#f1f5f9;border-radius:4px;
     display:flex;justify-content:space-between;align-items:center;
-    font-size:8pt;color:#64748b;flex-wrap:wrap;gap:8px;
+    font-size:6.5pt;color:#64748b;flex-wrap:wrap;gap:4px;
   }
-  .footer-legal{font-size:7.5pt;color:#94a3b8;margin:0 32px 24px;line-height:1.5}
+  .footer-legal{font-size:6pt;color:#94a3b8;margin:0 20px 10px;line-height:1.4}
 
-  /* ── PRINT OVERRIDES ── */
+  /* ── IMPRESSÃO ── */
   @media print{
     *{
       -webkit-print-color-adjust:exact!important;
       print-color-adjust:exact!important;
       color-adjust:exact!important;
     }
-    body{background:#fff}
-    .toolbar,.print-tip{display:none!important}
-    .doc{margin:0;border-radius:0;box-shadow:none;max-width:100%}
-    .section{margin:0 15mm 20px;padding-top:20px}
-    .cover{padding:40px 15mm 36px}
-    .compliance-bar{padding:16px 15mm}
-    .sign-section{margin:24px 15mm 0}
-    .doc-footer{margin:16px 15mm 20px}
-    .footer-legal{margin:0 15mm 16px}
-    @page{size:A4 portrait;margin:0}
+    body{background:#fff;font-size:8pt}
+    .toolbar{display:none!important}
+    .doc{margin:0;max-width:100%}
+    .section{margin:0 8mm 8px;padding-top:8px}
+    .cover{padding:10px 8mm 8px}
+    .compliance-bar{padding:4px 8mm}
+    .sign-section{margin:8px 8mm 0}
+    .doc-footer,.footer-legal{margin-left:8mm;margin-right:8mm}
+    @page{size:A4 portrait;margin:8mm 8mm 10mm}
     table{page-break-inside:auto}
     tr{page-break-inside:avoid}
     .nc-card{page-break-inside:avoid}
-    .cover{page-break-after:always}
+    .section{page-break-inside:auto}
   }
 </style>
 </head>
@@ -3640,91 +3571,45 @@ function generatePDF(){
 
 <!-- TOOLBAR -->
 <div class="toolbar">
-  <div class="toolbar-left">
-    <div class="toolbar-logo">🛡️</div>
-    <div>
-      <div class="toolbar-title">HACCP Pro — Pré-visualização do Relatório</div>
-      <div class="toolbar-sub">${nomeEst} · ${totalRecords} registos · ${periodStr}</div>
-    </div>
-  </div>
+  <div class="toolbar-left">🛡️ HACCP Pro &nbsp;·&nbsp; ${nomeEst} &nbsp;·&nbsp; ${totalRecords} registos &nbsp;·&nbsp; ${periodStr}</div>
   <div class="toolbar-btns">
     <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
-    <button class="btn-close" onclick="window.close()">✕ Fechar</button>
+    <button class="btn-close" onclick="window.close()">✕</button>
   </div>
-</div>
-<div class="print-tip">
-  <span>💡</span>
-  <span><strong>Para guardar como PDF:</strong> No diálogo de impressão, em "Destino" escolha <strong>"Guardar como PDF"</strong>. Activar <strong>"Gráficos de fundo"</strong> para manter cores e badges. Formato A4, orientação Retrato.</span>
 </div>
 
 <div class="doc">
 
-  <!-- COVER -->
+  <!-- CAPA COMPACTA -->
   <div class="cover">
-    <div class="cover-badge">✅ Documento Oficial HACCP</div>
-    <span class="cover-shield">🛡️</span>
-    <div class="cover-title">Registo HACCP</div>
-    <div class="cover-type">${tipoStr} — ${moduloStr}</div>
-    <hr class="cover-divider">
-    <div class="cover-grid">
-      <div class="cover-field">
-        <label>Estabelecimento</label>
-        <div class="val">${cfg.nome||'Não configurado'}</div>
+    <div class="cover-left">
+      <div class="cover-badge">✅ Documento Oficial HACCP</div>
+      <div class="cover-title">🛡️ Registo HACCP</div>
+      <div class="cover-type">${tipoStr} — ${moduloStr}</div>
+      <div class="cover-meta">
+        <span class="lbl">Estabelecimento</span><span class="val">${cfg.nome||'—'}</span>
+        <span class="lbl">NIF</span><span class="val">${cfg.nif||'—'}</span>
+        <span class="lbl">Resp. HACCP</span><span class="val">${cfg.responsavel||'—'}</span>
+        <span class="lbl">Período</span><span class="val">${periodStr}</span>
+        ${cfg.morada?`<span class="lbl">Morada</span><span class="val">${cfg.morada}</span>`:''}
+        ${cfg.consultoria?`<span class="lbl">Consultoria</span><span class="val">${cfg.consultoria}</span>`:''}
       </div>
-      <div class="cover-field">
-        <label>NIF</label>
-        <div class="val">${cfg.nif||'—'}</div>
-      </div>
-      <div class="cover-field">
-        <label>Responsável HACCP</label>
-        <div class="val">${cfg.responsavel||'—'}</div>
-      </div>
-      <div class="cover-field">
-        <label>Consultor / Empresa</label>
-        <div class="val">${cfg.consultoria||'—'}</div>
-      </div>
-      <div class="cover-field">
-        <label>Morada</label>
-        <div class="val">${cfg.morada||'—'}</div>
-      </div>
-      <div class="cover-field">
-        <label>Total de Registos</label>
-        <div class="val">${totalRecords}</div>
+      <div class="cover-chips">
+        <span class="cover-chip">✅ Reg. CE 852/2004</span>
+        <span class="cover-chip">✅ Reg. CE 178/2002</span>
+        <span class="cover-chip">✅ ASAE/DGAV</span>
+        <span class="cover-chip">✅ Codex Alim.</span>
       </div>
     </div>
-    <div class="cover-period">
-      📅 <strong>Período:</strong>&nbsp;${periodStr}
-    </div>
-    <div class="cover-compliance">
-      <div class="compliance-chip">✅ Reg. CE 852/2004</div>
-      <div class="compliance-chip">✅ Reg. CE 178/2002</div>
-      <div class="compliance-chip">✅ ASAE / DGAV</div>
-      <div class="compliance-chip">✅ Codex Alimentarius</div>
-    </div>
-    <div style="margin-top:20px;font-size:8.5pt;opacity:.5">Gerado em ${geradoEm} pelo sistema HACCP Pro</div>
-  </div>
-
-  <!-- COMPLIANCE SUMMARY -->
-  <div class="compliance-bar">
-    <div class="compliance-bar-title">📊 Resumo de Conformidade</div>
-    <div class="cb-stat">
-      <div class="n ok">${conformRate}%</div>
-      <div class="l">Taxa T° OK</div>
-    </div>
-    <div class="cb-sep"></div>
-    <div class="cb-stat">
-      <div class="n ${ncAbertas>0?'err':'ok'}">${ncAbertas}</div>
-      <div class="l">NC Abertas</div>
-    </div>
-    <div class="cb-sep"></div>
-    <div class="cb-stat">
-      <div class="n">${totalRecords}</div>
-      <div class="l">Registos Totais</div>
-    </div>
-    <div class="cb-sep"></div>
-    <div class="cb-stat">
-      <div class="n ok">${selected.length}</div>
-      <div class="l">Módulos</div>
+    <div class="cover-right">
+      <div style="font-size:10pt;opacity:.5;margin-bottom:4px">📊 Conformidade</div>
+      <div style="font-size:22pt;font-weight:800;color:#86efac;line-height:1">${conformRate}%</div>
+      <div style="font-size:7pt;opacity:.5;margin-bottom:10px">temperaturas OK</div>
+      <div style="font-size:14pt;font-weight:800;color:${ncAbertas>0?'#fca5a5':'#86efac'};line-height:1">${ncAbertas}</div>
+      <div style="font-size:7pt;opacity:.5;margin-bottom:10px">NC abertas</div>
+      <div style="font-size:14pt;font-weight:800;line-height:1">${totalRecords}</div>
+      <div style="font-size:7pt;opacity:.5;margin-bottom:10px">registos totais</div>
+      <div style="font-size:6.5pt;opacity:.4;margin-top:6px">${geradoEm}</div>
     </div>
   </div>
 
@@ -3736,10 +3621,8 @@ function generatePDF(){
     return `<div class="section">
       <div class="section-hd">
         <div class="section-icon">${m.icon}</div>
-        <div>
-          <div class="section-title">${m.title}</div>
-          <div class="section-ref">${m.ref}</div>
-        </div>
+        <div class="section-title">${m.title}</div>
+        <div class="section-ref">${m.ref}</div>
       </div>
       ${sectionContent}
     </div>`;
