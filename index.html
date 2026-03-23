@@ -909,29 +909,22 @@ input[type=range]::-webkit-slider-thumb{
 #rpt .chk-box.nc{border-color:#dc2626;background:#fee2e2;color:#dc2626}
 
 @media print{
-  /* Esconder TUDO excepto o overlay de impressão */
+  /* Quando window.print() é chamado no iframe, o browser imprime só o iframe */
+  /* Este CSS só actua como fallback se window.print() for chamado no parent */
   body > * { display:none!important }
   #print-overlay{
-    display:block!important;
+    display:flex!important;
     position:fixed!important;
     inset:0!important;
     background:#fff!important;
-    overflow:visible!important;
-    padding:0!important;
     z-index:99999!important;
   }
   #print-ui{ display:none!important }
-  #print-content{
+  #pdf-iframe{
     display:block!important;
-    background:#fff!important;
-    border-radius:0!important;
-    overflow:visible!important;
-    padding:0!important;
-  }
-  /* Forçar fundo branco e texto preto para impressão */
-  #print-content *{
-    -webkit-print-color-adjust:exact!important;
-    print-color-adjust:exact!important;
+    width:100%!important;
+    height:100vh!important;
+    border:none!important;
   }
   @page{ size:A4 portrait; margin:10mm 12mm }
 }
@@ -2154,23 +2147,16 @@ input[type=range]::-webkit-slider-thumb{
 
 </div><!-- /app -->
 
-<!-- ── FALLBACK PRINT CONTAINER ── -->
-<div id="pdf-iframe-content" style="display:none"></div>
-<div id="print-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9000;overflow-y:auto;-webkit-overflow-scrolling:touch">
-  <div id="print-ui" style="max-width:800px;margin:0 auto;padding:16px">
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:10;border-bottom:1px solid var(--border)">
-      <button class="btn btn-primary" onclick="doPrint()" style="flex:1;font-size:15px;background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 4px 14px rgba(22,163,74,.3)">🖨️ Imprimir / Guardar PDF</button>
-      <button class="btn btn-secondary" onclick="closePrintOverlay()" style="flex:1">✕ Fechar</button>
-    </div>
-    <div class="alert alert-ok" style="margin-bottom:16px">
-      <span>💡</span>
-      <div>
-        <strong>Android:</strong> toque em Imprimir → escolha <strong>"Guardar como PDF"</strong> ou a sua impressora.<br>
-        <strong>Browser:</strong> Ctrl+P → Destino → Guardar como PDF · Activar "Gráficos de fundo".
-      </div>
-    </div>
-    <div id="print-content" style="background:#fff;border-radius:8px;overflow:hidden"></div>
+<!-- ── PRINT OVERLAY (iframe isolado — CSS não conflitua com app) ── -->
+<div id="print-overlay" style="display:none;position:fixed;inset:0;background:#1a1a2e;z-index:9000;flex-direction:column">
+  <div id="print-ui" style="display:flex;gap:10px;padding:12px 16px;background:#0f1117;border-bottom:2px solid #22c55e;flex-shrink:0;flex-wrap:wrap">
+    <button onclick="doPrint()" style="flex:1;padding:13px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">🖨️ Imprimir / Guardar PDF</button>
+    <button onclick="closePrintOverlay()" style="flex:1;padding:13px;background:#1b2035;color:#e2e8f8;border:1px solid #2a3050;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">✕ Fechar</button>
   </div>
+  <div style="padding:8px 16px;background:#0a2a0a;border-bottom:1px solid #166534;font-size:12px;color:#86efac;flex-shrink:0">
+    💡 <strong>Android:</strong> Imprimir → "Guardar como PDF" &nbsp;|&nbsp; <strong>PC:</strong> Ctrl+P → Guardar como PDF → activar "Gráficos de fundo"
+  </div>
+  <iframe id="pdf-iframe" style="flex:1;width:100%;border:none;background:#fff"></iframe>
 </div>
 
 <!-- ── MORE DRAWER ── -->
@@ -3628,19 +3614,25 @@ function generatePDF(){
 
   /* ── PRINT OVERRIDES ── */
   @media print{
+    *{
+      -webkit-print-color-adjust:exact!important;
+      print-color-adjust:exact!important;
+      color-adjust:exact!important;
+    }
     body{background:#fff}
     .toolbar,.print-tip{display:none!important}
     .doc{margin:0;border-radius:0;box-shadow:none;max-width:100%}
-    .section{margin:0 20mm 20px;padding-top:20px}
-    .cover{padding:40px 20mm 36px}
-    .compliance-bar{padding:16px 20mm}
-    .sign-section{margin:24px 20mm 0}
-    .doc-footer{margin:16px 20mm 20px}
-    .footer-legal{margin:0 20mm 16px}
+    .section{margin:0 15mm 20px;padding-top:20px}
+    .cover{padding:40px 15mm 36px}
+    .compliance-bar{padding:16px 15mm}
+    .sign-section{margin:24px 15mm 0}
+    .doc-footer{margin:16px 15mm 20px}
+    .footer-legal{margin:0 15mm 16px}
     @page{size:A4 portrait;margin:0}
     table{page-break-inside:auto}
     tr{page-break-inside:avoid}
     .nc-card{page-break-inside:avoid}
+    .cover{page-break-after:always}
   }
 </style>
 </head>
@@ -3790,43 +3782,47 @@ function generatePDF(){
   // Estratégia: nunca usar window.open() ou Blob URLs
   // Usar sempre o overlay interno com window.print()
   // ══════════════════════════════════════════════════
-  showPdfPreviewInApp(pdfHtml, totalRecords, periodStr);
+  showPdfPreviewInApp(pdfHtml);
 
   document.getElementById('pdf-preview-text').textContent =
     `✅ ${totalRecords} registos · ${periodStr}`;
   toast('📋 Relatório pronto! Carregue em Imprimir.','ok');
 }
 
-function showPdfPreviewInApp(html, totalRecords, periodStr){
+function showPdfPreviewInApp(pdfHtml){
   const overlay = document.getElementById('print-overlay');
-  const content = document.getElementById('print-content');
+  const iframe  = document.getElementById('pdf-iframe');
 
-  // Injectar apenas o body do HTML do relatório (sem <html>/<head>)
-  // O CSS do relatório já está embutido no pdfHtml — extraímos e injectamos
-  const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
-  const bodyMatch  = html.match(/<body>([\s\S]*?)<\/body>/);
+  overlay.style.display = 'flex';
 
-  if(styleMatch && bodyMatch){
-    content.innerHTML =
-      `<style>${styleMatch[1]}</style>${bodyMatch[1]}`;
-  } else {
-    // fallback: injectar tudo
-    content.innerHTML = html;
-  }
-
-  overlay.style.display = 'block';
-  overlay.scrollTop = 0;
+  // Escrever o HTML completo no iframe — CSS totalmente isolado da app
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(pdfHtml);
+  doc.close();
 }
 
 function doPrint(){
-  // window.print() funciona em WebView Android (desde Android 4.4+)
-  // Imprime o que está visível — o overlay está em position:fixed e toma o ecrã todo
-  window.print();
+  const iframe = document.getElementById('pdf-iframe');
+  try {
+    // Tentar imprimir via iframe (melhor resultado — CSS isolado)
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  } catch(e){
+    // Fallback: window.print() da app (pode ter fundo escuro)
+    window.print();
+  }
 }
 
 function closePrintOverlay(){
-  document.getElementById('print-overlay').style.display = 'none';
-  document.getElementById('print-content').innerHTML = '';
+  const overlay = document.getElementById('print-overlay');
+  const iframe  = document.getElementById('pdf-iframe');
+  overlay.style.display = 'none';
+  // Limpar iframe
+  try {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open(); doc.write(''); doc.close();
+  } catch(e){ iframe.src = 'about:blank'; }
 }
 
 function updatePdfPreview(){
@@ -4032,7 +4028,7 @@ function init(){
     let el = e.target;
     let insideScroll = false;
     while(el && el !== document.body){
-      if(el.classList && (el.classList.contains('scroll-area') || el.classList.contains('modal') || el.classList.contains('more-drawer') || el.classList.contains('tab-row') || el.classList.contains('pv-strip') || el.classList.contains('table-wrap') || el.id==='print-overlay' || el.id==='print-content' || el.id==='onboarding')){
+      if(el.classList && (el.classList.contains('scroll-area') || el.classList.contains('modal') || el.classList.contains('more-drawer') || el.classList.contains('tab-row') || el.classList.contains('pv-strip') || el.classList.contains('table-wrap') || el.id==='print-overlay' || el.id==='pdf-iframe' || el.id==='onboarding')){
         insideScroll = true; break;
       }
       el = el.parentElement;
