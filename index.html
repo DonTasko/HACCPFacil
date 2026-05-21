@@ -1807,6 +1807,53 @@ input[type=range]::-webkit-slider-thumb{
         </button>
       </div>
 
+      <!-- CONFIG EXPORT/IMPORT -->
+      <div class="card" style="border-color:rgba(34,197,94,.3);background:linear-gradient(135deg,rgba(34,197,94,.04),rgba(16,185,129,.04))">
+        <div class="card-hd" style="margin-bottom:14px">
+          <div>
+            <div class="card-title" style="color:var(--green)">📲 Partilhar Configuração</div>
+            <div class="card-sub">Exporta empresa, locais, equipamentos, colaboradores, sobremesas e email — para instalar noutro dispositivo sem preencher tudo de novo</div>
+          </div>
+          <div style="font-size:28px">📱</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;font-size:12px">
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;gap:8px;align-items:center">
+            <span style="font-size:18px">🏢</span><div><div style="font-weight:600">Empresa</div><div style="color:var(--txt3);margin-top:1px">Nome, NIF, morada</div></div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;gap:8px;align-items:center">
+            <span style="font-size:18px">📍</span><div><div style="font-weight:600">Locais</div><div style="color:var(--txt3);margin-top:1px">Zonas de limpeza</div></div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;gap:8px;align-items:center">
+            <span style="font-size:18px">🔧</span><div><div style="font-weight:600">Equipamentos</div><div style="color:var(--txt3);margin-top:1px">Câmaras, fornos, etc.</div></div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;gap:8px;align-items:center">
+            <span style="font-size:18px">👥</span><div><div style="font-weight:600">Colaboradores</div><div style="color:var(--txt3);margin-top:1px">Equipa e funções</div></div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;gap:8px;align-items:center">
+            <span style="font-size:18px">🍮</span><div><div style="font-weight:600">Sobremesas</div><div style="color:var(--txt3);margin-top:1px">Menu e alergénios</div></div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;gap:8px;align-items:center">
+            <span style="font-size:18px">📧</span><div><div style="font-weight:600">Email</div><div style="color:var(--txt3);margin-top:1px">Alertas e relatórios</div></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-success" onclick="exportConfig()" style="font-size:14px">
+            📤 Exportar Configuração
+          </button>
+          <input type="file" id="imp-cfg-file" accept=".json" style="display:none" onchange="importConfig()">
+          <button class="btn btn-secondary" onclick="document.getElementById('imp-cfg-file').click()">
+            📥 Importar Configuração neste dispositivo
+          </button>
+        </div>
+
+        <div class="alert alert-info" style="margin-top:12px;margin-bottom:0">
+          <span>💡</span>
+          <span>Envia o ficheiro por WhatsApp, email ou AirDrop para o outro dispositivo e depois toca em <strong>Importar</strong>. Os registos existentes não são apagados.</span>
+        </div>
+      </div>
+
       <!-- DATA EXPORT -->
       <div class="card">
         <div class="card-title" style="margin-bottom:12px">💾 Exportar Dados</div>
@@ -2222,6 +2269,18 @@ const DB = {
     const r={config:this.getObj('config')};
     ks.forEach(k=>r[k]=this.get(k));
     return r;
+  },
+  allConfig(){
+    return {
+      _type:    'haccp_config',
+      _version: '1.0',
+      _exported: new Date().toISOString(),
+      config:           this.getObj('config'),
+      cfg_locais:       this.get('cfg_locais'),
+      cfg_equipamentos: this.get('cfg_equipamentos'),
+      cfg_colaboradores:this.get('cfg_colaboradores'),
+      cfg_sobremesas:   this.get('cfg_sobremesas'),
+    };
   }
 };
 
@@ -3108,6 +3167,86 @@ function exportJSON(){
   a.download=`haccp_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();
   toast('JSON exportado!');
 }
+
+function exportConfig(){
+  const data = DB.allConfig();
+  const cfg  = data.config;
+  const nome = (cfg.nome||'haccp').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `haccp_config_${nome}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+
+  // Show summary toast
+  const nd = data.cfg_equipamentos.length;
+  const nl = data.cfg_locais.length;
+  const nc = data.cfg_colaboradores.length;
+  const ns = data.cfg_sobremesas.length;
+  toast(`✅ Config exportada — ${nd} equip. · ${nl} locais · ${nc} colab. · ${ns} sobrem.`);
+}
+
+function importConfig(){
+  const file = document.getElementById('imp-cfg-file').files[0];
+  if(!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+
+      // Accept both config-only exports and full backups
+      const isConfigFile = data._type === 'haccp_config';
+      const isFull       = !isConfigFile && data.config;
+      if(!isConfigFile && !isFull){
+        toast('Ficheiro inválido — não é um ficheiro HACCP Pro','err');
+        return;
+      }
+
+      let imported = [];
+
+      // Merge company config (não sobrescreve campos vazios)
+      if(data.config){
+        const existing = DB.getObj('config');
+        const merged   = {...data.config, ...Object.fromEntries(
+          Object.entries(existing).filter(([,v])=>v!==''&&v!==null&&v!==undefined)
+        )};
+        // Keep imported values for keys not yet set locally
+        DB.set('config', {...data.config, ...existing});
+        imported.push('configuração da empresa');
+      }
+
+      // Merge config arrays — add items not already present (by nome)
+      const cfgKeys = [
+        {k:'cfg_locais',       label:'locais'},
+        {k:'cfg_equipamentos', label:'equipamentos'},
+        {k:'cfg_colaboradores',label:'colaboradores'},
+        {k:'cfg_sobremesas',   label:'sobremesas'},
+      ];
+      cfgKeys.forEach(({k, label})=>{
+        if(!data[k]||!Array.isArray(data[k])) return;
+        const existing  = DB.get(k);
+        const existNomes= new Set(existing.map(x=>x.nome?.toLowerCase()));
+        const toAdd     = data[k].filter(x=>!existNomes.has(x.nome?.toLowerCase()));
+        if(toAdd.length){
+          DB.set(k, [...existing, ...toAdd]);
+          imported.push(`${toAdd.length} ${label}`);
+        }
+      });
+
+      if(imported.length){
+        toast(`✅ Importado: ${imported.join(' · ')}`);
+        // Refresh UI
+        loadCfg();
+        renderDash();
+      } else {
+        toast('Nada de novo para importar — já existe tudo neste dispositivo','info');
+      }
+    } catch(err){
+      toast('Erro ao ler ficheiro. Verifique se é um ficheiro HACCP Pro válido.','err');
+    }
+  };
+  r.readAsText(file);
+}
 function exportCSV(){
   const rows=[['Módulo','Data','Detalhe','Colaborador','Observações']];
   [{k:'temp',l:'Temperatura'},{k:'limp',l:'Limpeza'},{k:'oleo',l:'Óleo'},{k:'val',l:'Validade'},{k:'sob',l:'Sobremesa'},{k:'rec',l:'Recepção'},{k:'nc',l:'NC'}]
@@ -3128,6 +3267,7 @@ function importData(){
   r.onload=e=>{try{
     const data=JSON.parse(e.target.result);
     let count=0;
+    // Registos operacionais
     ['temp','limp','oleo','val','sob','rec','chk','prag','nc'].forEach(k=>{
       if(data[k]&&Array.isArray(data[k])){
         const ex=DB.get(k);const ids=new Set(ex.map(x=>x.id));
@@ -3135,8 +3275,17 @@ function importData(){
         DB.set(k,[...nw,...ex]);count+=nw.length;
       }
     });
-    if(data.config)DB.set('config',{...DB.getObj('config'),...data.config});
-    toast(`Importados ${count} registos!`);renderDash();
+    // Config da empresa
+    if(data.config) DB.set('config',{...DB.getObj('config'),...data.config});
+    // Listas de configuração (merge por nome)
+    ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
+      if(!data[k]||!Array.isArray(data[k]))return;
+      const ex=DB.get(k);
+      const nomes=new Set(ex.map(x=>x.nome?.toLowerCase()));
+      const nw=data[k].filter(x=>!nomes.has(x.nome?.toLowerCase()));
+      if(nw.length) DB.set(k,[...ex,...nw]);
+    });
+    toast(`Importados ${count} registos!`);renderDash();loadCfg();
   }catch{toast('Erro ao importar','err')}};
   r.readAsText(file);
 }
