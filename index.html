@@ -1043,6 +1043,39 @@ input[type=range]::-webkit-slider-thumb{
   </div>
   <!-- ══ /ONBOARDING ══ -->
 
+  <!-- ══ MODAL RESTAURO AUTOMÁTICO ══ -->
+  <div id="gh-restore-modal" style="display:none;position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,.8);place-items:center" onclick="if(event.target===this) ghRestoreDecline()">
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin:20px;max-width:400px;width:100%;animation:slideUp .3s cubic-bezier(.32,1,.22,1)">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:48px;margin-bottom:12px">☁️</div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:8px">Backup encontrado!</div>
+        <div style="font-size:14px;color:var(--txt2);line-height:1.5" id="gh-restore-msg">
+          Foi encontrado um backup no GitHub.<br>Quer restaurar os dados agora?
+        </div>
+      </div>
+      <div id="gh-restore-info" style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;margin-bottom:16px;font-size:12px;color:var(--txt2);display:none">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span>Empresa:</span><strong id="gri-empresa" style="color:var(--txt)">—</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span>Última sync:</span><strong id="gri-sync" style="color:var(--txt)">—</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span>Registos:</span><strong id="gri-total" style="color:var(--acc)">—</strong>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-primary" onclick="ghRestoreConfirm()" id="gh-restore-btn" style="font-size:15px">
+          ⬇️ Sim, restaurar dados
+        </button>
+        <button class="btn btn-secondary" onclick="ghRestoreDecline()">
+          Não, começar do zero
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- ══ /MODAL RESTAURO ══ -->
+
   <!-- ── TOP BAR ── -->
   <div class="topbar">
     <div class="topbar-logo">
@@ -2994,8 +3027,9 @@ function loadCfg(){
 function saveCfg(tab){
   const c=DB.getObj('config');
   if(tab==='empresa'){
+    const oldNif = c.nif||'';
     c.nome=document.getElementById('c-nome').value;
-    c.nif=document.getElementById('c-nif').value;
+    c.nif=document.getElementById('c-nif').value.trim();
     c.tipo=document.getElementById('c-tipo').value;
     c.responsavel=document.getElementById('c-resp').value;
     c.morada=document.getElementById('c-morada').value;
@@ -3006,6 +3040,13 @@ function saveCfg(tab){
     document.getElementById('tb-name').textContent=c.nome||'HACCP Pro';
     const nifPrev=document.getElementById('gh-nif-preview');
     if(nifPrev) nifPrev.textContent=c.nif||'[NIF não configurado]';
+    DB.set('config',c);
+    toast('✅ Empresa guardada!');
+    // Se o NIF mudou e já temos token, verificar backup
+    if(c.nif && c.nif !== oldNif && ghToken() && !localStorage.getItem('h2_gh_last_sync')){
+      setTimeout(()=>ghCheckAndOfferRestore(), 800);
+    }
+    return;
   }
   if(tab==='email'){
     c.emPrincipal=document.getElementById('em-principal').value;
@@ -3025,6 +3066,11 @@ function saveCfg(tab){
     else localStorage.removeItem('h2_gh_token');
     toast('✅ Token guardado!');
     ghUpdateStatus('saved');
+    // Se já temos NIF configurado, verificar backup automaticamente
+    const nif = DB.getObj('config').nif||'';
+    if(tok && nif && !localStorage.getItem('h2_gh_last_sync')){
+      setTimeout(()=>ghCheckAndOfferRestore(), 800);
+    }
     return;
   }
   DB.set('config',c);
@@ -4619,6 +4665,115 @@ function obNext(){
 }
 
 // ═══════════════════════════════════════════
+// AUTO-RESTORE DO GITHUB
+// ═══════════════════════════════════════════
+let _ghRestoreData = null; // dados do backup em memória enquanto modal está aberto
+
+async function ghCheckAndOfferRestore(){
+  try {
+    const headers = ghHeaders();
+    const path    = ghFilePath();
+
+    // Verificar silenciosamente se existe backup
+    const res = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+      {headers}
+    );
+    if(!res.ok) return; // sem backup ou sem ligação — não fazer nada
+
+    const file     = await res.json();
+    const b64clean = file.content.replace(/\n/g,'');
+    const binary   = atob(b64clean);
+    const bytes    = new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+    const content  = new TextDecoder('utf-8').decode(bytes);
+    const data     = JSON.parse(content);
+
+    // Guardar em memória para usar se confirmar
+    _ghRestoreData = data;
+
+    // Preencher info do modal
+    const totalRecs = ['temp','limp','oleo','val','sob','rec','chk','nc']
+      .reduce((s,k)=>s+(data[k]?.length||0),0);
+
+    const syncDate = data._sync
+      ? new Date(data._sync).toLocaleString('pt-PT')
+      : '—';
+
+    const empresa = data._empresa || data.config?.nome || '—';
+
+    const msgEl   = document.getElementById('gh-restore-msg');
+    const infoEl  = document.getElementById('gh-restore-info');
+    if(msgEl) msgEl.innerHTML = `Foi encontrado um backup no GitHub para o NIF <strong>${data._nif||ghNif()}</strong>.<br>Quer restaurar os dados agora?`;
+    if(infoEl){
+      infoEl.style.display = 'block';
+      document.getElementById('gri-empresa').textContent = empresa;
+      document.getElementById('gri-sync').textContent    = syncDate;
+      document.getElementById('gri-total').textContent   = `${totalRecs} registos`;
+    }
+
+    // Mostrar modal
+    const modal = document.getElementById('gh-restore-modal');
+    if(modal) modal.style.display = 'grid';
+
+  } catch(e){
+    // Falha silenciosa — não incomodar o utilizador
+    console.log('ghCheckAndOfferRestore:', e.message);
+  }
+}
+
+async function ghRestoreConfirm(){
+  const btn = document.getElementById('gh-restore-btn');
+  if(btn){ btn.disabled=true; btn.textContent='⬇️ A restaurar...'; }
+
+  try {
+    const data = _ghRestoreData;
+    if(!data) throw new Error('Dados não disponíveis');
+
+    // Restaurar configuração
+    if(data.config) DB.set('config', data.config);
+    ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
+      if(data[k]) DB.set(k, data[k]);
+    });
+    // Restaurar registos
+    ['temp','limp','oleo','val','sob','rec','chk','nc'].forEach(k=>{
+      if(data[k]) DB.set(k, data[k]);
+    });
+
+    const now = new Date().toISOString();
+    localStorage.setItem('h2_gh_last_sync', now);
+    _ghRestoreData = null;
+
+    // Fechar modal
+    document.getElementById('gh-restore-modal').style.display = 'none';
+
+    // Actualizar UI
+    loadCfg();
+    renderDash();
+    ghUpdateSyncCard();
+
+    const total = ['temp','limp','oleo','val','sob','rec','chk','nc']
+      .reduce((s,k)=>s+DB.get(k).length,0);
+    toast(`✅ Restaurado! ${total} registos carregados do GitHub.`,'ok');
+
+    // Ir para dashboard
+    navigate('dash');
+
+  } catch(e){
+    toast(`❌ Erro ao restaurar: ${e.message}`,'err');
+    if(btn){ btn.disabled=false; btn.textContent='⬇️ Sim, restaurar dados'; }
+  }
+}
+
+function ghRestoreDecline(){
+  document.getElementById('gh-restore-modal').style.display = 'none';
+  _ghRestoreData = null;
+  // Marcar que o utilizador recusou para não perguntar de novo nesta sessão
+  sessionStorage.setItem('gh_restore_declined','1');
+  toast('A começar do zero. Pode sincronizar mais tarde em Exportar.','info');
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 function init(){
@@ -4644,6 +4799,14 @@ function init(){
   // Show onboarding on first launch
   if(!localStorage.getItem('h2_onboarded')){
     setTimeout(showOnboarding, 300);
+  } else if(
+    ghToken() &&
+    DB.getObj('config').nif &&
+    !localStorage.getItem('h2_gh_last_sync') &&
+    !sessionStorage.getItem('gh_restore_declined')
+  ){
+    // Token e NIF configurados mas nunca sincronizado — verificar se existe backup
+    setTimeout(()=>ghCheckAndOfferRestore(), 1200);
   }
 
   // PDF preview live update
