@@ -1854,6 +1854,48 @@ input[type=range]::-webkit-slider-thumb{
         </div>
       </div>
 
+      <!-- GITHUB SYNC -->
+      <div class="card" style="border-color:rgba(139,92,246,.3);background:linear-gradient(135deg,rgba(139,92,246,.04),rgba(99,102,241,.04))">
+        <div class="card-hd" style="margin-bottom:14px">
+          <div>
+            <div class="card-title" style="color:#a78bfa">🐙 Sincronização GitHub</div>
+            <div class="card-sub">Arquiva todos os registos no GitHub · Acesso de qualquer dispositivo</div>
+          </div>
+          <div id="gh-sync-dot" style="width:12px;height:12px;border-radius:50%;background:var(--txt3);flex-shrink:0;margin-top:4px"></div>
+        </div>
+
+        <!-- Status -->
+        <div id="gh-sync-status-card" style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span id="gh-sync-icon">⚪</span>
+            <span id="gh-sync-label" style="font-size:13px;font-weight:600">A verificar...</span>
+          </div>
+          <div id="gh-sync-detail" style="font-size:12px;color:var(--txt3)">Configure o token em ⚙️ Configurações → Sincronização GitHub</div>
+        </div>
+
+        <!-- Pending changes -->
+        <div id="gh-pending-wrap" style="display:none;margin-bottom:12px">
+          <div style="font-size:12px;color:var(--txt2);margin-bottom:6px">📋 Registos por sincronizar:</div>
+          <div id="gh-pending-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+
+        <!-- Buttons -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-primary" onclick="syncToGitHub()" id="gh-btn-push"
+            style="background:linear-gradient(135deg,#7c3aed,#6366f1);box-shadow:0 4px 14px rgba(124,58,237,.3)">
+            ☁️ Sincronizar para GitHub
+          </button>
+          <button class="btn btn-secondary" onclick="syncFromGitHub()" id="gh-btn-pull">
+            ⬇️ Restaurar do GitHub
+          </button>
+        </div>
+
+        <div class="alert alert-warn" style="margin-top:12px;margin-bottom:0">
+          <span>⚠️</span>
+          <span><strong>Restaurar</strong> substitui os dados locais pelos do GitHub. Faça um backup antes.</span>
+        </div>
+      </div>
+
       <!-- DATA EXPORT -->
       <div class="card">
         <div class="card-title" style="margin-bottom:12px">💾 Exportar Dados</div>
@@ -1905,6 +1947,7 @@ input[type=range]::-webkit-slider-thumb{
         <button class="cfg-tab" onclick="switchCfgTab('colaboradores')">👥<br><span>Colaboradores</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('sobremesas')">🍮<br><span>Sobremesas</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('email')">📧<br><span>Email</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('github')" style="grid-column:1/-1">🐙<br><span>Sincronização GitHub</span></button>
       </div>
 
       <!-- EMPRESA -->
@@ -2175,6 +2218,52 @@ input[type=range]::-webkit-slider-thumb{
         <button class="btn btn-primary" onclick="saveCfg('email')">💾 Guardar Configurações de Email</button>
       </div>
 
+      <!-- GITHUB -->
+      <div id="cfg-github" style="display:none">
+        <div class="cfg-section">
+          <div class="cfg-section-hd">🐙 Sincronização com GitHub</div>
+          <div class="cfg-section-body">
+            <div class="alert alert-info" style="margin-bottom:14px">
+              <span>ℹ️</span>
+              <div>Os registos ficam guardados em <strong>github.com/DonTasko/haccp-data</strong> numa pasta identificada pelo NIF da empresa. Cada empresa tem os seus dados separados.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Token de Acesso GitHub</label>
+              <div style="position:relative">
+                <input type="password" class="form-input" id="gh-token" placeholder="ghp_..." style="padding-right:48px">
+                <button onclick="toggleGhToken()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt2);cursor:pointer;font-size:16px" id="gh-token-eye">👁️</button>
+              </div>
+              <div style="font-size:11px;color:var(--txt3);margin-top:6px">O token fica guardado apenas neste dispositivo. Nunca é enviado para lado nenhum excepto para a API do GitHub.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Estado da Ligação</label>
+              <div id="gh-status" style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r3);padding:12px">
+                <span id="gh-status-icon" style="font-size:20px">⚪</span>
+                <div>
+                  <div id="gh-status-text" style="font-size:13px;font-weight:600">Não configurado</div>
+                  <div id="gh-status-sub" style="font-size:11px;color:var(--txt3);margin-top:2px">Configure o token e teste a ligação</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-secondary" onclick="testGitHub()">🔌 Testar Ligação</button>
+              <button class="btn btn-primary" onclick="saveCfg('github')">💾 Guardar Token</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-section">
+          <div class="cfg-section-hd">📊 Última Sincronização</div>
+          <div class="cfg-section-body">
+            <div id="gh-last-sync" style="font-size:13px;color:var(--txt2)">Nunca sincronizado.</div>
+            <div style="margin-top:12px;font-size:12px;color:var(--txt3);line-height:1.6">
+              Os dados são guardados em:<br>
+              <code style="background:var(--s2);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--acc)">DonTasko/haccp-data/data/<span id="gh-nif-preview">[NIF]</span>/db.json</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /page-cfg -->
 
   </div><!-- /scroll-area -->
@@ -2310,7 +2399,7 @@ function navigate(page){
   if(page==='rec'){setNow('rc-dt');populateColabs('rc-colab');renderRecTbl()}
   if(page==='chk'){setToday('ck-data');populateColabs('ck-colab');renderChkForm();renderChkTbl()}
   if(page==='nc'){setNow('nc-dt');populateColabs('nc-colab');renderNcTbl()}
-  if(page==='exp') updatePdfPreview();
+  if(page==='exp') { updatePdfPreview(); ghUpdateSyncCard(); }
   if(page==='cfg') loadCfg();
 }
 
@@ -2863,7 +2952,7 @@ function updateDashStats(){
 // ═══════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════
-const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','email'];
+const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','email','github'];
 
 function switchCfgTab(tab){
   CFG_TABS.forEach(t=>{const e=document.getElementById('cfg-'+t);if(e)e.style.display=t===tab?'':'none'});
@@ -2878,7 +2967,6 @@ function loadCfg(){
   const c=DB.getObj('config');
   const map={nome:'c-nome',nif:'c-nif',tipo:'c-tipo',responsavel:'c-resp',morada:'c-morada',telefone:'c-tel',email:'c-email',licenca:'c-lic',consultoria:'c-cons'};
   Object.entries(map).forEach(([k,id])=>{const e=document.getElementById(id);if(e&&c[k])e.value=c[k]});
-  // Email cfg
   if(document.getElementById('em-principal')) document.getElementById('em-principal').value=c.emPrincipal||'';
   if(document.getElementById('em-cc')) document.getElementById('em-cc').value=c.emCc||'';
   if(document.getElementById('em-cons')) document.getElementById('em-cons').value=c.emConsultor||'';
@@ -2889,7 +2977,18 @@ function loadCfg(){
   if(document.getElementById('em-temp-nc')) document.getElementById('em-temp-nc').checked=c.emTempNc!==false;
   if(document.getElementById('em-oleo-nc')) document.getElementById('em-oleo-nc').checked=c.emOleoNc!==false;
   if(document.getElementById('em-val-aviso')) document.getElementById('em-val-aviso').checked=c.emValAviso!==false;
+  // GitHub token (stored separately for security)
+  const tok = localStorage.getItem('h2_gh_token')||'';
+  if(document.getElementById('gh-token')) document.getElementById('gh-token').value=tok;
+  // NIF preview
+  const nifPrev = document.getElementById('gh-nif-preview');
+  if(nifPrev) nifPrev.textContent = c.nif||'[NIF não configurado]';
+  // Last sync
+  const ls = localStorage.getItem('h2_gh_last_sync');
+  const lsEl = document.getElementById('gh-last-sync');
+  if(lsEl) lsEl.textContent = ls ? `Última sincronização: ${new Date(ls).toLocaleString('pt-PT')}` : 'Nunca sincronizado.';
   renderCfgList('locais');renderCfgList('equipamentos');renderCfgList('colaboradores');renderCfgList('sobremesas');
+  ghUpdateSyncCard();
 }
 
 function saveCfg(tab){
@@ -2905,6 +3004,8 @@ function saveCfg(tab){
     c.licenca=document.getElementById('c-lic').value;
     c.consultoria=document.getElementById('c-cons').value;
     document.getElementById('tb-name').textContent=c.nome||'HACCP Pro';
+    const nifPrev=document.getElementById('gh-nif-preview');
+    if(nifPrev) nifPrev.textContent=c.nif||'[NIF não configurado]';
   }
   if(tab==='email'){
     c.emPrincipal=document.getElementById('em-principal').value;
@@ -2918,8 +3019,334 @@ function saveCfg(tab){
     c.emOleoNc=document.getElementById('em-oleo-nc').checked;
     c.emValAviso=document.getElementById('em-val-aviso').checked;
   }
+  if(tab==='github'){
+    const tok=document.getElementById('gh-token').value.trim();
+    if(tok) localStorage.setItem('h2_gh_token', tok);
+    else localStorage.removeItem('h2_gh_token');
+    toast('✅ Token guardado!');
+    ghUpdateStatus('saved');
+    return;
+  }
   DB.set('config',c);
   toast('✅ '+tab.charAt(0).toUpperCase()+tab.slice(1)+' guardado!');
+}
+
+// ═══════════════════════════════════════════
+// GITHUB SYNC
+// ═══════════════════════════════════════════
+const GH_OWNER  = 'DonTasko';
+const GH_REPO   = 'haccp-data';
+const GH_BRANCH = 'main';
+
+function ghToken(){ return localStorage.getItem('h2_gh_token')||''; }
+
+function ghNif(){
+  const nif = DB.getObj('config').nif||'';
+  if(!nif) throw new Error('NIF não configurado. Configure em ⚙️ Configurações → Empresa.');
+  return nif.replace(/[^0-9a-zA-Z]/g,'');
+}
+
+function ghFilePath(){
+  return `data/${ghNif()}/db.json`;
+}
+
+function ghHeaders(){
+  const tok = ghToken();
+  if(!tok) throw new Error('Token GitHub não configurado. Configure em ⚙️ Configurações → GitHub.');
+  return {
+    'Authorization': `token ${tok}`,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json',
+  };
+}
+
+function ghSetStatus(icon, text, sub, color){
+  const si=document.getElementById('gh-status-icon');
+  const st=document.getElementById('gh-status-text');
+  const ss=document.getElementById('gh-status-sub');
+  if(si) si.textContent=icon;
+  if(st){ st.textContent=text; st.style.color=color||'var(--txt)'; }
+  if(ss && sub) ss.textContent=sub;
+}
+
+function ghUpdateStatus(state){
+  const states = {
+    saved:    ['🔑','Token guardado','Teste a ligação para confirmar','var(--yellow)'],
+    ok:       ['✅','Ligação OK','Pronto para sincronizar','var(--green)'],
+    error:    ['❌','Erro de ligação','Verifique o token e a ligação à internet','var(--red)'],
+    syncing:  ['🔄','A sincronizar...','Aguarde','var(--acc)'],
+    synced:   ['✅','Sincronizado com sucesso','','var(--green)'],
+    notoken:  ['⚪','Não configurado','Configure o token em ⚙️ Configurações → GitHub','var(--txt3)'],
+  };
+  const s = states[state]||states.notoken;
+  ghSetStatus(s[0], s[1], s[2], s[3]);
+}
+
+function ghUpdateSyncCard(){
+  const tok = ghToken();
+  const cfg = DB.getObj('config');
+  const dot = document.getElementById('gh-sync-dot');
+  const lbl = document.getElementById('gh-sync-label');
+  const det = document.getElementById('gh-sync-detail');
+  const ls  = localStorage.getItem('h2_gh_last_sync');
+
+  if(!tok){
+    if(dot) dot.style.background='var(--txt3)';
+    if(lbl) lbl.textContent='Não configurado';
+    if(det) det.textContent='Configure o token em ⚙️ Configurações → Sincronização GitHub';
+    return;
+  }
+  if(!cfg.nif){
+    if(dot) dot.style.background='var(--yellow)';
+    if(lbl) lbl.textContent='NIF em falta';
+    if(det) det.textContent='Configure o NIF em ⚙️ Configurações → Empresa';
+    return;
+  }
+  if(dot) dot.style.background='var(--green)';
+  if(lbl) lbl.textContent='Pronto para sincronizar';
+  if(det) det.textContent=ls
+    ? `Última sync: ${new Date(ls).toLocaleString('pt-PT')}`
+    : 'Nunca sincronizado — prima "Sincronizar para GitHub"';
+
+  // Count pending (all records since last sync)
+  ghUpdatePending();
+}
+
+function ghUpdatePending(){
+  const ls = localStorage.getItem('h2_gh_last_sync');
+  const since = ls ? new Date(ls) : null;
+  const wrap = document.getElementById('gh-pending-wrap');
+  const list = document.getElementById('gh-pending-list');
+  if(!wrap||!list) return;
+
+  const modules = [
+    {k:'temp',l:'🌡️ Temp.',icon:'🌡️'},
+    {k:'limp',l:'🧹 Limp.',icon:'🧹'},
+    {k:'oleo',l:'🫙 Óleos',icon:'🫙'},
+    {k:'val', l:'📅 Val.',icon:'📅'},
+    {k:'sob', l:'🍮 Sobr.',icon:'🍮'},
+    {k:'rec', l:'📦 Rec.',icon:'📦'},
+    {k:'chk', l:'✅ Chk',icon:'✅'},
+    {k:'nc',  l:'⚠️ NC',icon:'⚠️'},
+  ];
+
+  let chips='', total=0;
+  modules.forEach(m=>{
+    const recs = DB.get(m.k);
+    const pending = since
+      ? recs.filter(r=>new Date(r.createdAt)>since).length
+      : recs.length;
+    if(pending>0){
+      chips+=`<span style="background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600">${m.icon} ${pending}</span>`;
+      total+=pending;
+    }
+  });
+
+  if(total>0){
+    wrap.style.display='block';
+    list.innerHTML=chips+`<span style="font-size:12px;color:var(--txt2);align-self:center;margin-left:4px">(${total} registos)</span>`;
+  } else {
+    wrap.style.display='none';
+  }
+}
+
+async function testGitHub(){
+  ghUpdateStatus('syncing');
+  ghSetStatus('🔄','A testar...','Aguarde','var(--acc)');
+  try {
+    const headers = ghHeaders();
+    const res = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`,
+      {headers}
+    );
+    if(res.status===200){
+      ghUpdateStatus('ok');
+      toast('✅ Ligação ao GitHub OK!','ok');
+    } else if(res.status===401){
+      ghUpdateStatus('error');
+      ghSetStatus('❌','Token inválido','O token não tem permissões ou expirou','var(--red)');
+      toast('Token inválido — regenere em github.com/settings/tokens','err');
+    } else if(res.status===404){
+      ghUpdateStatus('error');
+      ghSetStatus('❌','Repositório não encontrado','Verifique se o repo haccp-data existe e é privado','var(--red)');
+      toast('Repositório não encontrado','err');
+    } else {
+      ghUpdateStatus('error');
+      toast(`Erro ${res.status} — verifique o token`,'err');
+    }
+  } catch(e){
+    ghUpdateStatus('error');
+    ghSetStatus('❌','Sem ligação à internet','Verifique a ligação e tente novamente','var(--red)');
+    toast('Sem ligação à internet','err');
+  }
+}
+
+function toggleGhToken(){
+  const inp = document.getElementById('gh-token');
+  const eye = document.getElementById('gh-token-eye');
+  if(!inp) return;
+  inp.type = inp.type==='password'?'text':'password';
+  eye.textContent = inp.type==='password'?'👁️':'🙈';
+}
+
+async function syncToGitHub(){
+  const btn = document.getElementById('gh-btn-push');
+  try {
+    if(btn){ btn.disabled=true; btn.textContent='☁️ A sincronizar...'; }
+    ghUpdateSyncCardState('syncing');
+
+    const headers = ghHeaders();
+    const nif     = ghNif();
+    const path    = ghFilePath();
+
+    // Build full payload
+    const payload = {
+      _sync:    new Date().toISOString(),
+      _nif:     nif,
+      _empresa: DB.getObj('config').nome||'',
+      config:           DB.getObj('config'),
+      cfg_locais:       DB.get('cfg_locais'),
+      cfg_equipamentos: DB.get('cfg_equipamentos'),
+      cfg_colaboradores:DB.get('cfg_colaboradores'),
+      cfg_sobremesas:   DB.get('cfg_sobremesas'),
+      temp: DB.get('temp'),
+      limp: DB.get('limp'),
+      oleo: DB.get('oleo'),
+      val:  DB.get('val'),
+      sob:  DB.get('sob'),
+      rec:  DB.get('rec'),
+      chk:  DB.get('chk'),
+      nc:   DB.get('nc'),
+    };
+
+    // Remove photos from NC to stay under GitHub 1MB file limit
+    // Photos stay local only
+    payload.nc = payload.nc.map(r=>({...r, fotos:[]}));
+
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+    const message = `sync: ${new Date().toLocaleString('pt-PT')} — ${nif}`;
+
+    // Check if file already exists (need SHA to update)
+    let sha = null;
+    const checkRes = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+      {headers}
+    );
+    if(checkRes.status===200){
+      const existing = await checkRes.json();
+      sha = existing.sha;
+    } else if(checkRes.status===401){
+      throw new Error('Token inválido ou sem permissões.');
+    } else if(checkRes.status===404){
+      // File doesn't exist yet — will create it
+    }
+
+    // Create or update file
+    const body = {message, content, branch: GH_BRANCH};
+    if(sha) body.sha = sha;
+
+    const putRes = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+      {method:'PUT', headers, body: JSON.stringify(body)}
+    );
+
+    if(putRes.status===200||putRes.status===201){
+      const now = new Date().toISOString();
+      localStorage.setItem('h2_gh_last_sync', now);
+      ghUpdateSyncCard();
+      ghUpdateSyncCardState('ok');
+
+      const total = ['temp','limp','oleo','val','sob','rec','chk','nc']
+        .reduce((s,k)=>s+DB.get(k).length,0);
+      toast(`✅ ${total} registos sincronizados com o GitHub!`,'ok');
+
+      // Update last sync in config view
+      const lsEl = document.getElementById('gh-last-sync');
+      if(lsEl) lsEl.textContent=`Última sincronização: ${new Date(now).toLocaleString('pt-PT')}`;
+    } else {
+      const err = await putRes.json().catch(()=>({}));
+      throw new Error(err.message||`Erro HTTP ${putRes.status}`);
+    }
+
+  } catch(e){
+    ghUpdateSyncCardState('error');
+    toast(`❌ ${e.message}`,'err');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='☁️ Sincronizar para GitHub'; }
+  }
+}
+
+async function syncFromGitHub(){
+  if(!confirm('Substituir dados locais pelos dados do GitHub?\n\nEsta acção não pode ser desfeita. Faça um backup local antes.')) return;
+
+  const btn = document.getElementById('gh-btn-pull');
+  try {
+    if(btn){ btn.disabled=true; btn.textContent='⬇️ A restaurar...'; }
+
+    const headers = ghHeaders();
+    const path    = ghFilePath();
+
+    const res = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+      {headers}
+    );
+
+    if(res.status===404){
+      toast('Nenhum backup encontrado no GitHub para este NIF.','warn');
+      return;
+    }
+    if(res.status===401) throw new Error('Token inválido ou sem permissões.');
+    if(!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+
+    const file    = await res.json();
+    const content = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
+    const data    = JSON.parse(content);
+
+    // Restore all data
+    if(data.config) DB.set('config', data.config);
+    ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
+      if(data[k]) DB.set(k, data[k]);
+    });
+    ['temp','limp','oleo','val','sob','rec','chk','nc'].forEach(k=>{
+      if(data[k]) DB.set(k, data[k]);
+    });
+
+    const now = new Date().toISOString();
+    localStorage.setItem('h2_gh_last_sync', now);
+
+    toast('✅ Dados restaurados do GitHub com sucesso!','ok');
+    loadCfg();
+    renderDash();
+    ghUpdateSyncCard();
+
+  } catch(e){
+    toast(`❌ ${e.message}`,'err');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='⬇️ Restaurar do GitHub'; }
+  }
+}
+
+function ghUpdateSyncCardState(state){
+  const dot = document.getElementById('gh-sync-dot');
+  const icon= document.getElementById('gh-sync-icon');
+  const lbl = document.getElementById('gh-sync-label');
+  const det = document.getElementById('gh-sync-detail');
+  if(state==='syncing'){
+    if(dot) dot.style.background='var(--acc)';
+    if(icon) icon.textContent='🔄';
+    if(lbl){ lbl.textContent='A sincronizar...'; lbl.style.color='var(--acc)'; }
+  } else if(state==='ok'){
+    if(dot) dot.style.background='var(--green)';
+    if(icon) icon.textContent='✅';
+    if(lbl){ lbl.textContent='Sincronizado!'; lbl.style.color='var(--green)'; }
+    const ls=localStorage.getItem('h2_gh_last_sync');
+    if(det&&ls) det.textContent=`Última sync: ${new Date(ls).toLocaleString('pt-PT')}`;
+  } else if(state==='error'){
+    if(dot) dot.style.background='var(--red)';
+    if(icon) icon.textContent='❌';
+    if(lbl){ lbl.textContent='Erro de sincronização'; lbl.style.color='var(--red)'; }
+    if(det) det.textContent='Verifique o token e a ligação à internet';
+  }
 }
 
 // ═══════════════════════════════════════════
