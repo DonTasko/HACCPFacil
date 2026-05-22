@@ -3216,61 +3216,81 @@ async function syncToGitHub(){
       sob:  DB.get('sob'),
       rec:  DB.get('rec'),
       chk:  DB.get('chk'),
-      nc:   DB.get('nc'),
+      nc:   DB.get('nc').map(r=>({...r, fotos:[]})), // fotos ficam locais
     };
 
-    // Remove photos from NC to stay under GitHub 1MB file limit
-    // Photos stay local only
-    payload.nc = payload.nc.map(r=>({...r, fotos:[]}));
+    // ── Encoding seguro para UTF-8 com caracteres portugueses ──
+    const jsonStr  = JSON.stringify(payload, null, 2);
+    const encoder  = new TextEncoder();
+    const bytes    = encoder.encode(jsonStr);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    const content  = btoa(binary);
 
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-    const message = `sync: ${new Date().toLocaleString('pt-PT')} — ${nif}`;
+    const message  = `sync: ${new Date().toLocaleString('pt-PT')} — ${nif}`;
 
-    // Check if file already exists (need SHA to update)
+    // 1. Verificar se o ficheiro já existe (precisamos do SHA para actualizar)
     let sha = null;
     const checkRes = await fetch(
       `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
       {headers}
     );
-    if(checkRes.status===200){
+
+    if(checkRes.status === 200){
       const existing = await checkRes.json();
       sha = existing.sha;
-    } else if(checkRes.status===401){
-      throw new Error('Token inválido ou sem permissões.');
-    } else if(checkRes.status===404){
-      // File doesn't exist yet — will create it
+    } else if(checkRes.status === 401){
+      throw new Error('Token inválido ou expirado. Regenere o token em github.com/settings/tokens');
+    } else if(checkRes.status === 403){
+      throw new Error('Sem permissões. Verifique se o token tem permissão "repo".');
+    } else if(checkRes.status === 404){
+      // Ficheiro não existe ainda — vai ser criado
+    } else {
+      const errBody = await checkRes.json().catch(()=>({}));
+      throw new Error(`Erro ao verificar ficheiro: ${checkRes.status} — ${errBody.message||''}`);
     }
 
-    // Create or update file
-    const body = {message, content, branch: GH_BRANCH};
+    // 2. Criar ou actualizar o ficheiro
+    const body = { message, content, branch: GH_BRANCH };
     if(sha) body.sha = sha;
 
     const putRes = await fetch(
       `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
-      {method:'PUT', headers, body: JSON.stringify(body)}
+      { method:'PUT', headers, body: JSON.stringify(body) }
     );
 
-    if(putRes.status===200||putRes.status===201){
+    if(putRes.status === 200 || putRes.status === 201){
       const now = new Date().toISOString();
       localStorage.setItem('h2_gh_last_sync', now);
       ghUpdateSyncCard();
       ghUpdateSyncCardState('ok');
 
-      const total = ['temp','limp','oleo','val','sob','rec','chk','nc']
-        .reduce((s,k)=>s+DB.get(k).length,0);
-      toast(`✅ ${total} registos sincronizados com o GitHub!`,'ok');
+      const action = putRes.status === 201 ? 'criado' : 'actualizado';
+      const total  = ['temp','limp','oleo','val','sob','rec','chk','nc']
+        .reduce((s,k) => s + DB.get(k).length, 0);
+      toast(`✅ Ficheiro ${action}! ${total} registos no GitHub.`,'ok');
 
-      // Update last sync in config view
       const lsEl = document.getElementById('gh-last-sync');
-      if(lsEl) lsEl.textContent=`Última sincronização: ${new Date(now).toLocaleString('pt-PT')}`;
+      if(lsEl) lsEl.textContent = `Última sincronização: ${new Date(now).toLocaleString('pt-PT')}`;
+
     } else {
-      const err = await putRes.json().catch(()=>({}));
-      throw new Error(err.message||`Erro HTTP ${putRes.status}`);
+      // Mostrar o erro detalhado da API do GitHub
+      let errMsg = `Erro HTTP ${putRes.status}`;
+      try {
+        const errBody = await putRes.json();
+        errMsg = errBody.message || errMsg;
+        // Erros comuns da API GitHub
+        if(putRes.status === 409) errMsg = 'Conflito: outro dispositivo actualizou o ficheiro. Restaure primeiro e depois sincronize.';
+        if(putRes.status === 422) errMsg = 'Dados inválidos: ' + (errBody.message||'verifique o NIF');
+        if(putRes.status === 403) errMsg = 'Sem permissões de escrita. Verifique se o token tem permissão "repo".';
+      } catch(e){}
+      throw new Error(errMsg);
     }
 
   } catch(e){
     ghUpdateSyncCardState('error');
     toast(`❌ ${e.message}`,'err');
+    console.error('GitHub sync error:', e);
   } finally {
     if(btn){ btn.disabled=false; btn.textContent='☁️ Sincronizar para GitHub'; }
   }
@@ -3299,8 +3319,13 @@ async function syncFromGitHub(){
     if(!res.ok) throw new Error(`Erro HTTP ${res.status}`);
 
     const file    = await res.json();
-    const content = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
-    const data    = JSON.parse(content);
+    // Decode base64 → UTF-8 bytes → string (suporta caracteres portugueses)
+    const b64clean = file.content.replace(/\n/g,'');
+    const binary   = atob(b64clean);
+    const bytes    = new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+    const content  = new TextDecoder('utf-8').decode(bytes);
+    const data     = JSON.parse(content);
 
     // Restore all data
     if(data.config) DB.set('config', data.config);
