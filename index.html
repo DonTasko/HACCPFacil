@@ -1066,7 +1066,7 @@ input[type=range]::-webkit-slider-thumb{
       </div>
       <div style="display:flex;flex-direction:column;gap:10px">
         <button class="btn btn-primary" onclick="ghRestoreConfirm()" id="gh-restore-btn" style="font-size:15px">
-          ⬇️ Sim, restaurar dados
+          ⬇️ Sim, importar dados
         </button>
         <button class="btn btn-secondary" onclick="ghRestoreDecline()">
           Não, começar do zero
@@ -1916,16 +1916,21 @@ input[type=range]::-webkit-slider-thumb{
         <div style="display:flex;flex-direction:column;gap:8px">
           <button class="btn btn-primary" onclick="syncToGitHub()" id="gh-btn-push"
             style="background:linear-gradient(135deg,#7c3aed,#6366f1);box-shadow:0 4px 14px rgba(124,58,237,.3)">
-            ☁️ Sincronizar para GitHub
+            ☁️ Guardar no GitHub
           </button>
           <button class="btn btn-secondary" onclick="syncFromGitHub()" id="gh-btn-pull">
-            ⬇️ Restaurar do GitHub
+            ⬇️ Importar do GitHub <span style="font-size:11px;color:var(--green)">(junta registos)</span>
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="syncReplaceFromGitHub()" id="gh-btn-replace"
+            style="color:var(--red);border-color:rgba(239,68,68,.3);font-size:12px">
+            🔄 Substituir tudo pelo GitHub
           </button>
         </div>
 
-        <div class="alert alert-warn" style="margin-top:12px;margin-bottom:0">
-          <span>⚠️</span>
-          <span><strong>Restaurar</strong> substitui os dados locais pelos do GitHub. Faça um backup antes.</span>
+        <div style="margin-top:10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:10px;font-size:11px;color:var(--txt3);line-height:1.6">
+          <strong style="color:var(--txt2)">☁️ Guardar</strong> — envia todos os registos locais para o GitHub<br>
+          <strong style="color:var(--txt2)">⬇️ Importar</strong> — traz registos do GitHub e <strong style="color:var(--green)">junta</strong> com os locais (sem apagar nada)<br>
+          <strong style="color:var(--txt2)">🔄 Substituir</strong> — apaga tudo local e carrega do GitHub
         </div>
       </div>
 
@@ -3342,38 +3347,114 @@ async function syncToGitHub(){
   }
 }
 
-async function syncFromGitHub(){
-  if(!confirm('Substituir dados locais pelos dados do GitHub?\n\nEsta acção não pode ser desfeita. Faça um backup local antes.')) return;
+async function ghFetchRemoteData(){
+  const headers = ghHeaders();
+  const path    = ghFilePath();
+  const res = await fetch(
+    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+    {headers}
+  );
+  if(res.status===404) return null;
+  if(res.status===401) throw new Error('Token inválido ou sem permissões.');
+  if(!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+  const file     = await res.json();
+  const b64clean = file.content.replace(/\n/g,'');
+  const binary   = atob(b64clean);
+  const bytes    = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+  const content  = new TextDecoder('utf-8').decode(bytes);
+  return JSON.parse(content);
+}
 
+async function syncFromGitHub(){
+  // MODO MERGE — junta registos do GitHub com os locais sem apagar nada
   const btn = document.getElementById('gh-btn-pull');
   try {
-    if(btn){ btn.disabled=true; btn.textContent='⬇️ A restaurar...'; }
+    if(btn){ btn.disabled=true; btn.textContent='⬇️ A importar...'; }
+    ghUpdateSyncCardState('syncing');
 
-    const headers = ghHeaders();
-    const path    = ghFilePath();
+    const data = await ghFetchRemoteData();
+    if(!data){
+      toast('Nenhum backup encontrado no GitHub para este NIF.','warn');
+      ghUpdateSyncCardState('ok');
+      return;
+    }
 
-    const res = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
-      {headers}
-    );
+    // ── Merge de registos (por ID — nunca duplica) ──
+    const RECORD_KEYS = ['temp','limp','oleo','val','sob','rec','chk','nc'];
+    let added = 0;
+    const summary = [];
 
-    if(res.status===404){
+    RECORD_KEYS.forEach(k => {
+      if(!data[k]||!Array.isArray(data[k])) return;
+      const local   = DB.get(k);
+      const localIds= new Set(local.map(r=>r.id));
+      const newRecs = data[k].filter(r=>r.id && !localIds.has(r.id));
+      if(newRecs.length){
+        // Juntar novos registos e ordenar por data desc
+        const merged = [...newRecs, ...local]
+          .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+        DB.set(k, merged);
+        added += newRecs.length;
+        const labels={temp:'🌡️',limp:'🧹',oleo:'🫙',val:'📅',sob:'🍮',rec:'📦',chk:'✅',nc:'⚠️'};
+        summary.push(`${labels[k]||k} +${newRecs.length}`);
+      }
+    });
+
+    // ── Merge de configuração (só preenche campos vazios localmente) ──
+    if(data.config){
+      const local = DB.getObj('config');
+      const merged = {...data.config};
+      // Manter valores locais que já estão preenchidos
+      Object.keys(local).forEach(k=>{ if(local[k]) merged[k]=local[k]; });
+      DB.set('config', merged);
+    }
+
+    // ── Merge de listas de configuração (por nome) ──
+    ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
+      if(!data[k]||!Array.isArray(data[k])) return;
+      const local  = DB.get(k);
+      const nomes  = new Set(local.map(x=>x.nome?.toLowerCase()));
+      const newCfg = data[k].filter(x=>x.nome && !nomes.has(x.nome.toLowerCase()));
+      if(newCfg.length) DB.set(k, [...local, ...newCfg]);
+    });
+
+    const now = new Date().toISOString();
+    localStorage.setItem('h2_gh_last_sync', now);
+    ghUpdateSyncCard();
+    ghUpdateSyncCardState('ok');
+    loadCfg();
+    renderDash();
+
+    if(added > 0){
+      toast(`✅ Importados ${added} registos novos: ${summary.join(' · ')}`,'ok');
+    } else {
+      toast('✅ Já tens todos os registos do GitHub. Nada de novo.','ok');
+    }
+
+  } catch(e){
+    ghUpdateSyncCardState('error');
+    toast(`❌ ${e.message}`,'err');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='⬇️ Importar do GitHub'; }
+  }
+}
+
+async function syncReplaceFromGitHub(){
+  // MODO SUBSTITUIR — apaga tudo e carrega do GitHub
+  if(!confirm('⚠️ ATENÇÃO\n\nIsto vai apagar TODOS os dados locais e substituir pelos do GitHub.\n\nTem a certeza? Esta acção não pode ser desfeita.')) return;
+
+  const btn = document.getElementById('gh-btn-replace');
+  try {
+    if(btn){ btn.disabled=true; btn.textContent='🔄 A substituir...'; }
+    ghUpdateSyncCardState('syncing');
+
+    const data = await ghFetchRemoteData();
+    if(!data){
       toast('Nenhum backup encontrado no GitHub para este NIF.','warn');
       return;
     }
-    if(res.status===401) throw new Error('Token inválido ou sem permissões.');
-    if(!res.ok) throw new Error(`Erro HTTP ${res.status}`);
 
-    const file    = await res.json();
-    // Decode base64 → UTF-8 bytes → string (suporta caracteres portugueses)
-    const b64clean = file.content.replace(/\n/g,'');
-    const binary   = atob(b64clean);
-    const bytes    = new Uint8Array(binary.length);
-    for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
-    const content  = new TextDecoder('utf-8').decode(bytes);
-    const data     = JSON.parse(content);
-
-    // Restore all data
     if(data.config) DB.set('config', data.config);
     ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
       if(data[k]) DB.set(k, data[k]);
@@ -3384,16 +3465,20 @@ async function syncFromGitHub(){
 
     const now = new Date().toISOString();
     localStorage.setItem('h2_gh_last_sync', now);
-
-    toast('✅ Dados restaurados do GitHub com sucesso!','ok');
+    ghUpdateSyncCard();
+    ghUpdateSyncCardState('ok');
     loadCfg();
     renderDash();
-    ghUpdateSyncCard();
+
+    const total = ['temp','limp','oleo','val','sob','rec','chk','nc']
+      .reduce((s,k)=>s+DB.get(k).length,0);
+    toast(`✅ Substituído! ${total} registos carregados do GitHub.`,'ok');
 
   } catch(e){
+    ghUpdateSyncCardState('error');
     toast(`❌ ${e.message}`,'err');
   } finally {
-    if(btn){ btn.disabled=false; btn.textContent='⬇️ Restaurar do GitHub'; }
+    if(btn){ btn.disabled=false; btn.textContent='🔄 Substituir tudo'; }
   }
 }
 
@@ -4724,44 +4809,60 @@ async function ghCheckAndOfferRestore(){
 
 async function ghRestoreConfirm(){
   const btn = document.getElementById('gh-restore-btn');
-  if(btn){ btn.disabled=true; btn.textContent='⬇️ A restaurar...'; }
+  if(btn){ btn.disabled=true; btn.textContent='⬇️ A importar...'; }
 
   try {
     const data = _ghRestoreData;
     if(!data) throw new Error('Dados não disponíveis');
 
-    // Restaurar configuração
-    if(data.config) DB.set('config', data.config);
-    ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
-      if(data[k]) DB.set(k, data[k]);
+    // Merge — não substituir, juntar com o que já existe
+    const RECORD_KEYS = ['temp','limp','oleo','val','sob','rec','chk','nc'];
+    let added = 0;
+    RECORD_KEYS.forEach(k => {
+      if(!data[k]||!Array.isArray(data[k])) return;
+      const local    = DB.get(k);
+      const localIds = new Set(local.map(r=>r.id));
+      const newRecs  = data[k].filter(r=>r.id && !localIds.has(r.id));
+      if(newRecs.length){
+        const merged = [...newRecs, ...local]
+          .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+        DB.set(k, merged);
+        added += newRecs.length;
+      }
     });
-    // Restaurar registos
-    ['temp','limp','oleo','val','sob','rec','chk','nc'].forEach(k=>{
-      if(data[k]) DB.set(k, data[k]);
+
+    // Config e listas
+    if(data.config){
+      const local  = DB.getObj('config');
+      const merged = {...data.config};
+      Object.keys(local).forEach(k=>{ if(local[k]) merged[k]=local[k]; });
+      DB.set('config', merged);
+    }
+    ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
+      if(!data[k]||!Array.isArray(data[k])) return;
+      const local  = DB.get(k);
+      const nomes  = new Set(local.map(x=>x.nome?.toLowerCase()));
+      const newCfg = data[k].filter(x=>x.nome && !nomes.has(x.nome.toLowerCase()));
+      if(newCfg.length) DB.set(k, [...local, ...newCfg]);
     });
 
     const now = new Date().toISOString();
     localStorage.setItem('h2_gh_last_sync', now);
     _ghRestoreData = null;
 
-    // Fechar modal
     document.getElementById('gh-restore-modal').style.display = 'none';
-
-    // Actualizar UI
     loadCfg();
     renderDash();
     ghUpdateSyncCard();
 
     const total = ['temp','limp','oleo','val','sob','rec','chk','nc']
       .reduce((s,k)=>s+DB.get(k).length,0);
-    toast(`✅ Restaurado! ${total} registos carregados do GitHub.`,'ok');
-
-    // Ir para dashboard
+    toast(`✅ ${added > 0 ? added+' registos importados' : 'Já tens tudo actualizado'}! Total: ${total} registos.`,'ok');
     navigate('dash');
 
   } catch(e){
-    toast(`❌ Erro ao restaurar: ${e.message}`,'err');
-    if(btn){ btn.disabled=false; btn.textContent='⬇️ Sim, restaurar dados'; }
+    toast(`❌ Erro ao importar: ${e.message}`,'err');
+    if(btn){ btn.disabled=false; btn.textContent='⬇️ Sim, importar dados'; }
   }
 }
 
