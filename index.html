@@ -1792,7 +1792,7 @@ input[type=range]::-webkit-slider-thumb{
 
         <div class="form-group">
           <label class="form-label">Módulo a incluir no PDF</label>
-          <select class="form-select" id="pdf-mod">
+          <select class="form-select" id="pdf-mod" onchange="updatePdfAreaFilter();updatePdfPreview()">
             <option value="all">📦 Relatório Completo (todos os módulos)</option>
             <option value="temp">🌡️ Temperaturas</option>
             <option value="limp">🧹 Limpeza e Desinfecção</option>
@@ -1814,6 +1814,15 @@ input[type=range]::-webkit-slider-thumb{
             <label class="form-label">Data Fim</label>
             <input type="date" class="form-input" id="pdf-ate">
           </div>
+        </div>
+
+        <!-- FILTRO POR ÁREA — aparece dinamicamente conforme o módulo -->
+        <div class="form-group" id="pdf-area-wrap" style="display:none">
+          <label class="form-label" id="pdf-area-label">Filtrar por Área</label>
+          <select class="form-select" id="pdf-area" onchange="updatePdfPreview()">
+            <option value="">Todas as áreas</option>
+          </select>
+          <div style="font-size:11px;color:var(--txt3);margin-top:5px" id="pdf-area-hint"></div>
         </div>
 
         <div class="form-group">
@@ -2437,7 +2446,7 @@ function navigate(page){
   if(page==='rec'){setNow('rc-dt');populateColabs('rc-colab');renderRecTbl()}
   if(page==='chk'){setToday('ck-data');populateColabs('ck-colab');renderChkForm();renderChkTbl()}
   if(page==='nc'){setNow('nc-dt');populateColabs('nc-colab');renderNcTbl()}
-  if(page==='exp') { updatePdfPreview(); ghUpdateSyncCard(); }
+  if(page==='exp') { updatePdfPreview(); updatePdfAreaFilter(); ghUpdateSyncCard(); }
   if(page==='cfg') loadCfg();
 }
 
@@ -4156,11 +4165,22 @@ function generatePDF(){
   const de = document.getElementById('pdf-de').value;
   const ate = document.getElementById('pdf-ate').value;
   const isSummary = document.getElementById('pdf-type-sum').checked;
+  const areaFilter = document.getElementById('pdf-area')?.value || '';
   const cfg = DB.getObj('config');
 
   const getData = (k) => {
-    const arr = DB.get(k);
-    return de || ate ? filterByDate(arr, de, ate, k==='oleo'||k==='val'||k==='chk'?'data':'datetime') : arr;
+    let arr = DB.get(k);
+    // Filtro de datas
+    if(de || ate) arr = filterByDate(arr, de, ate, k==='oleo'||k==='val'||k==='chk'?'data':'datetime');
+    // Filtro de área por módulo
+    if(areaFilter){
+      if(k==='limp') arr = arr.filter(r=>r.local===areaFilter);
+      if(k==='temp') arr = arr.filter(r=>r.equipamento===areaFilter);
+      if(k==='nc')   arr = arr.filter(r=>r.area===areaFilter);
+      if(k==='oleo') arr = arr.filter(r=>r.equipamento===areaFilter);
+      if(k==='rec')  arr = arr.filter(r=>r.fornecedor===areaFilter);
+    }
+    return arr;
   };
 
   const modules = {
@@ -4178,19 +4198,22 @@ function generatePDF(){
   const periodStr = (de && ate) ? `${fdo(de)} a ${fdo(ate)}` :
                     de ? `A partir de ${fdo(de)}` :
                     ate ? `Até ${fdo(ate)}` : 'Todos os registos disponíveis';
+  const areaStr = areaFilter ? ` · Área: ${areaFilter}` : '';
 
   let totalRecords = 0;
   selected.forEach(k => totalRecords += getData(k).length);
 
   if(totalRecords === 0){
-    toast('Sem registos para o período seleccionado.','warn');
+    toast('Sem registos para o período/área seleccionada.','warn');
     return;
   }
 
   const now = new Date();
   const geradoEm = now.toLocaleString('pt-PT',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const tipoStr = isSummary ? 'Resumo Executivo' : 'Relatório Completo';
-  const moduloStr = modulo === 'all' ? 'Todos os Módulos HACCP' : modules[modulo]?.title || modulo;
+  const moduloStr = areaFilter
+    ? `${modules[modulo]?.title||modulo} — ${areaFilter}`
+    : (modulo === 'all' ? 'Todos os Módulos HACCP' : modules[modulo]?.title || modulo);
   const nomeEst = cfg.nome || 'Estabelecimento';
 
   // ── Compliance summary stats ──
@@ -4439,6 +4462,7 @@ function generatePDF(){
         <span class="lbl">NIF</span><span class="val">${cfg.nif||'—'}</span>
         <span class="lbl">Resp. HACCP</span><span class="val">${cfg.responsavel||'—'}</span>
         <span class="lbl">Período</span><span class="val">${periodStr}</span>
+        ${areaFilter?`<span class="lbl">Área / Filtro</span><span class="val" style="color:#22c55e;font-weight:800">${areaFilter}</span>`:''}
         ${cfg.morada?`<span class="lbl">Morada</span><span class="val">${cfg.morada}</span>`:''}
         ${cfg.consultoria?`<span class="lbl">Consultoria</span><span class="val">${cfg.consultoria}</span>`:''}
       </div>
@@ -4556,19 +4580,97 @@ function closePrintOverlay(){
   } catch(e){ iframe.src = 'about:blank'; }
 }
 
+function updatePdfAreaFilter(){
+  const modulo  = document.getElementById('pdf-mod')?.value || '';
+  const wrap    = document.getElementById('pdf-area-wrap');
+  const sel     = document.getElementById('pdf-area');
+  const lbl     = document.getElementById('pdf-area-label');
+  const hint    = document.getElementById('pdf-area-hint');
+  if(!wrap||!sel) return;
+
+  // Configuração por módulo
+  const cfg = {
+    limp: {
+      label: 'Filtrar por Local / Zona',
+      hint:  'Ex: ver só a limpeza da Cozinha ou dos WC separadamente',
+      opts:  ()=> DB.get('cfg_locais').map(l=>l.nome),
+    },
+    temp: {
+      label: 'Filtrar por Equipamento',
+      hint:  'Ex: ver só as temperaturas da Câmara de Frios',
+      opts:  ()=> DB.get('cfg_equipamentos').map(e=>e.nome),
+    },
+    oleo: {
+      label: 'Filtrar por Fritadeira',
+      hint:  'Ex: ver só os registos de uma fritadeira específica',
+      opts:  ()=> [...new Set(DB.get('oleo').map(r=>r.equipamento).filter(Boolean))],
+    },
+    nc: {
+      label: 'Filtrar por Área',
+      hint:  'Ex: ver só as NC da área de Limpeza',
+      opts:  ()=> ['temperatura','limpeza','validade','oleo','recepcao','higiene','pragas','equipamento','outro'],
+    },
+    rec: {
+      label: 'Filtrar por Fornecedor',
+      hint:  'Ex: ver só as recepções de um fornecedor específico',
+      opts:  ()=> [...new Set(DB.get('rec').map(r=>r.fornecedor).filter(Boolean))],
+    },
+  };
+
+  const c = cfg[modulo];
+  if(!c || modulo === 'all'){
+    wrap.style.display = 'none';
+    sel.innerHTML = '<option value="">Todas as áreas</option>';
+    return;
+  }
+
+  const opts = c.opts().filter(Boolean);
+  if(!opts.length){
+    wrap.style.display = 'none';
+    return;
+  }
+
+  wrap.style.display = 'block';
+  if(lbl) lbl.textContent = c.label;
+  if(hint) hint.textContent = c.hint;
+
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Todas (sem filtro) —</option>' +
+    opts.map(o=>`<option value="${o}"${o===current?' selected':''}>${o}</option>`).join('');
+}
+
 function updatePdfPreview(){
-  const de = document.getElementById('pdf-de')?.value;
-  const ate = document.getElementById('pdf-ate')?.value;
+  const de     = document.getElementById('pdf-de')?.value;
+  const ate    = document.getElementById('pdf-ate')?.value;
   const modulo = document.getElementById('pdf-mod')?.value;
-  if(!de && !ate){ document.getElementById('pdf-preview-text').textContent='Seleccione módulo e datas para gerar o relatório.'; return; }
-  const selected = modulo==='all'?['temp','limp','oleo','val','sob','rec','chk','nc']:[modulo];
-  let total=0;
+  const area   = document.getElementById('pdf-area')?.value || '';
+
+  if(!de && !ate){
+    document.getElementById('pdf-preview-text').textContent='Seleccione módulo e datas para gerar o relatório.';
+    return;
+  }
+
+  const selected = modulo==='all'
+    ? ['temp','limp','oleo','val','sob','rec','chk','nc']
+    : [modulo];
+
+  let total = 0;
   selected.forEach(k=>{
-    const arr=DB.get(k);
-    total+=(de||ate)?filterByDate(arr,de,ate,k==='oleo'||k==='val'||k==='chk'?'data':'datetime').length:arr.length;
+    let arr = DB.get(k);
+    if(de||ate) arr = filterByDate(arr, de, ate, k==='oleo'||k==='val'||k==='chk'?'data':'datetime');
+    if(area){
+      if(k==='limp') arr = arr.filter(r=>r.local===area);
+      if(k==='temp') arr = arr.filter(r=>r.equipamento===area);
+      if(k==='nc')   arr = arr.filter(r=>r.area===area);
+      if(k==='oleo') arr = arr.filter(r=>r.equipamento===area);
+      if(k==='rec')  arr = arr.filter(r=>r.fornecedor===area);
+    }
+    total += arr.length;
   });
-  const period=(de&&ate)?`${fdo(de)} a ${fdo(ate)}`:(de?`a partir de ${fdo(de)}`:(ate?`até ${fdo(ate)}`:'todos os registos'));
-  document.getElementById('pdf-preview-text').textContent=`${total} registos encontrados · ${period}`;
+
+  const period = (de&&ate)?`${fdo(de)} a ${fdo(ate)}`:(de?`a partir de ${fdo(de)}`:(ate?`até ${fdo(ate)}`:'todos os registos'));
+  const areaStr = area ? ` · ${area}` : '';
+  document.getElementById('pdf-preview-text').textContent=`${total} registos encontrados · ${period}${areaStr}`;
 }
 
 // ═══════════════════════════════════════════
@@ -4912,7 +5014,7 @@ function init(){
 
   // PDF preview live update
   setTimeout(()=>{
-    ['pdf-mod','pdf-de','pdf-ate'].forEach(id=>{
+    ['pdf-mod','pdf-de','pdf-ate','pdf-area'].forEach(id=>{
       const el=document.getElementById(id);
       if(el) el.addEventListener('change', updatePdfPreview);
     });
