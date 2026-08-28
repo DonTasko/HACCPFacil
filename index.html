@@ -35,8 +35,101 @@
   --r:         14px;
   --r2:        10px;
   --r3:        8px;
-  --nav-h:     64px;      /* bottom nav height */
-  --top-h:     56px;      /* topbar height */
+  --nav-h:     64px;
+  --top-h:     56px;
+}
+
+/* ── TEMA: CLARO ── */
+[data-theme="light"]{
+  --bg:        #f1f5f9;
+  --s1:        #ffffff;
+  --s2:        #f8fafc;
+  --s3:        #f1f5f9;
+  --s4:        #e2e8f0;
+  --border:    #e2e8f0;
+  --border2:   #cbd5e1;
+  --acc:       #2563eb;
+  --acc2:      #4f46e5;
+  --acc-glow:  rgba(37,99,235,.15);
+  --txt:       #0f172a;
+  --txt2:      #475569;
+  --txt3:      #94a3b8;
+}
+[data-theme="light"] .topbar,
+[data-theme="light"] .bottom-nav,
+[data-theme="light"] .more-drawer{
+  box-shadow:0 1px 8px rgba(0,0,0,.08);
+}
+[data-theme="light"] .lnch-btn{
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+}
+
+/* ── TEMA: ÂMBAR (quente/restaurante) ── */
+[data-theme="amber"]{
+  --bg:        #1a1208;
+  --s1:        #231a0a;
+  --s2:        #2e2210;
+  --s3:        #3a2c18;
+  --s4:        #473820;
+  --border:    #4a3520;
+  --border2:   #6b4e2a;
+  --acc:       #f59e0b;
+  --acc2:      #d97706;
+  --acc-glow:  rgba(245,158,11,.18);
+  --txt:       #fef3c7;
+  --txt2:      #d4a84b;
+  --txt3:      #78521e;
+}
+
+/* ── TEMA: VERDE (natureza) ── */
+[data-theme="green"]{
+  --bg:        #061210;
+  --s1:        #0a1f1c;
+  --s2:        #0f2e29;
+  --s3:        #143d37;
+  --s4:        #1a4d45;
+  --border:    #1e4f47;
+  --border2:   #2d7066;
+  --acc:       #10b981;
+  --acc2:      #059669;
+  --acc-glow:  rgba(16,185,129,.18);
+  --txt:       #d1fae5;
+  --txt2:      #6ee7b7;
+  --txt3:      #2d7060;
+}
+
+/* ── TEMA: AZUL PROFUNDO (oceano) ── */
+[data-theme="ocean"]{
+  --bg:        #020b18;
+  --s1:        #041525;
+  --s2:        #071e33;
+  --s3:        #0b2a47;
+  --s4:        #0f3660;
+  --border:    #0f3660;
+  --border2:   #1e5080;
+  --acc:       #38bdf8;
+  --acc2:      #0ea5e9;
+  --acc-glow:  rgba(56,189,248,.18);
+  --txt:       #e0f2fe;
+  --txt2:      #7dd3fc;
+  --txt3:      #1e6090;
+}
+
+/* ── TEMA: ROXO (violeta) ── */
+[data-theme="purple"]{
+  --bg:        #0d0a1a;
+  --s1:        #160f2a;
+  --s2:        #1e1638;
+  --s3:        #271d47;
+  --s4:        #312558;
+  --border:    #312558;
+  --border2:   #4c3880;
+  --acc:       #a78bfa;
+  --acc2:      #8b5cf6;
+  --acc-glow:  rgba(167,139,250,.18);
+  --txt:       #ede9fe;
+  --txt2:      #c4b5fd;
+  --txt3:      #4c3880;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
@@ -2001,7 +2094,8 @@ input[type=range]::-webkit-slider-thumb{
         <button class="cfg-tab" onclick="switchCfgTab('colaboradores')">👥<br><span>Colaboradores</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('sobremesas')">🍮<br><span>Sobremesas</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('email')">📧<br><span>Email</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('github')" style="grid-column:1/-1">🐙<br><span>Sincronização GitHub</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('visual')">🎨<br><span>Visual</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('github')" style="grid-column:2/4">🐙<br><span>GitHub</span></button>
       </div>
 
       <!-- EMPRESA -->
@@ -2270,6 +2364,31 @@ input[type=range]::-webkit-slider-thumb{
         </div>
 
         <button class="btn btn-primary" onclick="saveCfg('email')">💾 Guardar Configurações de Email</button>
+      </div>
+
+      <!-- VISUAL -->
+      <div id="cfg-visual" style="display:none">
+        <div class="cfg-section">
+          <div class="cfg-section-hd">🎨 Tema Visual</div>
+          <div class="cfg-section-body">
+            <div style="font-size:13px;color:var(--txt2);margin-bottom:16px;line-height:1.5">
+              Escolha o tema que preferir. A alteração é imediata e fica guardada neste dispositivo.
+            </div>
+            <div id="theme-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
+          </div>
+        </div>
+
+        <div class="cfg-section">
+          <div class="cfg-section-hd">🔤 Tamanho do Texto</div>
+          <div class="cfg-section-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <button class="btn btn-secondary btn-sm" onclick="setFontSize('small')" id="fs-small">A<small> Pequeno</small></button>
+              <button class="btn btn-secondary btn-sm" onclick="setFontSize('normal')" id="fs-normal" style="font-size:15px">A Médio</button>
+              <button class="btn btn-secondary btn-sm" onclick="setFontSize('large')" id="fs-large" style="font-size:18px">A Grande</button>
+            </div>
+            <div style="font-size:11px;color:var(--txt3);margin-top:10px">Útil para facilitar a leitura em ecrãs maiores ou para utilizadores com dificuldades visuais.</div>
+          </div>
+        </div>
       </div>
 
       <!-- GITHUB -->
@@ -3006,7 +3125,7 @@ function updateDashStats(){
 // ═══════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════
-const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','email','github'];
+const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','email','visual','github'];
 
 function switchCfgTab(tab){
   CFG_TABS.forEach(t=>{const e=document.getElementById('cfg-'+t);if(e)e.style.display=t===tab?'':'none'});
@@ -3015,6 +3134,7 @@ function switchCfgTab(tab){
   if(tab==='equipamentos')renderCfgList('equipamentos');
   if(tab==='colaboradores')renderCfgList('colaboradores');
   if(tab==='sobremesas')renderCfgList('sobremesas');
+  if(tab==='visual'){ renderThemeGrid(); updateFontSizeBtns(localStorage.getItem('h2_fontsize')||'normal'); }
 }
 
 function loadCfg(){
@@ -5059,9 +5179,94 @@ function ghRestoreDecline(){
 }
 
 // ═══════════════════════════════════════════
+// THEME SYSTEM
+// ═══════════════════════════════════════════
+const THEMES = [
+  { id:'dark',   name:'Escuro',      emoji:'🌑', preview:['#0c0f1a','#131726','#3b82f6'] },
+  { id:'light',  name:'Claro',       emoji:'☀️', preview:['#f1f5f9','#ffffff','#2563eb'] },
+  { id:'amber',  name:'Âmbar',       emoji:'🔥', preview:['#1a1208','#231a0a','#f59e0b'] },
+  { id:'green',  name:'Verde',       emoji:'🌿', preview:['#061210','#0a1f1c','#10b981'] },
+  { id:'ocean',  name:'Oceano',      emoji:'🌊', preview:['#020b18','#041525','#38bdf8'] },
+  { id:'purple', name:'Violeta',     emoji:'🔮', preview:['#0d0a1a','#160f2a','#a78bfa'] },
+];
+
+const FONT_SIZES = { small:'13px', normal:'15px', large:'17px' };
+
+function applyTheme(id){
+  if(id === 'dark'){
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', id);
+  }
+  localStorage.setItem('h2_theme', id);
+  renderThemeGrid();
+}
+
+function applyFontSize(size){
+  document.documentElement.style.fontSize = FONT_SIZES[size] || '15px';
+  localStorage.setItem('h2_fontsize', size);
+  updateFontSizeBtns(size);
+}
+
+function setFontSize(size){ applyFontSize(size); }
+
+function updateFontSizeBtns(size){
+  ['small','normal','large'].forEach(s=>{
+    const btn = document.getElementById('fs-'+s);
+    if(btn){
+      btn.style.borderColor   = s===size ? 'var(--acc)' : 'var(--border)';
+      btn.style.color         = s===size ? 'var(--acc)' : 'var(--txt2)';
+      btn.style.background    = s===size ? 'rgba(59,130,246,.1)' : 'var(--s2)';
+    }
+  });
+}
+
+function renderThemeGrid(){
+  const grid = document.getElementById('theme-grid');
+  if(!grid) return;
+  const current = localStorage.getItem('h2_theme') || 'dark';
+  grid.innerHTML = THEMES.map(t => {
+    const active = t.id === current;
+    return `<button onclick="applyTheme('${t.id}')"
+      style="
+        background:${t.preview[0]};
+        border:2px solid ${active ? t.preview[2] : t.preview[1]};
+        border-radius:var(--r2);
+        padding:14px 8px 10px;
+        cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;gap:6px;
+        position:relative;overflow:hidden;
+        transition:all .2s;
+        ${active ? `box-shadow:0 0 0 3px ${t.preview[2]}40;` : ''}
+      "
+    >
+      ${active ? `<div style="position:absolute;top:6px;right:6px;width:14px;height:14px;background:${t.preview[2]};border-radius:50%;display:grid;place-items:center;font-size:8px">✓</div>` : ''}
+      <div style="display:flex;gap:3px;margin-bottom:4px">
+        <div style="width:14px;height:14px;border-radius:50%;background:${t.preview[0]};border:1px solid ${t.preview[1]}"></div>
+        <div style="width:14px;height:14px;border-radius:50%;background:${t.preview[1]}"></div>
+        <div style="width:14px;height:14px;border-radius:50%;background:${t.preview[2]}"></div>
+      </div>
+      <span style="font-size:18px">${t.emoji}</span>
+      <span style="font-size:11px;font-weight:600;color:${t.preview[2]}">${t.name}</span>
+    </button>`;
+  }).join('');
+}
+
+function loadThemeSettings(){
+  // Aplicar tema guardado
+  const savedTheme = localStorage.getItem('h2_theme') || 'dark';
+  applyTheme(savedTheme);
+  // Aplicar tamanho de texto guardado
+  const savedFont = localStorage.getItem('h2_fontsize') || 'normal';
+  applyFontSize(savedFont);
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 function init(){
+  // ── Aplicar tema antes de qualquer render ──
+  loadThemeSettings();
   // ── Prevent pull-to-refresh & overscroll in WebView ──
   document.body.addEventListener('touchmove', function(e){
     // Allow scrolling only inside .scroll-area; block everywhere else
