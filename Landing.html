@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="HACCP Pro — Gestão digital de segurança alimentar. Cumpra a lei, evite multas da ASAE, passe inspecções. 14 dias gratuitos.">
+<meta property="og:title" content="HACCP Pro — Segurança Alimentar Digital">
+<meta property="og:description" content="14 dias gratuitos. Sem cartão. Sem compromisso.">
+<meta name="theme-color" content="#060914">
+<title>HACCP Pro — Segurança Alimentar Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:    #060914;
+  --s1:    #0d1220;
+  --s2:    #131a2e;
+  --blue:  #3b6eff;
+  --blue2: #5b8bff;
+  --green: #00d084;
+  --txt:   #edf2ff;
+  --txt2:  #7a8fb5;
+  --r:     12px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(6, 9, 20, .85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--blue), #6366f1);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 18px;
+}
+.nav-logo-name {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 17px; font-weight: 800; color: var(--txt);
+}
+.nav-cta {
+  background: var(--green); color: #000;
+  padding: 8px 18px; border-radius: 8px;
+  font-size: 13px; font-weight: 700;
+  text-decoration: none; white-space: nowrap;
+  transition: opacity .15s;
+}
+.nav-cta:hover { opacity: .88; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 100px 24px 60px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
+  width: 800px; height: 600px;
+  background: radial-gradient(ellipse, rgba(59,110,255,.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.trial-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0, 208, 132, .12);
+  border: 1px solid rgba(0, 208, 132, .3);
+  border-radius: 20px; padding: 6px 16px;
+  font-size: 13px; font-weight: 600; color: var(--green);
+  margin-bottom: 28px;
+  animation: pulse-border 3s ease-in-out infinite;
+}
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,208,132,.2); }
+  50%       { box-shadow: 0 0 0 8px rgba(0,208,132,0); }
+}
+.trial-pill-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.hero h1 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(36px, 8vw, 68px);
+  font-weight: 800; line-height: 1.08;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+  max-width: 780px;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--blue2), var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: clamp(16px, 2.5vw, 20px);
+  color: var(--txt2); max-width: 540px;
+  margin-bottom: 40px; line-height: 1.65;
+}
+
+.hero-btns {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 48px;
+}
+.btn-hero {
+  padding: 15px 32px; border-radius: 10px; border: none;
+  font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
+  cursor: pointer; text-decoration: none;
+  transition: all .15s; display: inline-block;
+}
+.btn-hero-green {
+  background: var(--green); color: #000;
+  box-shadow: 0 0 32px rgba(0,208,132,.25);
+}
+.btn-hero-green:hover { transform: translateY(-2px); box-shadow: 0 4px 40px rgba(0,208,132,.35); }
+.btn-hero-ghost {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: var(--txt);
+}
+.btn-hero-ghost:hover { background: rgba(255,255,255,.1); }
+
+.hero-note {
+  font-size: 13px; color: var(--txt2);
+  display: flex; align-items: center; gap: 6px; justify-content: center;
+}
+.hero-note span { color: var(--green); }
+
+/* ── MOCKUP ── */
+.mockup-wrap {
+  max-width: 360px; width: 90%; margin: 0 auto;
+  position: relative;
+}
+.mockup {
+  background: var(--s1);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+}
+.mockup-bar {
+  height: 52px; background: var(--s2);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px;
+}
+.mockup-logo { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+.mockup-logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg,var(--blue),#6366f1); border-radius: 8px; display: grid; place-items: center; font-size: 14px; }
+.mockup-date { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--txt2); background: var(--bg); border-radius: 6px; padding: 3px 8px; }
+.mockup-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+.ms { background: var(--s2); border-radius: 10px; padding: 12px; position: relative; overflow: hidden; }
+.ms::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--c, var(--blue)); }
+.ms-icon { font-size: 18px; margin-bottom: 6px; }
+.ms-val { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 600; color: var(--c, var(--blue)); }
+.ms-lbl { font-size: 9px; color: var(--txt2); margin-top: 2px; }
+.mockup-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 0 12px 12px; }
+.mg { background: var(--s2); border-radius: 8px; padding: 10px 6px 8px; text-align: center; }
+.mg-icon { font-size: 20px; margin-bottom: 4px; }
+.mg-lbl { font-size: 9px; color: var(--txt2); }
+.mockup-feed { padding: 0 12px 12px; }
+.mf-title { font-size: 10px; color: var(--txt2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
+.mf-item { display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--s2); border-radius: 8px; margin-bottom: 6px; }
+.mf-ic { width: 28px; height: 28px; background: var(--bg); border-radius: 7px; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+.mf-text { font-size: 10px; }
+.mf-sub { font-size: 9px; color: var(--txt2); margin-top: 2px; }
+.mf-badge { margin-left: auto; font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 700; flex-shrink: 0; }
+.b-ok { background: rgba(0,208,132,.15); color: var(--green); }
+.b-nc { background: rgba(239,68,68,.15); color: #ef4444; }
+
+/* ── SECTION ── */
+section { padding: 80px 24px; max-width: 1080px; margin: 0 auto; }
+.section-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 2px;
+  color: var(--blue2); margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.section-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 800; line-height: 1.12;
+  letter-spacing: -.8px; margin-bottom: 16px;
+}
+.section-sub { font-size: 17px; color: var(--txt2); max-width: 520px; line-height: 1.65; }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  background: var(--s1);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: var(--r);
+  display: flex; flex-wrap: wrap;
+  margin: 0 24px;
+}
+.stats-bar-item {
+  flex: 1; min-width: 150px;
+  padding: 28px 24px; text-align: center;
+  border-right: 1px solid rgba(255,255,255,.06);
+}
+.stats-bar-item:last-child { border-right: none; }
+.sbi-val {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 40px; font-weight: 800; line-height: 1;
+  background: linear-gradient(135deg, var(--blue2), var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.sbi-lbl { font-size: 13px; color: var(--txt2); margin-top: 6px; }
+
+/* ── FEATURES ── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 48px;
+}
+.feat {
+  background: var(--s1);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: var(--r);
+  padding: 28px;
+  transition: border-color .2s;
+}
+.feat:hover { border-color: rgba(59,110,255,.3); }
+.feat-icon {
+  width: 48px; height: 48px;
+  background: var(--s2);
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-size: 22px; margin-bottom: 16px;
+}
+.feat-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px; font-weight: 700; margin-bottom: 8px;
+}
+.feat-desc { font-size: 14px; color: var(--txt2); line-height: 1.6; }
+
+/* ── TRIAL SECTION ── */
+.trial-section {
+  background: linear-gradient(135deg, var(--s1) 0%, rgba(59,110,255,.08) 100%);
+  border: 1px solid rgba(59,110,255,.2);
+  border-radius: 20px;
+  padding: 56px 40px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.trial-section::before {
+  content: '';
+  position: absolute; top: -50%; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(0,208,132,.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.trial-days {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(72px, 18vw, 120px);
+  font-weight: 800; line-height: .9;
+  background: linear-gradient(135deg, var(--green) 30%, var(--blue2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+.trial-unit {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(24px, 5vw, 36px);
+  font-weight: 700; color: var(--txt2);
+  margin-bottom: 24px;
+}
+.trial-perks {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  justify-content: center; margin: 24px 0 36px;
+}
+.trial-perk {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px; padding: 8px 16px;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ── HOW IT WORKS ── */
+.steps { display: flex; flex-direction: column; gap: 0; margin-top: 48px; position: relative; }
+.steps::before {
+  content: '';
+  position: absolute; left: 20px; top: 32px; bottom: 32px; width: 1px;
+  background: linear-gradient(to bottom, var(--blue), var(--green));
+}
+.step {
+  display: flex; gap: 24px; align-items: flex-start;
+  padding: 0 0 36px;
+}
+.step:last-child { padding-bottom: 0; }
+.step-n {
+  width: 40px; height: 40px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--blue), #6366f1);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 16px; font-weight: 800;
+  position: relative; z-index: 1;
+}
+.step-content { padding-top: 8px; }
+.step-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px; font-weight: 700; margin-bottom: 6px;
+}
+.step-desc { font-size: 14px; color: var(--txt2); line-height: 1.6; }
+
+/* ── FAQ ── */
+.faq { margin-top: 48px; }
+.faq-item {
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  padding: 20px 0; cursor: pointer;
+}
+.faq-q {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 17px; font-weight: 700;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.faq-arrow { color: var(--txt2); font-size: 20px; flex-shrink: 0; transition: transform .2s; }
+.faq-a {
+  font-size: 14px; color: var(--txt2); line-height: 1.7;
+  max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .2s;
+}
+.faq-item.open .faq-arrow { transform: rotate(45deg); }
+.faq-item.open .faq-a { max-height: 200px; padding-top: 12px; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding: 36px 24px;
+  text-align: center;
+  font-size: 13px; color: var(--txt2);
+}
+footer a { color: var(--blue2); text-decoration: none; }
+
+/* ── MOBILE ── */
+@media(max-width: 600px){
+  .hero-btns { flex-direction: column; align-items: center; }
+  .btn-hero { width: 100%; max-width: 320px; text-align: center; }
+  .trial-section { padding: 40px 20px; }
+  .stats-bar { margin: 0 12px; }
+  .stats-bar-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .stats-bar-item:last-child { border-bottom: none; }
+  section { padding: 60px 20px; }
+  .steps::before { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">🛡️</div>
+    <span class="nav-logo-name">HACCP Pro</span>
+  </a>
+  <a class="nav-cta" href="#trial">Começar grátis</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="trial-pill">
+    <div class="trial-pill-dot"></div>
+    14 dias grátis · Sem cartão · Sem compromisso
+  </div>
+
+  <h1>Nunca mais leves<br>registos <em>em papel</em></h1>
+
+  <p class="hero-sub">
+    O HACCP Pro digitaliza toda a gestão de segurança alimentar do seu restaurante.
+    Passe inspecções da ASAE sem stress e evite multas que podem ultrapassar €5.000.
+  </p>
+
+  <div class="hero-btns">
+    <a class="btn-hero btn-hero-green" href="#trial">▶ Experimentar 14 dias grátis</a>
+    <a class="btn-hero btn-hero-ghost" href="#features">Ver funcionalidades</a>
+  </div>
+
+  <div class="hero-note">
+    <span>✓</span> Sem cartão de crédito &nbsp;·&nbsp;
+    <span>✓</span> Dados no seu dispositivo &nbsp;·&nbsp;
+    <span>✓</span> Cancela quando quiser
+  </div>
+
+  <!-- App Mockup -->
+  <div class="mockup-wrap" style="margin-top: 56px;">
+    <div class="mockup">
+      <div class="mockup-bar">
+        <div class="mockup-logo">
+          <div class="mockup-logo-icon">🛡️</div>
+          Restaurante Demo
+        </div>
+        <div class="mockup-date">22/05/2025</div>
+      </div>
+      <div class="mockup-stats">
+        <div class="ms" style="--c:#22c55e">
+          <div class="ms-icon">🧹</div>
+          <div class="ms-val">8</div>
+          <div class="ms-lbl">Limpezas hoje</div>
+        </div>
+        <div class="ms" style="--c:#3b6eff">
+          <div class="ms-icon">🌡️</div>
+          <div class="ms-val">12</div>
+          <div class="ms-lbl">Temperaturas</div>
+        </div>
+        <div class="ms" style="--c:#eab308">
+          <div class="ms-icon">📅</div>
+          <div class="ms-val">0</div>
+          <div class="ms-lbl">Validades alerta</div>
+        </div>
+        <div class="ms" style="--c:#22c55e">
+          <div class="ms-icon">⚠️</div>
+          <div class="ms-val">0</div>
+          <div class="ms-lbl">NC abertas</div>
+        </div>
+      </div>
+      <div class="mockup-grid">
+        <div class="mg"><div class="mg-icon">🌡️</div><div class="mg-lbl">Temp.</div></div>
+        <div class="mg"><div class="mg-icon">🧹</div><div class="mg-lbl">Limpeza</div></div>
+        <div class="mg"><div class="mg-icon">🫙</div><div class="mg-lbl">Óleos</div></div>
+        <div class="mg"><div class="mg-icon">📅</div><div class="mg-lbl">Validades</div></div>
+        <div class="mg"><div class="mg-icon">⚠️</div><div class="mg-lbl">NC</div></div>
+        <div class="mg"><div class="mg-icon">📄</div><div class="mg-lbl">PDF</div></div>
+      </div>
+      <div class="mockup-feed">
+        <div class="mf-title">Últimos registos</div>
+        <div class="mf-item">
+          <div class="mf-ic">🌡️</div>
+          <div><div class="mf-text">Câmara Frios · 3°C</div><div class="mf-sub">há 12min · Maria</div></div>
+          <div class="mf-badge b-ok">✓</div>
+        </div>
+        <div class="mf-item">
+          <div class="mf-ic">🧹</div>
+          <div><div class="mf-text">Cozinha · Desinfecção</div><div class="mf-sub">há 1h · João</div></div>
+          <div class="mf-badge b-ok">✓</div>
+        </div>
+        <div class="mf-item">
+          <div class="mf-ic">🧹</div>
+          <div><div class="mf-text">WC · Limpeza diária</div><div class="mf-sub">há 2h · Maria</div></div>
+          <div class="mf-badge b-ok">✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-bar-item">
+    <div class="sbi-val">10</div>
+    <div class="sbi-lbl">Módulos de registo incluídos</div>
+  </div>
+  <div class="stats-bar-item">
+    <div class="sbi-val">€5k+</div>
+    <div class="sbi-lbl">Multas ASAE que pode evitar</div>
+  </div>
+  <div class="stats-bar-item">
+    <div class="sbi-val">14</div>
+    <div class="sbi-lbl">Dias gratuitos sem cartão</div>
+  </div>
+  <div class="stats-bar-item">
+    <div class="sbi-val">0</div>
+    <div class="sbi-lbl">Papel necessário</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">Funcionalidades</div>
+  <h2 class="section-title">Tudo o que precisa,<br>num só lugar</h2>
+  <p class="section-sub">Conforme com o Regulamento CE 852/2004, Reg. CE 178/2002, ASAE e DGAV.</p>
+
+  <div class="features-grid">
+    <div class="feat">
+      <div class="feat-icon">🌡️</div>
+      <div class="feat-title">Controlo de Temperaturas</div>
+      <div class="feat-desc">Registe câmaras de frio, frigoríficos e conservação quente com alertas automáticos de desvio. O slider interactivo torna o registo instantâneo.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🧹</div>
+      <div class="feat-title">Limpeza e Desinfecção</div>
+      <div class="feat-desc">Seleccione vários locais de uma vez — registe o WC masculino e feminino em simultâneo com os mesmos produtos e colaborador.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⚠️</div>
+      <div class="feat-title">Não Conformidades com Foto</div>
+      <div class="feat-desc">Registe anomalias com fotografias directas da câmara. Gravidade, acção correctiva, prazo e estado de resolução — tudo rastreado.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📄</div>
+      <div class="feat-title">Relatórios PDF para Inspecções</div>
+      <div class="feat-desc">Gere relatórios profissionais por módulo, período e área em segundos. Capa com referências legais, tabelas de conformidade e bloco de assinaturas.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">☁️</div>
+      <div class="feat-title">Arquivo no GitHub</div>
+      <div class="feat-desc">Todos os registos arquivados por NIF da empresa. Instale noutro dispositivo e restaure o histórico completo em dois toques.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📧</div>
+      <div class="feat-title">Alertas e Relatórios por Email</div>
+      <div class="feat-desc">Resumo diário automático com o que foi feito e o que faltou. Alerta imediato por email quando é registada uma NC crítica.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">✅</div>
+      <div class="feat-title">Check-list Semanal HACCP</div>
+      <div class="feat-desc">35 itens em 5 categorias — instalações, equipamentos, higiene pessoal, boas práticas e documentação. Score automático de conformidade.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🎨</div>
+      <div class="feat-title">Personalizável</div>
+      <div class="feat-desc">6 temas visuais, tamanho de texto ajustável, equipamentos e locais configuráveis. A app adapta-se ao seu restaurante.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TRIAL CTA -->
+<section id="trial" style="padding: 40px 24px;">
+  <div class="trial-section">
+    <div class="trial-days">14</div>
+    <div class="trial-unit">dias completamente grátis</div>
+    <p style="font-size: 17px; color: var(--txt2); max-width: 480px; margin: 0 auto 24px; line-height: 1.65;">
+      Experimente o HACCP Pro sem qualquer compromisso.
+      Sem cartão de crédito. Sem dados pessoais. Só descarregue e comece.
+    </p>
+    <div class="trial-perks">
+      <div class="trial-perk">✅ Acesso completo a todos os módulos</div>
+      <div class="trial-perk">✅ Dados ficam no seu dispositivo</div>
+      <div class="trial-perk">✅ Sem cartão de crédito</div>
+      <div class="trial-perk">✅ Sem registo obrigatório</div>
+      <div class="trial-perk">✅ Cancela quando quiser</div>
+      <div class="trial-perk">✅ Suporte incluído</div>
+    </div>
+    <a class="btn-hero btn-hero-green" href="https://play.google.com/store" style="font-size: 16px; padding: 16px 40px;">
+      ▶ Descarregar grátis na Play Store
+    </a>
+    <div style="margin-top: 16px; font-size: 13px; color: var(--txt2);">
+      Após o trial, planos a partir de <strong style="color: var(--txt);">€9,90/mês</strong>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="section-label">Como funciona</div>
+  <h2 class="section-title">Pronto em 3 minutos</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">1</div>
+      <div class="step-content">
+        <div class="step-title">Descarregue e abra</div>
+        <div class="step-desc">Disponível na Play Store para Android. Instale, abra — sem registo, sem email. O trial de 14 dias começa automaticamente.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div class="step-content">
+        <div class="step-title">Configure o seu restaurante</div>
+        <div class="step-desc">Adicione o nome, NIF, equipamentos de frio, locais de limpeza e colaboradores. Demora menos de 3 minutos.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div class="step-content">
+        <div class="step-title">Comece a registar</div>
+        <div class="step-desc">Temperaturas, limpezas, óleos, validades — tudo num toque. A app guia o colaborador através de cada registo.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">4</div>
+      <div class="step-content">
+        <div class="step-title">Gere o relatório para inspecção</div>
+        <div class="step-desc">Quando a ASAE aparecer, gere um PDF profissional em segundos. Filtrado por módulo, período e área.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section>
+  <div class="section-label">Perguntas frequentes</div>
+  <h2 class="section-title" style="margin-bottom: 0">Tem dúvidas?</h2>
+  <div class="faq">
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">O que acontece ao fim dos 14 dias? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">A app bloqueia o acesso a novos registos, mas os seus dados ficam todos guardados. Pode activar uma licença a qualquer momento para continuar. Os registos feitos durante o trial não se perdem.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Os dados ficam guardados onde? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Localmente no dispositivo. Opcionalmente pode activar a sincronização com o GitHub (gratuito) para ter cópia de segurança e aceder de vários dispositivos.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Posso usar em vários dispositivos? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Sim. Com a sincronização GitHub, todos os dispositivos do restaurante partilham os mesmos registos. Uma licença cobre o NIF do estabelecimento — não é por dispositivo.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Cumpre as normas legais portuguesas? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Sim. Conforme com o Regulamento (CE) n.º 852/2004, Reg. CE 178/2002, Dec.-Lei 106/2005 e as directrizes da ASAE e DGAV. Os relatórios PDF incluem as referências legais necessárias.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Qual é o preço após o trial? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Plano mensal a partir de €9,90/mês. Planos trimestrais, semestrais e anuais com desconto disponíveis. Uma licença por NIF — sem limite de utilizadores ou dispositivos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section style="text-align: center; padding-bottom: 80px;">
+  <h2 class="section-title">Pronto para simplificar<br>o seu HACCP?</h2>
+  <p style="color: var(--txt2); margin: 16px auto 36px; max-width: 440px; font-size: 16px; line-height: 1.65;">
+    Junte-se a restaurantes que já abandonaram o papel. 14 dias grátis para experimentar sem risco.
+  </p>
+  <a class="btn-hero btn-hero-green" href="https://play.google.com/store" style="font-size: 16px; padding: 16px 40px;">
+    ▶ Descarregar grátis na Play Store
+  </a>
+  <div style="margin-top: 14px; font-size: 13px; color: var(--txt2);">
+    Sem cartão · Sem email · 14 dias grátis
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div style="margin-bottom: 12px;">
+    <strong>HACCP Pro</strong> · L.Apps Studio · <a href="mailto:suporte@haccpdigital.online">suporte@haccpdigital.online</a>
+  </div>
+  <div>
+    <a href="#">Política de Privacidade</a> &nbsp;·&nbsp;
+    <a href="#">Termos de Utilização</a> &nbsp;·&nbsp;
+    <a href="#">Suporte</a>
+  </div>
+  <div style="margin-top: 16px; font-size: 12px;">© 2025 L.Apps Studio. Todos os direitos reservados.</div>
+</footer>
+
+<script>
+function toggleFaq(el){
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!isOpen) el.classList.add('open');
+}
+
+// Scroll reveal
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.opacity='1';
+      e.target.style.transform='translateY(0)';
+    }
+  });
+},{threshold:.1});
+
+document.querySelectorAll('.feat,.step,.stats-bar-item').forEach(el=>{
+  el.style.cssText+='opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
