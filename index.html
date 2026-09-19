@@ -4022,19 +4022,48 @@ function buildTempAlert(data){
 }
 
 function triggerEmailAlert(type, data){
-  const cfg=DB.getObj('config');
-  let html='',subject='';
-  if(type==='nc'){html=buildNCAlert(data);subject=`[HACCP] 🚨 NC ${data.gravidade?.toUpperCase()} — ${cfg.nome||'Estabelecimento'}`}
-  if(type==='temp_nc'){html=buildTempAlert(data);subject=`[HACCP] 🌡️ Temperatura NC — ${data.equipamento} — ${cfg.nome||''}`}
-  if(type==='oleo_nc'){subject=`[HACCP] 🫙 Óleo acima do limite — ${cfg.nome||''}`;html=`<p>Óleo: ${data.equipamento||'—'} | Valor Polar: ${data.polar}% (limite: 25%) | Data: ${fdo(data.data)}</p>`}
-  downloadEml(subject, cfg.emPrincipal||'', cfg.emCc||'', html);
-  toast('📧 Email de alerta gerado!','info');
+  const cfg = DB.getObj('config');
+  if(!cfg.emPrincipal) return; // sem email configurado
+  let html='', subject='';
+  if(type==='nc'){
+    html    = buildNCAlert(data);
+    subject = `[HACCP] 🚨 NC ${(data.gravidade||'').toUpperCase()} — ${cfg.nome||'Estabelecimento'}`;
+  }
+  if(type==='temp_nc'){
+    html    = buildTempAlert(data);
+    subject = `[HACCP] 🌡️ Temperatura NC — ${data.equipamento} — ${cfg.nome||''}`;
+  }
+  if(type==='oleo_nc'){
+    subject = `[HACCP] 🫙 Óleo acima do limite — ${cfg.nome||''}`;
+    html    = `<p style="font-family:sans-serif">Óleo: <b>${data.equipamento||'—'}</b> | Valor Polar: <b>${data.polar}%</b> (limite: 25%) | Data: ${fdo(data.data)}</p>`;
+  }
+  sendEmailViaWorker(subject, cfg.emPrincipal, cfg.emCc||'', html);
+}
+
+async function sendEmailViaWorker(subject, to, cc, html){
+  const cfg = DB.getObj('config');
+  try {
+    if(ghUseWorker()){
+      // Envio via Worker (Resend)
+      const toList = [to, ...(cc ? cc.split(',').map(s=>s.trim()).filter(Boolean) : [])];
+      await ghWorkerEmail(toList, subject, html);
+      toast('📧 Email enviado!','ok');
+    } else {
+      // Fallback — descarregar .eml
+      downloadEml(subject, to, cc, html);
+      toast('📧 Email gerado — abra o ficheiro .eml','info');
+    }
+  } catch(e){
+    // Fallback silencioso para .eml se Worker falhar
+    downloadEml(subject, to, cc, html);
+    toast('📧 Email gerado (modo offline)','info');
+  }
 }
 
 function downloadEml(subject, to, cc, htmlBody){
   const date=new Date().toUTCString();
   const boundary='----=_Part_'+Date.now();
-  let eml=`From: HACCP Pro <noreply@haccp.local>\r\nTo: ${to}\r\n`;
+  let eml=`From: HACCP Pro <noreply@haccpdigital.online>\r\nTo: ${to}\r\n`;
   if(cc) eml+=`Cc: ${cc}\r\n`;
   eml+=`Subject: ${subject}\r\nDate: ${date}\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
   eml+=`--${boundary}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${subject}\r\n`;
@@ -4047,33 +4076,104 @@ function downloadEml(subject, to, cc, htmlBody){
   a.click();
 }
 
-function testEmail(){
+async function testEmail(){
   const cfg=DB.getObj('config');
   if(!cfg.emPrincipal){toast('Configure o email principal primeiro','warn');return}
   const html=buildDailyReport();
-  downloadEml(`[HACCP] 🧪 Email de Teste — ${cfg.nome||'Estabelecimento'}`,cfg.emPrincipal,cfg.emCc||'',html);
-  toast('📧 Email de teste gerado! Abra o ficheiro .eml no seu cliente de email.','info');
+  await sendEmailViaWorker(
+    `[HACCP] 🧪 Email de Teste — ${cfg.nome||'Estabelecimento'}`,
+    cfg.emPrincipal, cfg.emCc||'', html
+  );
 }
 
-function sendDailyReport(){
+async function sendDailyReport(){
   const cfg=DB.getObj('config');
-  if(!cfg.emPrincipal||!cfg.emResumo)return;
-  const html=buildDailyReport();
-  downloadEml(`[HACCP] 📊 Relatório Diário — ${cfg.nome||''} — ${new Date().toLocaleDateString('pt-PT')}`,cfg.emPrincipal,cfg.emCc||'',html);
-  toast('📧 Relatório diário gerado!','info');
+  if(!cfg.emPrincipal||!cfg.emResumo) return;
+  const html    = buildDailyReport();
+  const subject = `[HACCP] 📊 Relatório Diário — ${cfg.nome||''} — ${new Date().toLocaleDateString('pt-PT')}`;
+  await sendEmailViaWorker(subject, cfg.emPrincipal, cfg.emCc||'', html);
+}
+
+async function sendMonthlyReport(){
+  // Chamado no dia 1 do mês — envia relatório do mês anterior
+  const cfg  = DB.getObj('config');
+  if(!cfg.emPrincipal) return;
+  const now  = new Date();
+  const prev = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const mes  = prev.toLocaleDateString('pt-PT',{month:'long',year:'numeric'});
+  const html = buildMonthlyReportHtml(prev);
+  const subject = `[HACCP] 📋 Relatório Mensal — ${mes} — ${cfg.nome||''}`;
+  await sendEmailViaWorker(subject, cfg.emPrincipal, cfg.emCc||'', html);
+  toast(`📧 Relatório de ${mes} enviado!`,'ok');
+}
+
+function buildMonthlyReportHtml(monthDate){
+  const cfg    = DB.getObj('config');
+  const y      = monthDate.getFullYear();
+  const m      = monthDate.getMonth();
+  const start  = new Date(y,m,1).toISOString().slice(0,10);
+  const end    = new Date(y,m+1,0).toISOString().slice(0,10);
+  const mes    = monthDate.toLocaleDateString('pt-PT',{month:'long',year:'numeric'});
+
+  const filter = (k,dateField) => DB.get(k).filter(r=>{
+    const d=(r[dateField]||'').slice(0,10);
+    return d>=start && d<=end;
+  });
+
+  const temps  = filter('temp','datetime');
+  const limps  = filter('limp','datetime');
+  const ncs    = filter('nc','createdAt');
+  const chks   = filter('chk','data');
+  const tempOk = temps.filter(r=>r.conforme===true).length;
+  const ncAb   = ncs.filter(r=>r.estado!=='fechada').length;
+  const avgChk = chks.length ? Math.round(chks.reduce((s,r)=>s+r.score,0)/chks.length) : null;
+
+  return `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1e293b">
+    <div style="background:#1e3a8a;color:#fff;padding:24px;border-radius:8px 8px 0 0">
+      <h1 style="margin:0;font-size:20px">🛡️ Relatório Mensal HACCP</h1>
+      <p style="margin:4px 0 0;opacity:.8">${mes} · ${cfg.nome||'Estabelecimento'}</p>
+    </div>
+    <div style="background:#f8fafc;padding:24px;border-radius:0 0 8px 8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+        <div style="background:#fff;border-radius:8px;padding:16px;text-align:center;border-top:3px solid ${tempOk===temps.length&&temps.length>0?'#22c55e':'#3b82f6'}">
+          <div style="font-size:28px;font-weight:800;color:#1e3a8a">${temps.length}</div>
+          <div style="font-size:12px;color:#64748b">Temperaturas</div>
+          <div style="font-size:11px;color:${tempOk===temps.length?'#16a34a':'#dc2626'}">${temps.length>0?Math.round(tempOk/temps.length*100)+'% OK':'—'}</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:16px;text-align:center;border-top:3px solid #22c55e">
+          <div style="font-size:28px;font-weight:800;color:#16a34a">${limps.length}</div>
+          <div style="font-size:12px;color:#64748b">Limpezas</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:16px;text-align:center;border-top:3px solid ${ncAb>0?'#ef4444':'#22c55e'}">
+          <div style="font-size:28px;font-weight:800;color:${ncAb>0?'#dc2626':'#16a34a'}">${ncs.length}</div>
+          <div style="font-size:12px;color:#64748b">Não Conform.</div>
+          <div style="font-size:11px;color:${ncAb>0?'#dc2626':'#16a34a'}">${ncAb>0?ncAb+' abertas':'Todas resolvidas'}</div>
+        </div>
+      </div>
+      ${avgChk!==null?`<div style="background:#fff;border-radius:8px;padding:14px;margin-bottom:12px">
+        <b>✅ Check-lists:</b> ${chks.length} realizadas · Score médio: <b>${avgChk}%</b>
+      </div>`:''}
+      ${ncAb>0?`<div style="background:#fee2e2;border-radius:8px;padding:14px;margin-bottom:12px;color:#991b1b">
+        ⚠️ <b>Atenção:</b> ${ncAb} não conformidade(s) ainda abertas. Verifique e resolva.
+      </div>`:''}
+      <p style="font-size:12px;color:#94a3b8;margin-top:16px">HACCP Pro · haccpdigital.online · Gerado automaticamente a ${new Date().toLocaleString('pt-PT')}</p>
+    </div>
+  </body></html>`;
 }
 
 // Check if should send daily report (last 30s window matching hour)
 function checkDailyReportSchedule(){
   const cfg=DB.getObj('config');
-  if(!cfg.emResumo||!cfg.emPrincipal||!cfg.emHora)return;
+  if(!cfg.emResumo||!cfg.emPrincipal||!cfg.emHora) return;
   const now=new Date();
   const [h,m]=cfg.emHora.split(':').map(Number);
   const lastSent=localStorage.getItem('h2_last_daily')||'';
   const todayKey=`${now.toISOString().slice(0,10)}_${cfg.emHora}`;
-  if(now.getHours()===h&&now.getMinutes()===m&&lastSent!==todayKey){
+  if(now.getHours()===h && now.getMinutes()===m && lastSent!==todayKey){
     localStorage.setItem('h2_last_daily',todayKey);
     sendDailyReport();
+    // Dia 1 do mês — enviar também o relatório mensal
+    if(now.getDate()===1) sendMonthlyReport();
   }
 }
 
