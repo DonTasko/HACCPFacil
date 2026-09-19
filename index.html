@@ -3514,6 +3514,7 @@ async function syncToGitHub(){
       _sync:    new Date().toISOString(),
       _nif:     nif,
       _empresa: DB.getObj('config').nome||'',
+      _license: localStorage.getItem('h2_license')||null, // licença incluída para restauro automático
       config:           DB.getObj('config'),
       cfg_locais:       DB.get('cfg_locais'),
       cfg_equipamentos: DB.get('cfg_equipamentos'),
@@ -5232,6 +5233,21 @@ function ghMergeData(data){
     DB.set('config', merged);
   }
 
+  // ── Licença — restaurar automaticamente se não existe localmente ──
+  if(data._license && !localStorage.getItem('h2_license')){
+    try {
+      const lic = JSON.parse(data._license);
+      if(lic && lic.chave){
+        const v = licValidate(lic.chave, null);
+        if(v.ok){
+          localStorage.setItem('h2_license', data._license);
+          // Limpar grace period se existia
+          localStorage.removeItem('h2_grace_start');
+        }
+      }
+    } catch(e){ /* licença inválida — ignorar */ }
+  }
+
   // ── Listas de configuração (locais, equipamentos, colaboradores, sobremesas) ──
   ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k => {
     if(!data[k] || !Array.isArray(data[k]) || !data[k].length) return;
@@ -5467,6 +5483,14 @@ function licCheck(){
   );
 
   if(hasData){
+    // Verificar se a licença foi importada do GitHub mas ainda não carregada nesta sessão
+    // (pode acontecer quando o merge restaura a licença e a app precisa de reler)
+    const recheck = JSON.parse(localStorage.getItem('h2_license')||'null');
+    if(recheck && recheck.chave){
+      const v2 = licValidate(recheck.chave, recheck.nif);
+      if(v2.ok) return {type:'license', ...v2};
+    }
+
     // Atribuir período de graça de 30 dias a contar de agora (primeira detecção)
     const graceKey = 'h2_grace_start';
     if(!localStorage.getItem(graceKey)){
@@ -5613,6 +5637,9 @@ async function activateLicense(){
     validade:   result.validade,
     activadoEm: new Date().toISOString(),
   }));
+  // Limpar grace period e trial se existiam
+  localStorage.removeItem('h2_grace_start');
+  localStorage.removeItem('h2_trial_start');
 
   // Preencher NIF na config se vazio
   const cfg = DB.getObj('config');
