@@ -3621,44 +3621,8 @@ async function syncFromGitHub(){
       return;
     }
 
-    // ── Merge de registos (por ID — nunca duplica) ──
-    const RECORD_KEYS = ['temp','limp','oleo','val','sob','rec','chk','nc'];
-    let added = 0;
-    const summary = [];
-
-    RECORD_KEYS.forEach(k => {
-      if(!data[k]||!Array.isArray(data[k])) return;
-      const local   = DB.get(k);
-      const localIds= new Set(local.map(r=>r.id));
-      const newRecs = data[k].filter(r=>r.id && !localIds.has(r.id));
-      if(newRecs.length){
-        // Juntar novos registos e ordenar por data desc
-        const merged = [...newRecs, ...local]
-          .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-        DB.set(k, merged);
-        added += newRecs.length;
-        const labels={temp:'🌡️',limp:'🧹',oleo:'🫙',val:'📅',sob:'🍮',rec:'📦',chk:'✅',nc:'⚠️'};
-        summary.push(`${labels[k]||k} +${newRecs.length}`);
-      }
-    });
-
-    // ── Merge de configuração (só preenche campos vazios localmente) ──
-    if(data.config){
-      const local = DB.getObj('config');
-      const merged = {...data.config};
-      // Manter valores locais que já estão preenchidos
-      Object.keys(local).forEach(k=>{ if(local[k]) merged[k]=local[k]; });
-      DB.set('config', merged);
-    }
-
-    // ── Merge de listas de configuração (por nome) ──
-    ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
-      if(!data[k]||!Array.isArray(data[k])) return;
-      const local  = DB.get(k);
-      const nomes  = new Set(local.map(x=>x.nome?.toLowerCase()));
-      const newCfg = data[k].filter(x=>x.nome && !nomes.has(x.nome.toLowerCase()));
-      if(newCfg.length) DB.set(k, [...local, ...newCfg]);
-    });
+    // ── Merge robusto ──
+    const {added, summary} = ghMergeData(data);
 
     const now = new Date().toISOString();
     localStorage.setItem('h2_gh_last_sync', now);
@@ -4090,26 +4054,8 @@ function importData(){
   const r=new FileReader();
   r.onload=e=>{try{
     const data=JSON.parse(e.target.result);
-    let count=0;
-    // Registos operacionais
-    ['temp','limp','oleo','val','sob','rec','chk','prag','nc'].forEach(k=>{
-      if(data[k]&&Array.isArray(data[k])){
-        const ex=DB.get(k);const ids=new Set(ex.map(x=>x.id));
-        const nw=data[k].filter(x=>!ids.has(x.id));
-        DB.set(k,[...nw,...ex]);count+=nw.length;
-      }
-    });
-    // Config da empresa
-    if(data.config) DB.set('config',{...DB.getObj('config'),...data.config});
-    // Listas de configuração (merge por nome)
-    ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
-      if(!data[k]||!Array.isArray(data[k]))return;
-      const ex=DB.get(k);
-      const nomes=new Set(ex.map(x=>x.nome?.toLowerCase()));
-      const nw=data[k].filter(x=>!nomes.has(x.nome?.toLowerCase()));
-      if(nw.length) DB.set(k,[...ex,...nw]);
-    });
-    toast(`Importados ${count} registos!`);renderDash();loadCfg();
+    const {added}=ghMergeData(data);
+    toast(`Importados ${added} registos novos!`);renderDash();loadCfg();
   }catch{toast('Erro ao importar','err')}};
   r.readAsText(file);
 }
@@ -5159,6 +5105,79 @@ function obNext(){
 }
 
 // ═══════════════════════════════════════════
+// MERGE CENTRAL — usado por todos os imports
+// ═══════════════════════════════════════════
+function ghMergeData(data){
+  const RECORD_KEYS = ['temp','limp','oleo','val','sob','rec','chk','nc'];
+  const labels = {temp:'🌡️',limp:'🧹',oleo:'🫙',val:'📅',sob:'🍮',rec:'📦',chk:'✅',nc:'⚠️'};
+  let added = 0;
+  const summary = [];
+
+  // ── Registos operacionais ──
+  RECORD_KEYS.forEach(k => {
+    if(!data[k] || !Array.isArray(data[k])) return;
+    const local    = DB.get(k);
+    const localIds = new Set(local.map(r=>r.id).filter(Boolean));
+
+    // Incluir registos sem ID (criados em versões antigas) identificando por datetime+conteúdo
+    const localSigs = new Set(local.map(r=>r.id || (r.datetime||r.data||'')+'|'+(r.local||r.equipamento||r.tipo||r.area||'')));
+
+    const newRecs = data[k].filter(r => {
+      if(r.id) return !localIds.has(r.id); // tem ID — deduplicar por ID
+      // sem ID — deduplicar por assinatura datetime+campo principal
+      const sig = (r.datetime||r.data||'')+'|'+(r.local||r.equipamento||r.tipo||r.area||'');
+      return !localSigs.has(sig);
+    });
+
+    if(newRecs.length){
+      const merged = [...newRecs, ...local]
+        .sort((a,b)=>new Date(b.createdAt||b.datetime||b.data||0)-new Date(a.createdAt||a.datetime||a.data||0));
+      DB.set(k, merged);
+      added += newRecs.length;
+      summary.push(`${labels[k]||k} +${newRecs.length}`);
+    }
+  });
+
+  // ── Configuração da empresa (preserva valores locais já preenchidos) ──
+  if(data.config){
+    const local  = DB.getObj('config');
+    const merged = {...data.config};
+    Object.keys(local).forEach(k=>{ if(local[k]) merged[k]=local[k]; });
+    DB.set('config', merged);
+  }
+
+  // ── Listas de configuração (locais, equipamentos, colaboradores, sobremesas) ──
+  ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k => {
+    if(!data[k] || !Array.isArray(data[k]) || !data[k].length) return;
+    const local = DB.get(k);
+
+    // Se local está vazio — substituir directamente (sem precisar de deduplicar)
+    if(!local.length){
+      DB.set(k, data[k]);
+      return;
+    }
+
+    // Deduplicar por nome (case-insensitive) com fallback para id
+    const localKeys = new Set([
+      ...local.map(x=>x.nome?.toLowerCase()).filter(Boolean),
+      ...local.map(x=>x.id).filter(Boolean),
+    ]);
+    const newItems = data[k].filter(x => {
+      const byNome = x.nome && !localKeys.has(x.nome.toLowerCase());
+      const byId   = x.id   && !localKeys.has(x.id);
+      // incluir se não existe por nome NEM por id
+      if(x.nome && x.id) return byNome && byId;
+      if(x.nome)         return byNome;
+      if(x.id)           return byId;
+      return true; // sem nome nem id — incluir sempre (não há como deduplicar)
+    });
+    if(newItems.length) DB.set(k, [...local, ...newItems]);
+  });
+
+  return {added, summary};
+}
+
+// ═══════════════════════════════════════════
 // AUTO-RESTORE DO GITHUB
 // ═══════════════════════════════════════════
 let _ghRestoreData = null; // dados do backup em memória enquanto modal está aberto
@@ -5224,36 +5243,7 @@ async function ghRestoreConfirm(){
     const data = _ghRestoreData;
     if(!data) throw new Error('Dados não disponíveis');
 
-    // Merge — não substituir, juntar com o que já existe
-    const RECORD_KEYS = ['temp','limp','oleo','val','sob','rec','chk','nc'];
-    let added = 0;
-    RECORD_KEYS.forEach(k => {
-      if(!data[k]||!Array.isArray(data[k])) return;
-      const local    = DB.get(k);
-      const localIds = new Set(local.map(r=>r.id));
-      const newRecs  = data[k].filter(r=>r.id && !localIds.has(r.id));
-      if(newRecs.length){
-        const merged = [...newRecs, ...local]
-          .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-        DB.set(k, merged);
-        added += newRecs.length;
-      }
-    });
-
-    // Config e listas
-    if(data.config){
-      const local  = DB.getObj('config');
-      const merged = {...data.config};
-      Object.keys(local).forEach(k=>{ if(local[k]) merged[k]=local[k]; });
-      DB.set('config', merged);
-    }
-    ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k=>{
-      if(!data[k]||!Array.isArray(data[k])) return;
-      const local  = DB.get(k);
-      const nomes  = new Set(local.map(x=>x.nome?.toLowerCase()));
-      const newCfg = data[k].filter(x=>x.nome && !nomes.has(x.nome.toLowerCase()));
-      if(newCfg.length) DB.set(k, [...local, ...newCfg]);
-    });
+    const {added} = ghMergeData(data);
 
     const now = new Date().toISOString();
     localStorage.setItem('h2_gh_last_sync', now);
