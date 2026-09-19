@@ -3608,116 +3608,90 @@ async function syncToGitHub(){
 
 async function diagGitHub(){
   const btn = document.getElementById('gh-btn-diag');
-  if(btn){ btn.disabled=true; btn.textContent='🔍 A verificar...'; }
+  if(btn){ btn.disabled=true; btn.textContent='A verificar...'; }
   try {
     const data = await ghFetchRemoteData();
     const el   = document.getElementById('gh-diag-content');
     const modal= document.getElementById('gh-diag-modal');
 
     if(!data){
-      el.innerHTML = '<div style="color:var(--red)">❌ Nenhum backup encontrado no GitHub para este NIF.</div>';
+      el.innerHTML = '<div style="color:var(--red)">Nenhum backup encontrado no GitHub para este NIF.</div>';
       modal.style.display='grid'; return;
     }
 
-    const syncDate = data._sync ? new Date(data._sync).toLocaleString('pt-PT') : '—';
-    const empresa  = data._empresa || data.config?.nome || '—';
-    const nif      = data._nif || '—';
+    const syncDate = data._sync ? new Date(data._sync).toLocaleString('pt-PT') : '---';
+    const empresa  = data._empresa || (data.config && data.config.nome) || '---';
+    const nif      = data._nif || '---';
 
     const rows = [
-      {k:'temp',  l:'🌡️ Temperaturas',   icon:'temp'},
-      {k:'limp',  l:'🧹 Limpezas',        icon:'limp'},
-      {k:'oleo',  l:'🫙 Óleos',           icon:'oleo'},
-      {k:'val',   l:'📅 Validades',        icon:'val'},
-      {k:'sob',   l:'🍮 Sobremesas (reg)', icon:'sob'},
-      {k:'rec',   l:'📦 Recepções',        icon:'rec'},
-      {k:'chk',   l:'✅ Check-lists',      icon:'chk'},
-      {k:'nc',    l:'⚠️ NC',              icon:'nc'},
+      {k:'temp', l:'Temperaturas'},
+      {k:'limp', l:'Limpezas'},
+      {k:'oleo', l:'Oleos'},
+      {k:'val',  l:'Validades'},
+      {k:'sob',  l:'Sobremesas (registos)'},
+      {k:'rec',  l:'Recepcoes'},
+      {k:'chk',  l:'Check-lists'},
+      {k:'nc',   l:'NC'},
     ];
     const cfgRows = [
-      {k:'cfg_locais',        l:'📍 Locais configurados'},
-      {k:'cfg_equipamentos',  l:'🔧 Equipamentos'},
-      {k:'cfg_colaboradores', l:'👥 Colaboradores'},
-      {k:'cfg_sobremesas',    l:'🍮 Sobremesas (config)'},
+      {k:'cfg_locais',        l:'Locais configurados'},
+      {k:'cfg_equipamentos',  l:'Equipamentos'},
+      {k:'cfg_colaboradores', l:'Colaboradores'},
+      {k:'cfg_sobremesas',    l:'Sobremesas (config)'},
     ];
 
-    let html = `
-      <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;margin-bottom:12px;font-size:12px">
-        <div><strong>Empresa:</strong> ${empresa}</div>
-        <div><strong>NIF:</strong> ${nif}</div>
-        <div><strong>Última sync:</strong> ${syncDate}</div>
-      </div>
-      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Registos operacionais</div>`;
+    var html = '<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;margin-bottom:12px;font-size:12px">'
+      + '<div><b>Empresa:</b> ' + empresa + '</div>'
+      + '<div><b>NIF:</b> ' + nif + '</div>'
+      + '<div><b>Ultima sync:</b> ' + syncDate + '</div>'
+      + '</div>'
+      + '<div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Registos operacionais</div>';
 
-    rows.forEach(r => {
-      const arr   = data[r.k];
-      const count = Array.isArray(arr) ? arr.length : 0;
-      const local = DB.get(r.k).length;
-      const color = count > 0 ? 'var(--green)' : 'var(--txt3)';
-      html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
-        <span>${r.l}</span>
-        <span style="color:${color};font-weight:600">${count} no backup ${local>0?`· ${local} local`:'· local vazio'}</span>
-      </div>`;
+    rows.forEach(function(r){
+      var arr   = data[r.k];
+      var count = Array.isArray(arr) ? arr.length : 0;
+      var local = DB.get(r.k).length;
+      var color = count > 0 ? 'var(--green)' : 'var(--txt3)';
+      var localStr = local > 0 ? (' · ' + local + ' local') : ' · local vazio';
+      html += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">'
+        + '<span>' + r.l + '</span>'
+        + '<span style="color:' + color + ';font-weight:600">' + count + ' no backup' + localStr + '</span>'
+        + '</div>';
     });
 
-    html += `<div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">Configuração</div>`;
+    html += '<div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">Configuracao</div>';
 
-    cfgRows.forEach(r => {
-      const arr   = data[r.k];
-      const count = Array.isArray(arr) ? arr.length : null;
-      const exists= arr !== undefined;
-      const local = DB.get(r.k).length;
-      let badge, color;
-      if(!exists || count === null){
-        badge='❌ Não está no backup'; color='var(--red)';
-      } else if(count === 0){
-        badge='⚠️ 0 itens no backup'; color='var(--yellow)';
-      } else {
-        badge=`✅ ${count} itens`; color='var(--green)';
-      }
-      html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
-        <span>${r.l}</span>
-        <span style="color:${color};font-weight:600;font-size:12px">${badge}</span>
-      </div>`;
+    var missing = [];
+    cfgRows.forEach(function(r){
+      var arr    = data[r.k];
+      var exists = arr !== undefined;
+      var count  = Array.isArray(arr) ? arr.length : null;
+      var badge, color;
+      if(!exists || count === null){ badge = 'NAO esta no backup'; color = 'var(--red)'; missing.push(r.l); }
+      else if(count === 0)         { badge = '0 itens no backup';  color = 'var(--yellow)'; missing.push(r.l); }
+      else                         { badge = count + ' itens';     color = 'var(--green)'; }
+      html += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">'
+        + '<span>' + r.l + '</span>'
+        + '<span style="color:' + color + ';font-weight:600;font-size:12px">' + badge + '</span>'
+        + '</div>';
     });
 
-    // Avisos
-    const missing = cfgRows.filter(r => {
-      const arr = data[r.k];
-      return arr === undefined || (Array.isArray(arr) && arr.length === 0);
-    });
     if(missing.length){
-      html += `<div style="margin-top:12px;background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2);border-radius:var(--r3);padding:10px;font-size:12px;color:var(--yellow);line-height:1.6">
-        ⚠️ <strong>Dados em falta no backup:</strong><br>
-        ${missing.map(r=>r.l).join(', ')}<br>
-        <span style="opacity:.7">Para incluir estes dados: no dispositivo original, adicione-os e faça <strong>☁️ Guardar no GitHub</strong> novamente.</span>
-      </div>`;
+      html += '<div style="margin-top:12px;background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2);border-radius:var(--r3);padding:10px;font-size:12px;color:var(--yellow);line-height:1.6">'
+        + 'Dados em falta no backup: ' + missing.join(', ')
+        + '<br><span style="opacity:.7">No dispositivo original, faca Guardar no GitHub novamente.</span>'
+        + '</div>';
     }
 
     el.innerHTML = html;
-    modal.style.display='grid';
+    modal.style.display = 'grid';
   } catch(e){
-    toast(`❌ ${e.message}`,'err');
+    toast(e.message, 'err');
   } finally {
-    if(btn){ btn.disabled=false; btn.textContent='🔍 Ver conteúdo do backup'; }
+    if(btn){ btn.disabled=false; btn.textContent='Ver conteudo do backup'; }
   }
 }
-  const headers = ghHeaders();
-  const path    = ghFilePath();
-  const res = await fetch(
-    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
-    {headers}
-  );
-  if(res.status===404) return null;
-  if(res.status===401) throw new Error('Token inválido ou sem permissões.');
-  if(!res.ok) throw new Error(`Erro HTTP ${res.status}`);
-  const file     = await res.json();
-  const b64clean = file.content.replace(/\n/g,'');
-  const binary   = atob(b64clean);
-  const bytes    = new Uint8Array(binary.length);
-  for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
-  const content  = new TextDecoder('utf-8').decode(bytes);
-  return JSON.parse(content);
-}
+
 
 async function syncFromGitHub(){
   // MODO MERGE — junta registos do GitHub com os locais sem apagar nada
