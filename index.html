@@ -1174,7 +1174,21 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
   </div>
-  <!-- ══ /MODAL RESTAURO ══ -->
+  <!-- ══ MODAL DIAGNÓSTICO GITHUB ══ -->
+  <div id="gh-diag-modal" style="display:none;position:fixed;inset:0;z-index:8600;background:rgba(0,0,0,.85);place-items:center;overflow-y:auto" onclick="if(event.target===this)document.getElementById('gh-diag-modal').style.display='none'">
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin:20px;max-width:420px;width:100%">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800">🔍 Conteúdo do backup GitHub</div>
+        <button onclick="document.getElementById('gh-diag-modal').style.display='none'" style="background:none;border:none;color:var(--txt2);font-size:20px;cursor:pointer">×</button>
+      </div>
+      <div id="gh-diag-content" style="font-size:13px;line-height:1.8"></div>
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="syncFromGitHub();document.getElementById('gh-diag-modal').style.display='none'" style="flex:1;font-size:13px">⬇️ Importar agora</button>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('gh-diag-modal').style.display='none'" style="font-size:13px">Fechar</button>
+      </div>
+    </div>
+  </div>
+  <!-- ══ /MODAL DIAGNÓSTICO ══ -->
 
   <!-- ══ ECRÃ DE LICENÇA ══ -->
   <div id="license-screen" style="display:none;position:fixed;inset:0;z-index:9500;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch">
@@ -2134,6 +2148,10 @@ input[type=range]::-webkit-slider-thumb{
           </button>
           <button class="btn btn-secondary" onclick="syncFromGitHub()" id="gh-btn-pull">
             ⬇️ Importar do GitHub <span style="font-size:11px;color:var(--green)">(junta registos)</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="diagGitHub()" id="gh-btn-diag"
+            style="font-size:12px;color:var(--txt2)">
+            🔍 Ver conteúdo do backup
           </button>
           <button class="btn btn-ghost btn-sm" onclick="syncReplaceFromGitHub()" id="gh-btn-replace"
             style="color:var(--red);border-color:rgba(239,68,68,.3);font-size:12px">
@@ -3588,7 +3606,101 @@ async function syncToGitHub(){
   }
 }
 
-async function ghFetchRemoteData(){
+async function diagGitHub(){
+  const btn = document.getElementById('gh-btn-diag');
+  if(btn){ btn.disabled=true; btn.textContent='🔍 A verificar...'; }
+  try {
+    const data = await ghFetchRemoteData();
+    const el   = document.getElementById('gh-diag-content');
+    const modal= document.getElementById('gh-diag-modal');
+
+    if(!data){
+      el.innerHTML = '<div style="color:var(--red)">❌ Nenhum backup encontrado no GitHub para este NIF.</div>';
+      modal.style.display='grid'; return;
+    }
+
+    const syncDate = data._sync ? new Date(data._sync).toLocaleString('pt-PT') : '—';
+    const empresa  = data._empresa || data.config?.nome || '—';
+    const nif      = data._nif || '—';
+
+    const rows = [
+      {k:'temp',  l:'🌡️ Temperaturas',   icon:'temp'},
+      {k:'limp',  l:'🧹 Limpezas',        icon:'limp'},
+      {k:'oleo',  l:'🫙 Óleos',           icon:'oleo'},
+      {k:'val',   l:'📅 Validades',        icon:'val'},
+      {k:'sob',   l:'🍮 Sobremesas (reg)', icon:'sob'},
+      {k:'rec',   l:'📦 Recepções',        icon:'rec'},
+      {k:'chk',   l:'✅ Check-lists',      icon:'chk'},
+      {k:'nc',    l:'⚠️ NC',              icon:'nc'},
+    ];
+    const cfgRows = [
+      {k:'cfg_locais',        l:'📍 Locais configurados'},
+      {k:'cfg_equipamentos',  l:'🔧 Equipamentos'},
+      {k:'cfg_colaboradores', l:'👥 Colaboradores'},
+      {k:'cfg_sobremesas',    l:'🍮 Sobremesas (config)'},
+    ];
+
+    let html = `
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;margin-bottom:12px;font-size:12px">
+        <div><strong>Empresa:</strong> ${empresa}</div>
+        <div><strong>NIF:</strong> ${nif}</div>
+        <div><strong>Última sync:</strong> ${syncDate}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Registos operacionais</div>`;
+
+    rows.forEach(r => {
+      const arr   = data[r.k];
+      const count = Array.isArray(arr) ? arr.length : 0;
+      const local = DB.get(r.k).length;
+      const color = count > 0 ? 'var(--green)' : 'var(--txt3)';
+      html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
+        <span>${r.l}</span>
+        <span style="color:${color};font-weight:600">${count} no backup ${local>0?`· ${local} local`:'· local vazio'}</span>
+      </div>`;
+    });
+
+    html += `<div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">Configuração</div>`;
+
+    cfgRows.forEach(r => {
+      const arr   = data[r.k];
+      const count = Array.isArray(arr) ? arr.length : null;
+      const exists= arr !== undefined;
+      const local = DB.get(r.k).length;
+      let badge, color;
+      if(!exists || count === null){
+        badge='❌ Não está no backup'; color='var(--red)';
+      } else if(count === 0){
+        badge='⚠️ 0 itens no backup'; color='var(--yellow)';
+      } else {
+        badge=`✅ ${count} itens`; color='var(--green)';
+      }
+      html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
+        <span>${r.l}</span>
+        <span style="color:${color};font-weight:600;font-size:12px">${badge}</span>
+      </div>`;
+    });
+
+    // Avisos
+    const missing = cfgRows.filter(r => {
+      const arr = data[r.k];
+      return arr === undefined || (Array.isArray(arr) && arr.length === 0);
+    });
+    if(missing.length){
+      html += `<div style="margin-top:12px;background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2);border-radius:var(--r3);padding:10px;font-size:12px;color:var(--yellow);line-height:1.6">
+        ⚠️ <strong>Dados em falta no backup:</strong><br>
+        ${missing.map(r=>r.l).join(', ')}<br>
+        <span style="opacity:.7">Para incluir estes dados: no dispositivo original, adicione-os e faça <strong>☁️ Guardar no GitHub</strong> novamente.</span>
+      </div>`;
+    }
+
+    el.innerHTML = html;
+    modal.style.display='grid';
+  } catch(e){
+    toast(`❌ ${e.message}`,'err');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='🔍 Ver conteúdo do backup'; }
+  }
+}
   const headers = ghHeaders();
   const path    = ghFilePath();
   const res = await fetch(
