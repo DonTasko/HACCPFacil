@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HACCP Pro — Gestão de Licenças</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0c0f1a;color:#e2e8f8;font-size:15px;min-height:100vh;padding:0 0 40px}
+.hd{background:#131726;border-bottom:1px solid #2a3050;padding:16px 24px;display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.hd-logo{width:40px;height:40px;background:linear-gradient(135deg,#3b82f6,#6366f1);border-radius:12px;display:grid;place-items:center;font-size:20px}
+.hd-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+.hd-sub{font-size:12px;color:#8b92b0;margin-top:2px}
+.container{max-width:860px;margin:0 auto;padding:0 20px}
+.card{background:#131726;border:1px solid #2a3050;border-radius:14px;padding:22px;margin-bottom:20px}
+.card-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;font-weight:700;color:#8b92b0;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+.form-input,.form-select{width:100%;background:#1b2035;border:1.5px solid #2a3050;border-radius:8px;padding:12px 14px;color:#e2e8f8;font-family:'Inter',sans-serif;font-size:15px;outline:none}
+.form-input:focus,.form-select:focus{border-color:#3b82f6}
+.form-select option{background:#1b2035}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{padding:12px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:all .15s}
+.btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;width:100%}
+.btn-secondary{background:#1b2035;color:#e2e8f8;border:1.5px solid #2a3050}
+.btn-danger{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
+.btn:active{transform:scale(.97)}
+.key-result{background:#0a1a0a;border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:16px;margin-top:14px;display:none}
+.key-display{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#22c55e;letter-spacing:2px;word-break:break-all;text-align:center;margin-bottom:10px}
+.key-meta{font-size:12px;color:#8b92b0;text-align:center}
+.copy-btn{display:block;width:100%;margin-top:10px;padding:10px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;color:#22c55e;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.copy-btn:active{background:rgba(34,197,94,.2)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:#1b2035}
+th{padding:10px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#4b5270;font-weight:700}
+td{padding:10px 12px;border-bottom:1px solid #1b2035;color:#8b92b0;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.b-ok{background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.b-warn{background:rgba(234,179,8,.15);color:#eab308;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.b-fail{background:rgba(239,68,68,.15);color:#ef4444;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:#e2e8f8}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat{background:#131726;border:1px solid #2a3050;border-radius:12px;padding:16px;text-align:center}
+.stat-n{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:#3b82f6;line-height:1}
+.stat-l{font-size:11px;color:#4b5270;margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
+.verify-result{background:#1b2035;border:1px solid #2a3050;border-radius:10px;padding:14px;margin-top:12px;display:none;font-size:13px}
+.tab-row{display:flex;gap:6px;margin-bottom:20px}
+.tab{padding:8px 16px;border-radius:20px;border:1px solid #2a3050;background:#1b2035;color:#8b92b0;cursor:pointer;font-size:13px;font-weight:600}
+.tab.active{background:linear-gradient(135deg,#3b82f6,#6366f1);border-color:transparent;color:#fff}
+.section{display:none}.section.active{display:block}
+textarea.form-input{min-height:80px;resize:vertical;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="hd-logo">🛡️</div>
+  <div>
+    <div class="hd-title">HACCP Pro — Gestão de Licenças</div>
+    <div class="hd-sub">L.Apps Studio · Uso interno</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="stat-total">0</div><div class="stat-l">Licenças geradas</div></div>
+    <div class="stat"><div class="stat-n" id="stat-active" style="color:#22c55e">0</div><div class="stat-l">Activas</div></div>
+    <div class="stat"><div class="stat-n" id="stat-expired" style="color:#ef4444">0</div><div class="stat-l">Expiradas</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-row">
+    <button class="tab active" onclick="showTab('gerar')">🔑 Gerar Licença</button>
+    <button class="tab" onclick="showTab('lista')">📋 Registo</button>
+    <button class="tab" onclick="showTab('verificar')">🔍 Verificar</button>
+    <button class="tab" onclick="showTab('trial')">⏳ Trial Info</button>
+  </div>
+
+  <!-- GERAR -->
+  <div class="section active" id="tab-gerar">
+    <div class="card">
+      <div class="card-title">🔑 Gerar Nova Chave de Licença</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">NIF do Cliente *</label>
+          <input type="text" class="form-input" id="g-nif" placeholder="Ex: 516763482" inputmode="numeric" maxlength="9">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nome da Empresa *</label>
+          <input type="text" class="form-input" id="g-nome" placeholder="Ex: Don Tasko">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email do Cliente</label>
+          <input type="email" class="form-input" id="g-email" placeholder="email@empresa.pt">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plano</label>
+          <select class="form-select" id="g-plano">
+            <option value="mensal">Mensal (1 mês)</option>
+            <option value="trimestral">Trimestral (3 meses)</option>
+            <option value="semestral">Semestral (6 meses)</option>
+            <option value="anual" selected>Anual (12 meses)</option>
+            <option value="custom">Personalizado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" id="g-custom-wrap" style="display:none">
+        <label class="form-label">Validade (YYYYMM — último mês válido)</label>
+        <input type="text" class="form-input" id="g-custom" placeholder="Ex: 202612 = válido até Dezembro 2026" maxlength="6">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas (uso interno)</label>
+        <input type="text" class="form-input" id="g-notas" placeholder="Canal de venda, observações...">
+      </div>
+      <button class="btn btn-primary" onclick="gerarLicenca()">🔑 Gerar Chave</button>
+
+      <div class="key-result" id="key-result">
+        <div class="key-display" id="key-display"></div>
+        <div class="key-meta" id="key-meta"></div>
+        <button class="copy-btn" onclick="copyKey()">📋 Copiar Chave</button>
+        <button class="copy-btn" onclick="copyEmail()" style="margin-top:6px;background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#3b82f6">✉️ Copiar Email Pronto a Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTA -->
+  <div class="section" id="tab-lista">
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between">
+        <span>📋 Licenças Registadas</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="exportarLicencas()" style="padding:6px 12px;font-size:12px">📤 Exportar JSON</button>
+          <button class="btn btn-secondary btn-sm" onclick="importarLicencas()" style="padding:6px 12px;font-size:12px">📥 Importar</button>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport()">
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Empresa</th><th>NIF</th><th>Chave</th><th>Validade</th><th>Estado</th><th>Plano</th><th></th></tr></thead>
+          <tbody id="lic-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERIFICAR -->
+  <div class="section" id="tab-verificar">
+    <div class="card">
+      <div class="card-title">🔍 Verificar Chave</div>
+      <div class="form-group">
+        <label class="form-label">Chave a Verificar</label>
+        <input type="text" class="form-input mono" id="v-key" placeholder="HACCP-123456789-202512-XXXX" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">NIF (opcional — valida se corresponde)</label>
+        <input type="text" class="form-input" id="v-nif" placeholder="Deixar em branco para não verificar" inputmode="numeric">
+      </div>
+      <button class="btn btn-primary" onclick="verificarChave()">🔍 Verificar</button>
+      <div class="verify-result" id="verify-result"></div>
+    </div>
+  </div>
+
+  <!-- TRIAL INFO -->
+  <div class="section" id="tab-trial">
+    <div class="card">
+      <div class="card-title">⏳ Informações do Trial</div>
+      <div style="background:#1b2035;border:1px solid #2a3050;border-radius:10px;padding:16px;font-size:13px;color:#8b92b0;line-height:2">
+        <div>⏳ <strong style="color:#e2e8f8">Duração:</strong> 14 dias a contar da primeira abertura</div>
+        <div>🔒 <strong style="color:#e2e8f8">Após trial:</strong> App bloqueia, dados mantidos</div>
+        <div>🔑 <strong style="color:#e2e8f8">Para continuar:</strong> Activar licença</div>
+        <div>📱 <strong style="color:#e2e8f8">Play Store:</strong> O trial da Play Store pode ser usado em vez deste</div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="form-group">
+          <label class="form-label">Verificar estado de trial de um dispositivo</label>
+          <div style="font-size:12px;color:#4b5270;margin-bottom:8px">Cola o JSON de diagnóstico que o utilizador pode copiar em Configurações → GitHub → Estado</div>
+          <textarea class="form-input" id="trial-debug" placeholder='{"h2_trial_start":"...","h2_license":"...","h2_onboarded":"..."}'></textarea>
+        </div>
+        <button class="btn btn-secondary" onclick="diagTrial()" style="width:100%">🔍 Analisar</button>
+        <div class="verify-result" id="trial-result"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ══════════════════════════════════
+// SEGREDO — tem de ser igual ao da app
+// ══════════════════════════════════
+const _LS = 'HACCPPRO-LAPPS-2025';
+const TRIAL_DAYS = 14;
+
+// ── Checksum ──
+function licChecksum(nif, yyyymm){
+  const raw = nif.replace(/\D/g,'') + yyyymm + _LS;
+  let h = 5381;
+  for(let i=0;i<raw.length;i++) h=((h<<5)+h)+raw.charCodeAt(i)|0;
+  const n = Math.abs(h);
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out=''; let tmp=n;
+  for(let i=0;i<4;i++){ out+=chars[tmp%chars.length]; tmp=Math.floor(tmp/chars.length); }
+  return out;
+}
+
+function licBuildKey(nif, yyyymm){
+  const n9 = nif.replace(/\D/g,'').padStart(9,'0').slice(-9);
+  return `HACCP-${n9}-${yyyymm}-${licChecksum(n9, yyyymm)}`;
+}
+
+function licValidate(key, nif){
+  const clean = (key||'').trim().toUpperCase().replace(/\s/g,'');
+  const parts = clean.split('-');
+  if(parts.length!==4||parts[0]!=='HACCP') return {ok:false,erro:'Formato inválido'};
+  const keyNif=parts[1], yyyymm=parts[2], check=parts[3];
+  if(!/^\d{6}$/.test(yyyymm)) return {ok:false,erro:'Data inválida'};
+  if(check!==licChecksum(keyNif,yyyymm)) return {ok:false,erro:'Checksum inválido — chave falsificada ou com erro'};
+  if(nif){
+    const nc=nif.replace(/\D/g,'').padStart(9,'0').slice(-9);
+    if(nc!==keyNif) return {ok:false,erro:`NIF não corresponde (chave: ${keyNif})`};
+  }
+  const ano=parseInt(yyyymm.slice(0,4)), mes=parseInt(yyyymm.slice(4,6));
+  const expiry=new Date(ano,mes,1);
+  const now=new Date();
+  const diasRestantes=Math.ceil((expiry-now)/86400000);
+  if(diasRestantes<=0) return {ok:false,erro:`Expirada em ${mes.toString().padStart(2,'0')}/${ano}`,expired:true,nif:keyNif};
+  return {ok:true,nif:keyNif,validade:yyyymm,diasRestantes,chave:clean};
+}
+
+// ── Storage local de licenças ──
+function getLicencas(){ try{ return JSON.parse(localStorage.getItem('admin_lics')||'[]') }catch{ return [] } }
+function saveLicencas(arr){ localStorage.setItem('admin_lics', JSON.stringify(arr)) }
+
+// ── Plano para YYYYMM ──
+function planoToYYYYMM(plano, custom){
+  const now=new Date();
+  let months=12;
+  if(plano==='mensal') months=1;
+  if(plano==='trimestral') months=3;
+  if(plano==='semestral') months=6;
+  if(plano==='anual') months=12;
+  if(plano==='custom') return custom||'';
+  const d=new Date(now.getFullYear(), now.getMonth()+months, 1);
+  const y=d.getFullYear();
+  const m=(d.getMonth()).toString().padStart(2,'0'); // mês anterior ao novo = último mês válido
+  return `${y}${m}`;
+}
+
+// ── TABS ──
+function showTab(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='lista') renderLista();
+}
+
+// ── GERAR ──
+document.getElementById('g-plano').onchange=function(){
+  document.getElementById('g-custom-wrap').style.display=this.value==='custom'?'':'none';
+};
+
+function gerarLicenca(){
+  const nif  = document.getElementById('g-nif').value.trim().replace(/\D/g,'');
+  const nome = document.getElementById('g-nome').value.trim();
+  const email= document.getElementById('g-email').value.trim();
+  const plano= document.getElementById('g-plano').value;
+  const notas= document.getElementById('g-notas').value.trim();
+
+  if(!nif||nif.length<8){ alert('NIF inválido'); return; }
+  if(!nome){ alert('Introduza o nome da empresa'); return; }
+
+  const custom = document.getElementById('g-custom').value.trim();
+  const yyyymm = planoToYYYYMM(plano, custom);
+  if(!yyyymm||!/^\d{6}$/.test(yyyymm)){ alert('Data de validade inválida (formato YYYYMM)'); return; }
+
+  const nif9 = nif.padStart(9,'0').slice(-9);
+  const key  = licBuildKey(nif9, yyyymm);
+  const ano  = yyyymm.slice(0,4);
+  const mes  = yyyymm.slice(4,6);
+
+  // Guardar registo
+  const lics = getLicencas();
+  const existing = lics.findIndex(l=>l.nif===nif9);
+  const entry = {
+    chave:key, nif:nif9, nome, email, plano, yyyymm,
+    notas, geradaEm:new Date().toISOString()
+  };
+  if(existing>=0) lics[existing]=entry; else lics.unshift(entry);
+  saveLicencas(lics);
+
+  // Mostrar resultado
+  document.getElementById('key-display').textContent = key;
+  document.getElementById('key-meta').innerHTML =
+    `<strong>${nome}</strong> · NIF ${nif9}<br>Válida até ${mes}/${ano} · ${plano}`;
+  document.getElementById('key-result').style.display='block';
+
+  updateStats();
+}
+
+function copyKey(){
+  const key=document.getElementById('key-display').textContent;
+  navigator.clipboard.writeText(key).then(()=>alert('Copiado!')).catch(()=>{
+    prompt('Copie a chave:', key);
+  });
+}
+
+function copyEmail(){
+  const key  = document.getElementById('key-display').textContent;
+  const nome = document.getElementById('g-nome').value.trim();
+  const email= document.getElementById('g-email').value.trim();
+  const yyyymm=key.split('-')[3]?key.split('-')[2]:'';
+  const mes  = yyyymm.slice(4,6)||'—';
+  const ano  = yyyymm.slice(0,4)||'—';
+
+  const msg=`Assunto: HACCP Pro — Chave de Licença
+
+Olá ${nome||''},
+
+A sua licença HACCP Pro está activada. Aqui estão os dados:
+
+Chave de Licença: ${key}
+Válida até: ${mes}/${ano}
+
+Como activar:
+1. Abra o HACCP Pro
+2. No ecrã de activação, introduza a chave acima
+3. Confirme o NIF do estabelecimento
+4. Toque em "Activar"
+
+Suporte: haccpdigital.online
+
+Obrigado,
+L.Apps Studio`;
+
+  navigator.clipboard.writeText(msg).then(()=>alert('Email copiado!')).catch(()=>{
+    prompt('Copie o email:', msg);
+  });
+}
+
+// ── LISTA ──
+function renderLista(){
+  const lics=getLicencas();
+  const tbody=document.getElementById('lic-tbody');
+  if(!lics.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#4b5270">Nenhuma licença gerada ainda.</td></tr>'; return; }
+
+  tbody.innerHTML=lics.map(l=>{
+    const v=licValidate(l.chave);
+    const badge=v.ok?`<span class="b-ok">✅ ${v.diasRestantes}d</span>`:(v.expired?'<span class="b-fail">❌ Expirada</span>':'<span class="b-fail">❌ Inválida</span>');
+    const yyyymm=l.yyyymm||'—';
+    const valStr=yyyymm.length===6?`${yyyymm.slice(4,6)}/${yyyymm.slice(0,4)}`:yyyymm;
+    return `<tr>
+      <td><strong style="color:#e2e8f8">${l.nome||'—'}</strong>${l.email?`<div style="font-size:11px;color:#4b5270">${l.email}</div>`:''}</td>
+      <td class="mono">${l.nif}</td>
+      <td class="mono" style="font-size:11px;letter-spacing:.5px">${l.chave}</td>
+      <td>${valStr}</td>
+      <td>${badge}</td>
+      <td><span style="font-size:11px;color:#8b92b0">${l.plano||'—'}</span></td>
+      <td>
+        <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="revogarLicenca('${l.nif}')">Revogar</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  updateStats();
+}
+
+function revogarLicenca(nif){
+  if(!confirm(`Revogar licença do NIF ${nif}?\n\nIsso não bloqueia imediatamente o dispositivo (a validação é local), mas remove do registo.`)) return;
+  const lics=getLicencas().filter(l=>l.nif!==nif);
+  saveLicencas(lics);
+  renderLista();
+}
+
+function updateStats(){
+  const lics=getLicencas();
+  document.getElementById('stat-total').textContent=lics.length;
+  const active=lics.filter(l=>licValidate(l.chave).ok).length;
+  document.getElementById('stat-active').textContent=active;
+  document.getElementById('stat-expired').textContent=lics.length-active;
+}
+
+// ── EXPORTAR / IMPORTAR ──
+function exportarLicencas(){
+  const data={_exported:new Date().toISOString(),licencas:getLicencas()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`haccp_licencas_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+function importarLicencas(){ document.getElementById('import-file').click(); }
+function handleImport(){
+  const file=document.getElementById('import-file').files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      const arr=data.licencas||data;
+      if(!Array.isArray(arr)){alert('Formato inválido');return;}
+      const existing=getLicencas();
+      const nifs=new Set(existing.map(l=>l.nif));
+      const newOnes=arr.filter(l=>!nifs.has(l.nif));
+      saveLicencas([...newOnes,...existing]);
+      renderLista();
+      alert(`Importadas ${newOnes.length} novas licenças.`);
+    }catch(err){alert('Erro ao importar: '+err.message);}
+  };
+  r.readAsText(file);
+}
+
+// ── VERIFICAR ──
+function verificarChave(){
+  const key=document.getElementById('v-key').value;
+  const nif=document.getElementById('v-nif').value;
+  const r=licValidate(key, nif||null);
+  const el=document.getElementById('verify-result');
+  if(r.ok){
+    el.innerHTML=`<div style="color:#22c55e;font-weight:700;margin-bottom:8px">✅ Chave Válida</div>
+      <div>NIF: <span class="mono">${r.nif}</span></div>
+      <div>Validade: ${r.validade?.slice(4,6)}/${r.validade?.slice(0,4)}</div>
+      <div>Dias restantes: <strong>${r.diasRestantes}</strong></div>`;
+    el.style.borderColor='rgba(34,197,94,.3)';el.style.background='rgba(34,197,94,.05)';
+  } else {
+    el.innerHTML=`<div style="color:#ef4444;font-weight:700;margin-bottom:8px">❌ Chave Inválida</div><div>${r.erro}</div>`;
+    el.style.borderColor='rgba(239,68,68,.3)';el.style.background='rgba(239,68,68,.05)';
+  }
+  el.style.display='block';
+}
+
+// ── TRIAL DIAG ──
+function diagTrial(){
+  const raw=document.getElementById('trial-debug').value;
+  const el=document.getElementById('trial-result');
+  try{
+    const data=JSON.parse(raw);
+    let html='';
+    if(data.h2_trial_start){
+      const start=parseInt(data.h2_trial_start);
+      const daysUsed=Math.floor((Date.now()-start)/86400000);
+      const daysLeft=TRIAL_DAYS-daysUsed;
+      html+=`<div>Trial iniciado: <strong>${new Date(start).toLocaleDateString('pt-PT')}</strong></div>`;
+      html+=`<div>Dias usados: ${daysUsed} / ${TRIAL_DAYS}</div>`;
+      html+=daysLeft>0
+        ?`<div style="color:#22c55e">✅ Trial activo — ${daysLeft} dias restantes</div>`
+        :`<div style="color:#ef4444">❌ Trial expirado há ${Math.abs(daysLeft)} dias</div>`;
+    } else { html+='<div style="color:#8b92b0">Sem trial iniciado</div>'; }
+    if(data.h2_license){
+      const lic=JSON.parse(data.h2_license||'{}');
+      const v=licValidate(lic.chave||'');
+      html+=`<hr style="border-color:#2a3050;margin:8px 0">`;
+      html+=v.ok
+        ?`<div style="color:#22c55e">✅ Licença válida — ${v.diasRestantes} dias</div>`
+        :`<div style="color:#ef4444">❌ ${v.erro}</div>`;
+    }
+    el.innerHTML=html;el.style.display='block';
+  }catch(e){el.innerHTML='Erro ao analisar JSON: '+e.message;el.style.display='block';}
+}
+
+updateStats();
+</script>
+</body>
+</html>
