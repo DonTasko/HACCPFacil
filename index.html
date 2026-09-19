@@ -3607,6 +3607,25 @@ async function syncToGitHub(){
   }
 }
 
+async function ghFetchRemoteData(){
+  const headers = ghHeaders();
+  const path    = ghFilePath();
+  const res = await fetch(
+    'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + path,
+    {headers}
+  );
+  if(res.status===404) return null;
+  if(res.status===401) throw new Error('Token inválido ou sem permissões.');
+  if(!res.ok) throw new Error('Erro HTTP ' + res.status);
+  const file     = await res.json();
+  const b64clean = file.content.replace(/\n/g,'');
+  const binary   = atob(b64clean);
+  const bytes    = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+  const content  = new TextDecoder('utf-8').decode(bytes);
+  return JSON.parse(content);
+}
+
 async function diagGitHub(){
   const btn = document.getElementById('gh-btn-diag');
   if(btn){ btn.disabled=true; btn.textContent='A verificar...'; }
