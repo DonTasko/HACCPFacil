@@ -3386,15 +3386,32 @@ function ghLicense(){
   catch{ return null; }
 }
 
-// Sempre usa Worker (URL fixo)
-function ghUseWorker(){ return true; }
+// Usa Worker se tiver licença activada; senão usa token directo (legado)
+function ghUseWorker(){
+  return !!ghLicense();
+}
 
 function ghWorkerUrl(){
   return localStorage.getItem('h2_worker_url') || WORKER_URL_DEFAULT;
 }
 
 async function ghFetchRemoteData(){
-  return ghWorkerPull();
+  if(ghUseWorker()) return ghWorkerPull();
+  // Fallback legado — acesso directo com token GitHub
+  const tok = ghToken();
+  if(!tok) throw new Error('Configure o token GitHub em ⚙️ Configurações → GitHub ou active a licença.');
+  const headers = {'Authorization':'token '+tok,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};
+  const path = ghFilePath();
+  const res = await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+path,{headers});
+  if(res.status===404) return null;
+  if(res.status===401) throw new Error('Token inválido ou sem permissões.');
+  if(!res.ok) throw new Error('Erro HTTP '+res.status);
+  const file=await res.json();
+  const b64=file.content.replace(/\n/g,'');
+  const bin=atob(b64);
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return JSON.parse(new TextDecoder('utf-8').decode(bytes));
 }
 
 async function ghWorkerPull(){
@@ -3596,39 +3613,25 @@ async function syncToGitHub(){
       nc:   DB.get('nc').map(r=>({...r, fotos:[]})),
     };
 
-    // Usar Worker se configurado, senão acesso directo
+    // Worker se licença presente, senão legado com token
     if(ghUseWorker()){
       await ghWorkerPush(payload);
     } else {
-      // Modo legado — acesso directo com token
-      const headers = ghHeaders();
-      const path    = ghFilePath();
-      const jsonStr  = JSON.stringify(payload, null, 2);
-      const encoder  = new TextEncoder();
-      const bytes    = encoder.encode(jsonStr);
-      let binary = '';
-      bytes.forEach(b => binary += String.fromCharCode(b));
-      const content  = btoa(binary);
-      const message  = `sync: ${new Date().toLocaleString('pt-PT')} — ${nif}`;
-      let sha = null;
-      const checkRes = await fetch(
-        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
-        {headers}
-      );
-      if(checkRes.status === 200){ sha = (await checkRes.json()).sha; }
-      else if(checkRes.status === 401) throw new Error('Token inválido ou expirado.');
-      else if(checkRes.status === 403) throw new Error('Sem permissões. Verifique se o token tem permissão "repo".');
-      const body = { message, content, branch: GH_BRANCH };
-      if(sha) body.sha = sha;
-      const putRes = await fetch(
-        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
-        { method:'PUT', headers, body: JSON.stringify(body) }
-      );
-      if(!putRes.ok){
-        let errMsg = `Erro HTTP ${putRes.status}`;
-        try { const e=await putRes.json(); errMsg=e.message||errMsg; }catch(e){}
-        throw new Error(errMsg);
-      }
+      const tok = ghToken();
+      if(!tok) throw new Error('Sem licença activa nem token GitHub configurado. Configure em ⚙️ Configurações → GitHub.');
+      const headers = {'Authorization':'token '+tok,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};
+      const path = ghFilePath();
+      const enc=new TextEncoder(),bytes2=enc.encode(JSON.stringify(payload,null,2));
+      let bin='';bytes2.forEach(b=>bin+=String.fromCharCode(b));
+      const content=btoa(bin);
+      const message='sync: '+new Date().toLocaleString('pt-PT')+' — '+nif;
+      let sha=null;
+      const chk=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+path,{headers});
+      if(chk.status===200) sha=(await chk.json()).sha;
+      else if(chk.status===401) throw new Error('Token inválido.');
+      const body2={message,content,branch:GH_BRANCH};if(sha)body2.sha=sha;
+      const put=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+path,{method:'PUT',headers,body:JSON.stringify(body2)});
+      if(!put.ok){const e=await put.json().catch(()=>({}));throw new Error(e.message||'Erro HTTP '+put.status);}
     }
 
     const now = new Date().toISOString();
@@ -5262,7 +5265,8 @@ function ghUpdateSyncIndicator(state, msg){
 }
 
 async function ghAutoSyncOnOpen(){
-  if(!ghToken()||!DB.getObj('config').nif)return;
+  if(!DB.getObj('config').nif)return;
+  if(!ghLicense() && !ghToken())return; // sem credenciais — não tentar
   if(ghMinutesSinceLastSync()<AUTO_IMPORT_MIN_MIN)return;
   ghUpdateSyncIndicator('syncing','A verificar...');
   try{
@@ -5281,7 +5285,8 @@ async function ghAutoSyncOnOpen(){
 }
 
 async function ghAutoSyncPeriodic(){
-  if(!ghToken()||!DB.getObj('config').nif)return;
+  if(!DB.getObj('config').nif)return;
+  if(!ghLicense() && !ghToken())return;
   if(document.hidden)return;
   ghUpdateSyncIndicator('syncing','');
   try{
