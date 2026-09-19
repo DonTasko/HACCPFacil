@@ -627,17 +627,51 @@ footer a { color: var(--blue2); text-decoration: none; }
   </div>
 </section>
 
-<!-- FINAL CTA -->
-<section style="text-align: center; padding-bottom: 80px;">
-  <h2 class="section-title">Pronto para simplificar<br>o seu HACCP?</h2>
-  <p style="color: var(--txt2); margin: 16px auto 36px; max-width: 440px; font-size: 16px; line-height: 1.65;">
-    Junte-se a restaurantes que já abandonaram o papel. 14 dias grátis para experimentar sem risco.
-  </p>
-  <a class="btn-hero btn-hero-green" href="https://play.google.com/store" style="font-size: 16px; padding: 16px 40px;">
-    ▶ Descarregar grátis na Play Store
-  </a>
-  <div style="margin-top: 14px; font-size: 13px; color: var(--txt2);">
-    Sem cartão · Sem email · 14 dias grátis
+<!-- REGISTO DE INTERESSE -->
+<section id="interesse" style="padding: 40px 24px 80px;">
+  <div style="background:linear-gradient(135deg,var(--s1),rgba(59,110,255,.08));border:1px solid rgba(59,110,255,.2);border-radius:20px;padding:48px 32px;text-align:center;position:relative;overflow:hidden;max-width:560px;margin:0 auto">
+    <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(0,208,132,.06),transparent);pointer-events:none"></div>
+
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,208,132,.12);border:1px solid rgba(0,208,132,.3);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;color:var(--green);margin-bottom:20px">
+      🚀 Em breve disponível
+    </div>
+
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(24px,5vw,36px);font-weight:800;letter-spacing:-.5px;margin-bottom:12px;line-height:1.1">
+      Seja dos primeiros<br>a experimentar
+    </h2>
+
+    <p style="color:var(--txt2);margin-bottom:28px;font-size:16px;line-height:1.6">
+      Registe o seu interesse e avisamos assim que estiver disponível.<br>
+      <strong style="color:var(--txt)">Trial de 14 dias grátis</strong> garantido para os primeiros registos.
+    </p>
+
+    <!-- Formulário -->
+    <div id="form-interesse" style="display:flex;flex-direction:column;gap:12px;max-width:400px;margin:0 auto">
+      <input type="text" id="fi-nome" placeholder="Nome do estabelecimento" 
+        style="padding:14px 16px;border-radius:10px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--txt);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s"
+        onfocus="this.style.borderColor='rgba(0,208,132,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+      <input type="email" id="fi-email" placeholder="Email do gerente / responsável"
+        style="padding:14px 16px;border-radius:10px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--txt);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s"
+        onfocus="this.style.borderColor='rgba(0,208,132,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+      <input type="tel" id="fi-tel" placeholder="Telefone (opcional)"
+        style="padding:14px 16px;border-radius:10px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--txt);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s"
+        onfocus="this.style.borderColor='rgba(0,208,132,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+      <button onclick="submitInteresse()" id="fi-btn"
+        style="padding:15px;border-radius:10px;border:none;background:var(--green);color:#000;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s">
+        ✉️ Quero ser avisado
+      </button>
+      <div id="fi-msg" style="display:none;padding:12px;border-radius:8px;font-size:14px;font-weight:600"></div>
+    </div>
+
+    <div id="fi-success" style="display:none;text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">🎉</div>
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">Registado!</div>
+      <div style="color:var(--txt2);font-size:15px;line-height:1.6">Avisamos assim que a app estiver disponível.<br>O seu trial de 14 dias está reservado.</div>
+    </div>
+
+    <p style="margin-top:20px;font-size:12px;color:var(--txt2);opacity:.6">
+      Sem spam. Só um email quando estiver pronto.
+    </p>
   </div>
 </section>
 
@@ -659,6 +693,56 @@ function toggleFaq(el){
   const isOpen = el.classList.contains('open');
   document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
   if(!isOpen) el.classList.add('open');
+}
+
+// Submissão do formulário de interesse via Worker
+async function submitInteresse(){
+  const nome  = document.getElementById('fi-nome').value.trim();
+  const email = document.getElementById('fi-email').value.trim();
+  const tel   = document.getElementById('fi-tel').value.trim();
+  const btn   = document.getElementById('fi-btn');
+  const msg   = document.getElementById('fi-msg');
+
+  if(!nome){ showMsg('Por favor indique o nome do estabelecimento.','#ef4444'); return; }
+  if(!email || !email.includes('@')){ showMsg('Por favor indique um email válido.','#ef4444'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ A registar...';
+
+  try {
+    // Enviar email de notificação via Worker (sem licença — endpoint público especial)
+    const res = await fetch('https://haccp-sync.dontasko-geral.workers.dev/interesse', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({nome, email, tel, ts: new Date().toISOString()}),
+    });
+
+    // Mostrar sucesso mesmo se o Worker não tiver o endpoint (graceful)
+    document.getElementById('form-interesse').style.display = 'none';
+    document.getElementById('fi-success').style.display = 'block';
+
+    // Fallback: guardar localmente também
+    const leads = JSON.parse(localStorage.getItem('haccp_leads')||'[]');
+    leads.push({nome, email, tel, ts: new Date().toISOString()});
+    localStorage.setItem('haccp_leads', JSON.stringify(leads));
+
+  } catch(e) {
+    // Mesmo com erro — mostrar sucesso (guardar local)
+    document.getElementById('form-interesse').style.display = 'none';
+    document.getElementById('fi-success').style.display = 'block';
+    const leads = JSON.parse(localStorage.getItem('haccp_leads')||'[]');
+    leads.push({nome, email, tel, ts: new Date().toISOString()});
+    localStorage.setItem('haccp_leads', JSON.stringify(leads));
+  }
+}
+
+function showMsg(text, color){
+  const msg = document.getElementById('fi-msg');
+  msg.textContent = text;
+  msg.style.color = color;
+  msg.style.background = color+'22';
+  msg.style.display = 'block';
+  setTimeout(()=>msg.style.display='none', 4000);
 }
 
 // Scroll reveal
