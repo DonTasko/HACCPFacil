@@ -2020,15 +2020,40 @@ input[type=range]::-webkit-slider-thumb{
           </select>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Data Início</label>
-            <input type="date" class="form-input" id="pdf-de">
+        <!-- PERÍODO RÁPIDO -->
+        <div class="form-group">
+          <label class="form-label">Período</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+            <button type="button" id="pdf-period-prev" onclick="setPdfPeriod('prev')"
+              style="padding:10px 6px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r3);font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all .15s">
+              ◀ Mês Anterior
+            </button>
+            <button type="button" id="pdf-period-curr" onclick="setPdfPeriod('curr')"
+              style="padding:10px 6px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r3);font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all .15s">
+              📅 Mês Actual
+            </button>
+            <button type="button" id="pdf-period-custom" onclick="setPdfPeriod('custom')"
+              style="padding:10px 6px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r3);font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all .15s">
+              ✏️ Personalizado
+            </button>
           </div>
-          <div class="form-group">
-            <label class="form-label">Data Fim</label>
-            <input type="date" class="form-input" id="pdf-ate">
+          <!-- Inputs de data — sempre presentes, visíveis só no modo personalizado -->
+          <div id="pdf-dates-wrap" style="display:none">
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Data Início</label>
+                <input type="date" class="form-input" id="pdf-de" onchange="updatePdfPreview()">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Data Fim</label>
+                <input type="date" class="form-input" id="pdf-ate" onchange="updatePdfPreview()">
+              </div>
+            </div>
           </div>
+          <!-- Inputs ocultos para mês anterior / actual -->
+          <input type="date" id="pdf-de-hidden" style="display:none">
+          <input type="date" id="pdf-ate-hidden" style="display:none">
+          <div id="pdf-period-label" style="font-size:12px;color:var(--acc);margin-top:6px;display:none"></div>
         </div>
 
         <!-- FILTRO POR ÁREA — checkboxes multi-selecção -->
@@ -2702,7 +2727,7 @@ function navigate(page){
   if(page==='rec'){setNow('rc-dt');populateColabs('rc-colab');renderRecTbl()}
   if(page==='chk'){setToday('ck-data');populateColabs('ck-colab');renderChkForm();renderChkTbl()}
   if(page==='nc'){setNow('nc-dt');populateColabs('nc-colab');renderNcTbl()}
-  if(page==='exp') { updatePdfPreview(); updatePdfAreaFilter(); ghUpdateSyncCard(); }
+  if(page==='exp') { updatePdfPreview(); updatePdfAreaFilter(); ghUpdateSyncCard(); initPdfPeriod(); }
   if(page==='cfg') loadCfg();
 }
 
@@ -4990,7 +5015,69 @@ function closePrintOverlay(){
   } catch(e){ iframe.src = 'about:blank'; }
 }
 
-function updatePdfAreaFilter(){
+function setPdfPeriod(mode){
+  const now   = new Date();
+  let de, ate;
+
+  if(mode === 'prev'){
+    // Mês anterior
+    const first = new Date(now.getFullYear(), now.getMonth()-1, 1);
+    const last  = new Date(now.getFullYear(), now.getMonth(), 0);
+    de  = first.toISOString().slice(0,10);
+    ate = last.toISOString().slice(0,10);
+  } else if(mode === 'curr'){
+    // Mês actual
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const last  = new Date(now.getFullYear(), now.getMonth()+1, 0);
+    de  = first.toISOString().slice(0,10);
+    ate = last.toISOString().slice(0,10);
+  }
+
+  // Estilo dos botões
+  ['prev','curr','custom'].forEach(m => {
+    const btn = document.getElementById('pdf-period-'+m);
+    if(!btn) return;
+    const active = m === mode;
+    btn.style.borderColor = active ? 'var(--acc)' : 'var(--border)';
+    btn.style.background  = active ? 'rgba(59,130,246,.1)' : 'var(--s2)';
+    btn.style.color       = active ? 'var(--acc)' : 'var(--txt2)';
+  });
+
+  const wrap  = document.getElementById('pdf-dates-wrap');
+  const label = document.getElementById('pdf-period-label');
+
+  if(mode === 'custom'){
+    if(wrap) wrap.style.display = 'block';
+    if(label) label.style.display = 'none';
+    // Focar no campo de início
+    setTimeout(()=>document.getElementById('pdf-de')?.focus(), 100);
+  } else {
+    if(wrap) wrap.style.display = 'none';
+    // Guardar datas nos inputs hidden e nos reais
+    const deEl  = document.getElementById('pdf-de');
+    const ateEl = document.getElementById('pdf-ate');
+    if(deEl)  deEl.value  = de;
+    if(ateEl) ateEl.value = ate;
+    // Mostrar label descritivo
+    const mesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const d = new Date(de+'T12:00:00');
+    if(label){
+      label.style.display = 'block';
+      label.textContent   = `📅 ${mesNomes[d.getMonth()]} ${d.getFullYear()}`;
+    }
+    updatePdfPreview();
+  }
+}
+
+// Inicializar com mês actual ao abrir a página de exportação
+function initPdfPeriod(){
+  // Só inicializa se nenhum botão estiver activo
+  const anyActive = ['prev','curr','custom'].some(m=>{
+    const btn=document.getElementById('pdf-period-'+m);
+    return btn && btn.style.borderColor.includes('var(--acc)');
+  });
+  if(!anyActive) setPdfPeriod('curr');
+}
   const modulo = document.getElementById('pdf-mod')?.value || '';
   const wrap   = document.getElementById('pdf-area-wrap');
   const grid   = document.getElementById('pdf-area-grid');
@@ -5365,36 +5452,52 @@ function ghUpdateSyncIndicator(state, msg){
 }
 
 async function ghAutoSyncOnOpen(){
-  if(!DB.getObj('config').nif)return;
-  if(!ghLicense() && !ghToken())return; // sem credenciais — não tentar
-  if(ghMinutesSinceLastSync()<AUTO_IMPORT_MIN_MIN)return;
-  ghUpdateSyncIndicator('syncing','A verificar...');
-  try{
-    const data=await ghFetchRemoteData();
-    if(!data){ghUpdateSyncIndicator('ok','');return;}
-    const {added}=ghMergeData(data);
-    if(ghHasNewData()){
-      await ghAutoSave(true);
-    } else {
-      localStorage.setItem('h2_gh_last_sync',new Date().toISOString());
-      ghUpdateSyncCard();
-      ghUpdateSyncIndicator('ok','');
-      if(added>0){renderDash();toast('☁️ '+added+' registos novos importados','ok');}
+  if(!DB.getObj('config').nif) return;
+  if(!ghLicense() && !ghToken()) return;
+  if(ghMinutesSinceLastSync() < AUTO_IMPORT_MIN_MIN) return;
+
+  ghUpdateSyncIndicator('syncing', 'A verificar...');
+  try {
+    const data = await ghFetchRemoteData();
+    if(!data){ ghUpdateSyncIndicator('ok',''); return; }
+
+    const {added} = ghMergeData(data);
+
+    const now = new Date().toISOString();
+    localStorage.setItem('h2_gh_last_sync', now);
+    ghUpdateSyncCard();
+    ghUpdateSyncIndicator('ok','');
+
+    if(added > 0){
+      renderDash();
+      loadCfg();
+      toast('☁️ ' + added + ' registos novos importados','ok');
     }
-  }catch(e){ghUpdateSyncIndicator('offline','');}
+  } catch(e){
+    ghUpdateSyncIndicator('offline','');
+  }
 }
 
 async function ghAutoSyncPeriodic(){
-  if(!DB.getObj('config').nif)return;
-  if(!ghLicense() && !ghToken())return;
-  if(document.hidden)return;
+  if(!DB.getObj('config').nif) return;
+  if(!ghLicense() && !ghToken()) return;
+  if(document.hidden) return;
+
   ghUpdateSyncIndicator('syncing','');
-  try{
-    const data=await ghFetchRemoteData();
-    if(data){const {added}=ghMergeData(data);if(added>0)renderDash();}
-    if(ghHasNewData()){await ghAutoSave(false);}
-    else{localStorage.setItem('h2_gh_last_sync',new Date().toISOString());ghUpdateSyncCard();ghUpdateSyncIndicator('ok','');}
-  }catch(e){ghUpdateSyncIndicator('offline','');}
+  try {
+    // Só importa — nunca guarda automaticamente (evita sobrescrever dados de outro dispositivo)
+    const data = await ghFetchRemoteData();
+    if(data){
+      const {added} = ghMergeData(data);
+      if(added > 0){ renderDash(); loadCfg(); }
+    }
+    const now = new Date().toISOString();
+    localStorage.setItem('h2_gh_last_sync', now);
+    ghUpdateSyncCard();
+    ghUpdateSyncIndicator('ok','');
+  } catch(e){
+    ghUpdateSyncIndicator('offline','');
+  }
 }
 
 async function ghAutoSave(silent){
@@ -6142,15 +6245,7 @@ function init(){
       const el=document.getElementById(id);
       if(el) el.addEventListener('change', updatePdfPreview);
     });
-    // Set default dates for PDF (last 30 days)
-    const pdfAte=document.getElementById('pdf-ate');
-    const pdfDe=document.getElementById('pdf-de');
-    if(pdfAte&&!pdfAte.value){
-      const today=new Date();
-      pdfAte.value=today.toISOString().slice(0,10);
-      today.setDate(today.getDate()-30);
-      if(pdfDe&&!pdfDe.value) pdfDe.value=today.toISOString().slice(0,10);
-    }
+    // Default period handled by initPdfPeriod() on page navigate
   }, 200);
 
   // Schedule checker (every minute)
