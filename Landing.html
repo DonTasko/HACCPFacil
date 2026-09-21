@@ -101,6 +101,7 @@ nav {
   animation: blink 1.4s ease-in-out infinite;
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
 .hero h1 {
   font-family: 'Bricolage Grotesque', sans-serif;
@@ -547,6 +548,12 @@ footer a { color: var(--blue2); text-decoration: none; }
       <div class="feat-title">Personalizável</div>
       <div class="feat-desc">6 temas visuais, tamanho de texto ajustável, equipamentos e locais configuráveis. A app adapta-se ao seu restaurante.</div>
     </div>
+    <div class="feat" style="border-color:rgba(59,130,246,.35);background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(79,70,229,.05));position:relative;overflow:hidden">
+      <div style="position:absolute;top:10px;right:12px;background:#22c55e;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;letter-spacing:.3px">NOVO</div>
+      <div class="feat-icon">🤖</div>
+      <div class="feat-title">Assistente IA 24h</div>
+      <div class="feat-desc">Suporte por inteligência artificial disponível a qualquer hora. Responde a dúvidas sobre a app, HACCP, legislação e temperaturas — em segundos, em português.</div>
+    </div>
   </div>
 </section>
 
@@ -614,6 +621,30 @@ footer a { color: var(--blue2); text-decoration: none; }
         <div class="step-title">Gere o relatório para inspecção</div>
         <div class="step-desc">Quando a ASAE aparecer, gere um PDF profissional em segundos. Filtrado por módulo, período e área.</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHAT IA DESTAQUE -->
+<section style="padding:20px 24px 60px">
+  <div style="background:linear-gradient(135deg,#1e3a8a,#312e81);border-radius:20px;padding:36px 32px;display:flex;align-items:center;gap:28px;flex-wrap:wrap;max-width:1080px;margin:0 auto;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,255,255,.06),transparent);pointer-events:none"></div>
+    <div style="font-size:56px;flex-shrink:0">🤖</div>
+    <div style="flex:1;min-width:240px">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.4);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:#86efac;margin-bottom:10px">
+        <span style="width:7px;height:7px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>
+        Online 24 horas por dia
+      </div>
+      <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(20px,4vw,28px);font-weight:800;color:#fff;margin-bottom:8px;line-height:1.2">Suporte por IA disponível sempre</h3>
+      <p style="color:rgba(255,255,255,.7);font-size:15px;line-height:1.65;margin:0">Tem dúvidas sobre a aplicação, sobre o HACCP ou sobre a legislação? O nosso assistente de inteligência artificial responde em segundos — a qualquer hora, em português, sem esperas.</p>
+    </div>
+    <div style="flex-shrink:0;text-align:center">
+      <div style="background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:16px 24px;margin-bottom:10px">
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:4px">Toque no botão</div>
+        <div style="font-size:28px">🛡️</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">no canto inferior direito</div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4)">Disponível nesta página e na app</div>
     </div>
   </div>
 </section>
