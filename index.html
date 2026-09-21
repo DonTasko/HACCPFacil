@@ -1543,9 +1543,22 @@ input[type=range]::-webkit-slider-thumb{
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Produto utilizado</label>
-            <input type="text" class="form-input" id="l-prod" placeholder="Ex: Desinfectante X...">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+              <span>Produto(s) utilizado(s)</span>
+              <button type="button" onclick="toggleProdutosManual()" id="l-prod-toggle"
+                style="font-size:11px;padding:3px 10px;background:var(--s3);border:1px solid var(--border);border-radius:6px;color:var(--txt2);cursor:pointer">
+                ✏️ Escrever manualmente
+              </button>
+            </label>
+            <!-- Grid de checkboxes dos produtos configurados -->
+            <div id="l-prod-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"></div>
+            <!-- Campo manual (fallback) -->
+            <input type="text" class="form-input" id="l-prod-manual" placeholder="Digite o produto..."
+              style="display:none;margin-top:6px">
+            <div id="l-prod-sel" style="margin-top:6px;display:none">
+              <span style="font-size:12px;color:var(--acc)" id="l-prod-sel-text"></span>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label">Conformidade</label>
@@ -2244,6 +2257,7 @@ input[type=range]::-webkit-slider-thumb{
         <button class="cfg-tab" onclick="switchCfgTab('equipamentos')">🔧<br><span>Equipamentos</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('colaboradores')">👥<br><span>Colaboradores</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('sobremesas')">🍮<br><span>Sobremesas</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('produtos')">🧴<br><span>Produtos</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('email')">📧<br><span>Email</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('visual')">🎨<br><span>Visual</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('github')" style="grid-column:2/4">🐙<br><span>GitHub</span></button>
@@ -2408,6 +2422,47 @@ input[type=range]::-webkit-slider-thumb{
             <div id="sobremesas-list" class="tag-list"></div>
             <hr class="divider">
             <button class="btn btn-primary" onclick="saveCfg('sobremesas')">💾 Guardar Sobremesas</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUTOS DE LIMPEZA -->
+      <div id="cfg-produtos" style="display:none">
+        <div class="cfg-section">
+          <div class="cfg-section-hd">🧴 Produtos de Limpeza e Desinfecção</div>
+          <div class="cfg-section-body">
+            <div class="alert alert-info" style="margin-bottom:14px">
+              <span>💡</span>
+              <div>Os produtos aqui configurados aparecem como opções rápidas no formulário de limpeza. Pode seleccionar vários por registo.</div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nome do Produto *</label>
+                <input type="text" class="form-input" id="np-nome" placeholder="Ex: Desinfectante Multi-Usos">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Categoria</label>
+                <select class="form-select" id="np-cat">
+                  <option value="detergente">Detergente</option>
+                  <option value="desinfectante">Desinfectante</option>
+                  <option value="desincrustante">Desincrustante</option>
+                  <option value="decapante">Decapante</option>
+                  <option value="multiusos">Multi-usos</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Diluição / Notas (opcional)</label>
+              <input type="text" class="form-input" id="np-notas" placeholder="Ex: Diluição 1:10, tempo de contacto 5min">
+            </div>
+            <button class="btn btn-secondary" onclick="addProduto()">➕ Adicionar Produto</button>
+          </div>
+        </div>
+        <div class="cfg-section">
+          <div class="cfg-section-hd">Lista de Produtos</div>
+          <div class="cfg-section-body" id="cfg-produtos-list">
+            <div style="color:var(--txt3);font-size:13px">Nenhum produto configurado.</div>
           </div>
         </div>
       </div>
@@ -2720,7 +2775,7 @@ function navigate(page){
   // Init
   if(page==='dash') renderDash();
   if(page==='temp'){setNow('t-dt');populateColabs('t-colab');populateEquips();setToday('t-flt');renderTempTbl()}
-  if(page==='limp'){setNow('l-dt');populateColabs('l-colab');populateColabs('l-verif');populateLocais();setToday('l-flt');renderLimpTbl()}
+  if(page==='limp'){setNow('l-dt');populateColabs('l-colab');populateColabs('l-verif');populateLocais();populateProdutos();setToday('l-flt');renderLimpTbl()}
   if(page==='oleo'){setToday('o-data');populateColabs('o-colab');renderOleoTbl()}
   if(page==='val'){setToday('v-data');populateColabs('v-colab');renderValTbl()}
   if(page==='sob'){setNow('sb-dt');populateSobs();populateColabs('sb-colab');renderSobTbl()}
@@ -2914,7 +2969,7 @@ function saveLimp(){
   if(!locais.length){toast('Seleccione pelo menos um local','warn');return}
 
   const tipo        = document.getElementById('l-tipo').value;
-  const produto     = document.getElementById('l-prod').value;
+  const produto     = getSelectedProdutos();
   const conformidade= document.getElementById('l-conf').value;
   const colaborador = document.getElementById('l-colab').value;
   const verificador = document.getElementById('l-verif').value;
@@ -2932,7 +2987,7 @@ function saveLimp(){
   toast(msg);
 
   // Reset form
-  document.getElementById('l-prod').value = '';
+  document.getElementById('l-prod-manual').value = '';
   document.getElementById('l-obs').value  = '';
   setNow('l-dt');
 
@@ -2941,6 +2996,9 @@ function saveLimp(){
     const lbl = document.getElementById('ll-'+l.id);
     if(lbl && lbl.dataset.sel === '1') toggleLocalChk(l.id);
   });
+
+  // Deseleccionar todos os produtos
+  resetSelectedProdutos();
 
   renderLimpTbl();
   updateDashStats();
@@ -3280,7 +3338,7 @@ function updateDashStats(){
 // ═══════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════
-const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','email','visual','github'];
+const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','produtos','email','visual','github'];
 
 function switchCfgTab(tab){
   CFG_TABS.forEach(t=>{const e=document.getElementById('cfg-'+t);if(e)e.style.display=t===tab?'':'none'});
@@ -3289,6 +3347,7 @@ function switchCfgTab(tab){
   if(tab==='equipamentos')renderCfgList('equipamentos');
   if(tab==='colaboradores')renderCfgList('colaboradores');
   if(tab==='sobremesas')renderCfgList('sobremesas');
+  if(tab==='produtos')renderProdutosList();
   if(tab==='visual'){ renderThemeGrid(); updateFontSizeBtns(localStorage.getItem('h2_fontsize')||'normal'); }
 }
 
@@ -3628,6 +3687,7 @@ async function syncToGitHub(){
       cfg_equipamentos: DB.get('cfg_equipamentos'),
       cfg_colaboradores:DB.get('cfg_colaboradores'),
       cfg_sobremesas:   DB.get('cfg_sobremesas'),
+      cfg_produtos:     DB.get('cfg_produtos'),
       temp: DB.get('temp'),
       limp: DB.get('limp'),
       oleo: DB.get('oleo'),
@@ -5425,6 +5485,156 @@ function obNext(){
 }
 
 // ═══════════════════════════════════════════
+// PRODUTOS DE LIMPEZA
+// ═══════════════════════════════════════════
+
+function addProduto(){
+  const nome  = document.getElementById('np-nome').value.trim();
+  const cat   = document.getElementById('np-cat').value;
+  const notas = document.getElementById('np-notas').value.trim();
+  if(!nome){ toast('Introduza o nome do produto','warn'); return; }
+
+  const produtos = DB.get('cfg_produtos');
+  if(produtos.find(p=>p.nome.toLowerCase()===nome.toLowerCase())){
+    toast('Produto já existe','warn'); return;
+  }
+  DB.push('cfg_produtos', {nome, cat, notas});
+  document.getElementById('np-nome').value  = '';
+  document.getElementById('np-notas').value = '';
+  renderProdutosList();
+  populateProdutos();
+  toast('✅ Produto adicionado!');
+}
+
+function renderProdutosList(){
+  const list     = document.getElementById('cfg-produtos-list');
+  if(!list) return;
+  const produtos = DB.get('cfg_produtos');
+  if(!produtos.length){
+    list.innerHTML = '<div style="color:var(--txt3);font-size:13px">Nenhum produto configurado.</div>';
+    return;
+  }
+  const catIcon = {detergente:'🧼',desinfectante:'🦠',desincrustante:'⚗️',decapante:'🔬',multiusos:'🧴',outro:'🧹'};
+  list.innerHTML = produtos.map(p=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r3);margin-bottom:8px">
+      <span style="font-size:20px">${catIcon[p.cat]||'🧴'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600">${p.nome}</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:2px">${p.cat}${p.notas?' · '+p.notas:''}</div>
+      </div>
+      <button onclick="removeProduto('${p.id}')" style="background:none;border:none;color:var(--txt3);cursor:pointer;font-size:16px;padding:4px">🗑️</button>
+    </div>`).join('');
+}
+
+function removeProduto(id){
+  DB.set('cfg_produtos', DB.get('cfg_produtos').filter(p=>p.id!==id));
+  renderProdutosList();
+  populateProdutos();
+  toast('Produto removido');
+}
+
+function populateProdutos(){
+  const grid = document.getElementById('l-prod-grid');
+  if(!grid) return;
+  const produtos = DB.get('cfg_produtos');
+
+  if(!produtos.length){
+    // Sem produtos configurados — mostrar só campo manual
+    grid.style.display = 'none';
+    const manual = document.getElementById('l-prod-manual');
+    if(manual) manual.style.display = 'block';
+    const btn = document.getElementById('l-prod-toggle');
+    if(btn) btn.style.display = 'none';
+    return;
+  }
+
+  const catIcon = {detergente:'🧼',desinfectante:'🦠',desincrustante:'⚗️',decapante:'🔬',multiusos:'🧴',outro:'🧹'};
+  grid.style.display = 'grid';
+  grid.innerHTML = produtos.map(p=>`
+    <label style="display:flex;align-items:center;gap:9px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r3);padding:10px 12px;cursor:pointer;transition:all .15s" id="pl-${p.id}" onclick="toggleProdutoChk('${p.id}')">
+      <div style="width:20px;height:20px;flex-shrink:0;border:2px solid var(--border2);border-radius:5px;display:grid;place-items:center;transition:all .2s;font-size:12px" id="plbox-${p.id}"></div>
+      <div style="min-width:0">
+        <div style="font-size:13px;font-weight:600">${catIcon[p.cat]||'🧴'} ${p.nome}</div>
+        ${p.notas?`<div style="font-size:10px;color:var(--txt3)">${p.notas}</div>`:''}
+      </div>
+    </label>`).join('');
+  updateProdutosSelText();
+}
+
+function toggleProdutoChk(id){
+  const lbl = document.getElementById('pl-'+id);
+  const box = document.getElementById('plbox-'+id);
+  if(!lbl) return;
+  const active = lbl.dataset.sel === '1';
+  if(active){
+    lbl.dataset.sel = '0';
+    lbl.style.borderColor = 'var(--border)';
+    lbl.style.background  = 'var(--s2)';
+    if(box){ box.textContent=''; box.style.background=''; box.style.borderColor='var(--border2)'; }
+  } else {
+    lbl.dataset.sel = '1';
+    lbl.style.borderColor = 'var(--acc)';
+    lbl.style.background  = 'rgba(59,130,246,.08)';
+    if(box){ box.textContent='✓'; box.style.color='#fff'; box.style.fontWeight='800'; box.style.background='var(--acc)'; box.style.borderColor='var(--acc)'; }
+  }
+  updateProdutosSelText();
+}
+
+function getSelectedProdutos(){
+  // Verifica se está em modo manual
+  const manual = document.getElementById('l-prod-manual');
+  if(manual && manual.style.display !== 'none'){
+    return manual.value.trim();
+  }
+  // Modo checkboxes
+  const produtos = DB.get('cfg_produtos');
+  const selected = produtos
+    .filter(p=>{ const el=document.getElementById('pl-'+p.id); return el&&el.dataset.sel==='1'; })
+    .map(p=>p.nome);
+  return selected.join(', ');
+}
+
+function resetSelectedProdutos(){
+  DB.get('cfg_produtos').forEach(p=>{
+    const lbl = document.getElementById('pl-'+p.id);
+    if(lbl && lbl.dataset.sel==='1') toggleProdutoChk(p.id);
+  });
+  const manual = document.getElementById('l-prod-manual');
+  if(manual) manual.value = '';
+  updateProdutosSelText();
+}
+
+function updateProdutosSelText(){
+  const produtos = DB.get('cfg_produtos');
+  const selected = produtos.filter(p=>{ const el=document.getElementById('pl-'+p.id); return el&&el.dataset.sel==='1'; });
+  const selDiv   = document.getElementById('l-prod-sel');
+  const selSpan  = document.getElementById('l-prod-sel-text');
+  if(selDiv){
+    selDiv.style.display = selected.length ? 'block' : 'none';
+    if(selSpan) selSpan.textContent = selected.length ? `✅ ${selected.map(p=>p.nome).join(', ')}` : '';
+  }
+}
+
+function toggleProdutosManual(){
+  const grid   = document.getElementById('l-prod-grid');
+  const manual = document.getElementById('l-prod-manual');
+  const btn    = document.getElementById('l-prod-toggle');
+  const isManual = manual && manual.style.display !== 'none';
+  if(isManual){
+    // Voltar para checkboxes
+    if(grid)   grid.style.display   = 'grid';
+    if(manual) manual.style.display = 'none';
+    if(btn)    btn.textContent      = '✏️ Escrever manualmente';
+  } else {
+    // Modo manual
+    if(grid)   grid.style.display   = 'none';
+    if(manual) manual.style.display = 'block';
+    if(btn)    btn.textContent      = '☑️ Usar lista';
+    if(manual) manual.focus();
+  }
+}
+
+// ═══════════════════════════════════════════
 // AUTO-SYNC
 // ═══════════════════════════════════════════
 
@@ -5595,7 +5805,7 @@ function ghMergeData(data){
   }
 
   // ── Listas de configuração (locais, equipamentos, colaboradores, sobremesas) ──
-  ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas'].forEach(k => {
+  ['cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas','cfg_produtos'].forEach(k => {
     if(!data[k] || !Array.isArray(data[k]) || !data[k].length) return;
     const local = DB.get(k);
 
