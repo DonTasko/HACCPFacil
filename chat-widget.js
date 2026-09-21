@@ -27,7 +27,7 @@
     #hpw-btn:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(37,99,235,.5)}
     #hpw-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:#ef4444;border-radius:50%;font-size:11px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid #fff;opacity:0;transition:opacity .3s}
     #hpw-badge.visible{opacity:1}
-    #hpw-box{position:fixed;bottom:86px;right:20px;width:340px;max-width:calc(100vw - 32px);height:480px;max-height:calc(100vh - 120px);background:#131929;border:1px solid rgba(255,255,255,.1);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:9998;display:flex;flex-direction:column;transform:scale(.92) translateY(16px);opacity:0;pointer-events:none;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s;overflow:hidden;touch-action:none}
+    #hpw-box{position:fixed;bottom:86px;right:20px;width:340px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 100px);background:#131929;border:1px solid rgba(255,255,255,.1);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:9998;display:flex;flex-direction:column;transform:scale(.92) translateY(16px);opacity:0;pointer-events:none;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s;overflow:hidden}
     #hpw-box.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
     #hpw-head{padding:14px 16px;background:linear-gradient(135deg,#1e3a8a,#312e81);display:flex;align-items:center;gap:10px;flex-shrink:0}
     #hpw-head-icon{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
@@ -37,7 +37,7 @@
     #hpw-head-status::before{content:'';width:7px;height:7px;background:#22c55e;border-radius:50%;display:inline-block}
     #hpw-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:4px;line-height:1;flex-shrink:0}
     #hpw-close:hover{color:#fff}
-    #hpw-msgs{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+    #hpw-msgs{flex:1;overflow-y:scroll !important;overflow-x:hidden;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;min-height:0}
     #hpw-msgs::-webkit-scrollbar{width:4px}
     #hpw-msgs::-webkit-scrollbar-track{background:transparent}
     #hpw-msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
