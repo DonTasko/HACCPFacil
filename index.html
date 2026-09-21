@@ -1008,6 +1008,7 @@ input[type=range]::-webkit-slider-thumb{
   #print-ui              { display:none!important }
   #print-tip             { display:none!important }
   #pdf-content-wrap      { display:block!important; overflow:visible!important; height:auto!important; background:#fff!important; }
+  #pdf-content-wrap > *  { display:block!important; width:100%!important; }
   @page{ size:A4 portrait; margin:0 }
 }
 </style>
@@ -5046,42 +5047,64 @@ function showPdfPreviewInApp(pdfHtml){
   const wrap    = document.getElementById('pdf-content-wrap');
   if(!overlay || !wrap) return;
 
-  // Extrair só o conteúdo do <body> do pdfHtml e injectar + CSS inline
-  // Isto evita completamente o iframe e funciona no Android WebView
-  const bodyMatch = pdfHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-  const styleMatch= pdfHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+  // Usar Shadow DOM para isolamento total de CSS — o estilo do PDF não
+  // interfere com a app e o CSS da app não afecta o PDF
+  wrap.innerHTML = '';
 
-  let styles = '';
-  if(styleMatch) styles = styleMatch.join('\n');
+  // Criar container com Shadow DOM
+  const host = document.createElement('div');
+  host.style.cssText = 'width:100%;min-height:100%;background:#fff;display:block';
+  wrap.appendChild(host);
 
-  const bodyContent = bodyMatch ? bodyMatch[1] : pdfHtml;
-
-  wrap.innerHTML = `
-    <style>
-      #pdf-content-wrap * { all: revert; }
-      #pdf-content-wrap { font-family: 'Helvetica Neue', Arial, sans-serif; background:#fff; }
-      ${styles.replace(/<\/?style[^>]*>/gi,'')}
-    </style>
-    ${bodyContent}`;
+  let shadow;
+  try {
+    shadow = host.attachShadow({mode:'open'});
+    shadow.innerHTML = pdfHtml;
+  } catch(e) {
+    // Fallback se Shadow DOM não suportado (Android antigo)
+    // Usar iframe com srcdoc
+    wrap.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'width:100%;height:100vh;border:none;background:#fff;display:block';
+    iframe.srcdoc = pdfHtml;
+    wrap.appendChild(iframe);
+  }
 
   overlay.style.display = 'flex';
 }
 
 function doPrint(){
-  // Esconder a toolbar de impressão antes de imprimir
   const ui   = document.getElementById('print-ui');
   const tip  = document.getElementById('print-tip');
-  if(ui)  ui.style.display  = 'none';
-  if(tip) tip.style.display = 'none';
+  const wrap = document.getElementById('pdf-content-wrap');
 
+  // Verificar se usou iframe fallback
+  const iframe = wrap?.querySelector('iframe');
+  if(iframe){
+    // Imprimir via iframe
+    if(ui)  ui.style.display = 'none';
+    if(tip) tip.style.display= 'none';
+    setTimeout(()=>{
+      try{ iframe.contentWindow.print(); }
+      catch(e){ window.print(); }
+      setTimeout(()=>{
+        if(ui)  ui.style.display = 'flex';
+        if(tip) tip.style.display= 'block';
+      },500);
+    },100);
+    return;
+  }
+
+  // Shadow DOM — imprimir via window.print() com @media print
+  if(ui)  ui.style.display = 'none';
+  if(tip) tip.style.display= 'none';
   setTimeout(()=>{
     window.print();
-    // Restaurar toolbar após impressão
     setTimeout(()=>{
-      if(ui)  ui.style.display  = 'flex';
-      if(tip) tip.style.display = 'block';
-    }, 500);
-  }, 100);
+      if(ui)  ui.style.display = 'flex';
+      if(tip) tip.style.display= 'block';
+    },500);
+  },100);
 }
 
 function closePrintOverlay(){
