@@ -5078,6 +5078,8 @@ function initPdfPeriod(){
   });
   if(!anyActive) setPdfPeriod('curr');
 }
+
+function updatePdfAreaFilter(){
   const modulo = document.getElementById('pdf-mod')?.value || '';
   const wrap   = document.getElementById('pdf-area-wrap');
   const grid   = document.getElementById('pdf-area-grid');
