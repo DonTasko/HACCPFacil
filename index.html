@@ -1002,24 +1002,13 @@ input[type=range]::-webkit-slider-thumb{
 #rpt .chk-box.nc{border-color:#dc2626;background:#fee2e2;color:#dc2626}
 
 @media print{
-  /* Quando window.print() é chamado no iframe, o browser imprime só o iframe */
-  /* Este CSS só actua como fallback se window.print() for chamado no parent */
-  body > * { display:none!important }
-  #print-overlay{
-    display:flex!important;
-    position:fixed!important;
-    inset:0!important;
-    background:#fff!important;
-    z-index:99999!important;
-  }
-  #print-ui{ display:none!important }
-  #pdf-iframe{
-    display:block!important;
-    width:100%!important;
-    height:100vh!important;
-    border:none!important;
-  }
-  @page{ size:A4 portrait; margin:10mm 12mm }
+  /* Esconde toda a app e mostra só o conteúdo PDF */
+  body > *               { display:none!important }
+  #print-overlay         { display:block!important; position:fixed!important; inset:0!important; background:#fff!important; z-index:99999!important; overflow:visible!important; }
+  #print-ui              { display:none!important }
+  #print-tip             { display:none!important }
+  #pdf-content-wrap      { display:block!important; overflow:visible!important; height:auto!important; background:#fff!important; }
+  @page{ size:A4 portrait; margin:0 }
 }
 </style>
 </head>
@@ -1295,6 +1284,11 @@ input[type=range]::-webkit-slider-thumb{
       <div>
         <div class="topbar-name" id="tb-name">HACCP Pro</div>
         <div class="topbar-sub" id="tb-sub">Segurança Alimentar</div>
+      </div>
+      <!-- Logo do parceiro — visível só se configurado -->
+      <div id="partner-logo-wrap" style="display:none;margin-left:10px;padding-left:10px;border-left:1px solid var(--border2);display:flex;align-items:center;gap:6px">
+        <img id="partner-logo-img" src="" alt="" style="height:24px;width:auto;object-fit:contain;border-radius:4px">
+        <span id="partner-logo-nome" style="font-size:10px;color:var(--txt3);max-width:70px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical"></span>
       </div>
     </div>
     <div class="topbar-right">
@@ -2275,7 +2269,14 @@ input[type=range]::-webkit-slider-thumb{
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">NIF</label>
-                <input type="text" class="form-input" id="c-nif" placeholder="Número de identificação fiscal">
+                <div style="display:flex;gap:8px">
+                  <input type="text" class="form-input" id="c-nif" placeholder="Número de identificação fiscal" style="flex:1" inputmode="numeric" maxlength="9">
+                  <button type="button" id="nif-lookup-btn" onclick="lookupNifEmpresa()" title="Preencher dados pelo NIF"
+                    style="padding:0 14px;background:var(--acc);color:#fff;border:none;border-radius:var(--r3);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">
+                    🔍 Pesquisar
+                  </button>
+                </div>
+                <div style="font-size:11px;color:var(--txt3);margin-top:4px">Introduza o NIF e toque em Pesquisar para preencher os dados automaticamente</div>
               </div>
               <div class="form-group">
                 <label class="form-label">Tipo de Negócio</label>
@@ -2681,10 +2682,11 @@ input[type=range]::-webkit-slider-thumb{
     <button onclick="doPrint()" style="flex:1;padding:13px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">🖨️ Imprimir / Guardar PDF</button>
     <button onclick="closePrintOverlay()" style="flex:1;padding:13px;background:#1b2035;color:#e2e8f8;border:1px solid #2a3050;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">✕ Fechar</button>
   </div>
-  <div style="padding:8px 16px;background:#0a2a0a;border-bottom:1px solid #166534;font-size:12px;color:#86efac;flex-shrink:0">
-    💡 <strong>Android:</strong> Imprimir → "Guardar como PDF" &nbsp;|&nbsp; <strong>PC:</strong> Ctrl+P → Guardar como PDF → activar "Gráficos de fundo"
+  <div id="print-tip" style="padding:8px 16px;background:#0a2a0a;border-bottom:1px solid #166534;font-size:12px;color:#86efac;flex-shrink:0">
+    💡 Toque em <strong>Imprimir</strong> e escolha "Guardar como PDF" ou envie para impressora
   </div>
-  <iframe id="pdf-iframe" style="flex:1;width:100%;border:none;background:#fff"></iframe>
+  <!-- Conteúdo do relatório injectado aqui em vez de iframe -->
+  <div id="pdf-content-wrap" style="flex:1;overflow-y:auto;background:#fff;-webkit-overflow-scrolling:touch"></div>
 </div>
 
 <!-- ── MORE DRAWER ── -->
@@ -5041,38 +5043,52 @@ function generatePDF(){
 
 function showPdfPreviewInApp(pdfHtml){
   const overlay = document.getElementById('print-overlay');
-  const iframe  = document.getElementById('pdf-iframe');
+  const wrap    = document.getElementById('pdf-content-wrap');
+  if(!overlay || !wrap) return;
+
+  // Extrair só o conteúdo do <body> do pdfHtml e injectar + CSS inline
+  // Isto evita completamente o iframe e funciona no Android WebView
+  const bodyMatch = pdfHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  const styleMatch= pdfHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+
+  let styles = '';
+  if(styleMatch) styles = styleMatch.join('\n');
+
+  const bodyContent = bodyMatch ? bodyMatch[1] : pdfHtml;
+
+  wrap.innerHTML = `
+    <style>
+      #pdf-content-wrap * { all: revert; }
+      #pdf-content-wrap { font-family: 'Helvetica Neue', Arial, sans-serif; background:#fff; }
+      ${styles.replace(/<\/?style[^>]*>/gi,'')}
+    </style>
+    ${bodyContent}`;
 
   overlay.style.display = 'flex';
-
-  // Escrever o HTML completo no iframe — CSS totalmente isolado da app
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
-  doc.open();
-  doc.write(pdfHtml);
-  doc.close();
 }
 
 function doPrint(){
-  const iframe = document.getElementById('pdf-iframe');
-  try {
-    // Tentar imprimir via iframe (melhor resultado — CSS isolado)
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
-  } catch(e){
-    // Fallback: window.print() da app (pode ter fundo escuro)
+  // Esconder a toolbar de impressão antes de imprimir
+  const ui   = document.getElementById('print-ui');
+  const tip  = document.getElementById('print-tip');
+  if(ui)  ui.style.display  = 'none';
+  if(tip) tip.style.display = 'none';
+
+  setTimeout(()=>{
     window.print();
-  }
+    // Restaurar toolbar após impressão
+    setTimeout(()=>{
+      if(ui)  ui.style.display  = 'flex';
+      if(tip) tip.style.display = 'block';
+    }, 500);
+  }, 100);
 }
 
 function closePrintOverlay(){
   const overlay = document.getElementById('print-overlay');
-  const iframe  = document.getElementById('pdf-iframe');
-  overlay.style.display = 'none';
-  // Limpar iframe
-  try {
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    doc.open(); doc.write(''); doc.close();
-  } catch(e){ iframe.src = 'about:blank'; }
+  const wrap    = document.getElementById('pdf-content-wrap');
+  if(overlay) overlay.style.display = 'none';
+  if(wrap)    wrap.innerHTML = '';
 }
 
 function setPdfPeriod(mode){
@@ -5932,6 +5948,95 @@ function ghRestoreDecline(){
 }
 
 // ═══════════════════════════════════════════
+// ── Logo do Parceiro ──
+function loadPartnerLogo(){
+  try {
+    const lic = JSON.parse(localStorage.getItem('h2_license')||'null');
+    if(!lic || !lic.partner_logo) return;
+    const wrap = document.getElementById('partner-logo-wrap');
+    const img  = document.getElementById('partner-logo-img');
+    const nome = document.getElementById('partner-logo-nome');
+    if(!wrap || !img) return;
+    img.src = lic.partner_logo;
+    img.onerror = ()=>{ wrap.style.display='none'; };
+    if(nome && lic.partner_nome) nome.textContent = lic.partner_nome;
+    wrap.style.display = 'flex';
+  } catch(e){}
+}
+
+// ── Lookup de NIF (via Worker → nif.pt) ──
+async function lookupNif(){
+  const nifEl = document.getElementById('cfg-nif');
+  const nif   = (nifEl?.value||'').replace(/\D/g,'');
+  if(nif.length < 9){ toast('Introduza o NIF completo (9 dígitos)','warn'); return; }
+
+  const btn = document.getElementById('nif-lookup-btn');
+  if(btn){ btn.disabled=true; btn.textContent='🔍 A procurar...'; }
+
+  try {
+    const res  = await fetch(ghWorkerUrl()+'/nif/lookup', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({nif}),
+    });
+    const data = await res.json();
+
+    if(!res.ok || !data.ok){
+      toast(data.erro||'NIF não encontrado','warn');
+      return;
+    }
+
+    const d = data.empresa;
+    if(d.nome && document.getElementById('cfg-nome'))
+      document.getElementById('cfg-nome').value = d.nome;
+    if(d.morada && document.getElementById('cfg-morada'))
+      document.getElementById('cfg-morada').value = d.morada;
+    if(d.cp && document.getElementById('cfg-cp'))
+      document.getElementById('cfg-cp').value = d.cp;
+    if(d.localidade && document.getElementById('cfg-localidade'))
+      document.getElementById('cfg-localidade').value = d.localidade;
+
+    toast('✅ Dados preenchidos automaticamente!','ok');
+  } catch(e){
+    toast('Erro ao pesquisar NIF — verifique a ligação','err');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='🔍 Pesquisar NIF'; }
+  }
+}
+
+// Versão para a tab empresa (usa IDs c-nome, c-morada, etc)
+async function lookupNifEmpresa(){
+  const nifEl = document.getElementById('c-nif');
+  const nif   = (nifEl?.value||'').replace(/\D/g,'');
+  if(nif.length < 9){ toast('Introduza o NIF completo (9 dígitos)','warn'); return; }
+
+  const btn = document.getElementById('nif-lookup-btn');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ A procurar...'; }
+
+  try {
+    const res  = await fetch(ghWorkerUrl()+'/nif/lookup', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nif}),
+    });
+    const data = await res.json();
+
+    if(!res.ok||!data.ok){
+      toast(data.erro||'NIF não encontrado na base de dados','warn');
+      return;
+    }
+
+    const d = data.empresa;
+    if(d.nome)      { const el=document.getElementById('c-nome');   if(el && !el.value) el.value=d.nome; else if(el) el.value=d.nome; }
+    if(d.morada)    { const el=document.getElementById('c-morada'); if(el) el.value=d.morada; }
+    toast('✅ '+d.nome+' — dados preenchidos!','ok');
+  } catch(e){
+    toast('Sem ligação ao servidor — tente mais tarde','err');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='🔍 Pesquisar'; }
+  }
+}
+
 // SISTEMA DE LICENÇAS
 // ═══════════════════════════════════════════
 
@@ -6403,6 +6508,8 @@ function loadThemeSettings(){
 function init(){
   // ── Aplicar tema antes de qualquer render ──
   loadThemeSettings();
+  // ── Logo do parceiro ──
+  loadPartnerLogo();
 
   // ── Verificar licença / trial ──
   const licStatus = licCheck();
@@ -6420,7 +6527,7 @@ function init(){
     let el = e.target;
     let insideScroll = false;
     while(el && el !== document.body){
-      if(el.classList && (el.classList.contains('scroll-area') || el.classList.contains('modal') || el.classList.contains('more-drawer') || el.classList.contains('tab-row') || el.classList.contains('pv-strip') || el.classList.contains('table-wrap') || el.id==='print-overlay' || el.id==='pdf-iframe' || el.id==='onboarding' || el.id==='license-screen')){
+      if(el.classList && (el.classList.contains('scroll-area') || el.classList.contains('modal') || el.classList.contains('more-drawer') || el.classList.contains('tab-row') || el.classList.contains('pv-strip') || el.classList.contains('table-wrap') || el.id==='print-overlay' || el.id==='pdf-content-wrap' || el.id==='onboarding' || el.id==='license-screen')){
         insideScroll = true; break;
       }
       el = el.parentElement;
