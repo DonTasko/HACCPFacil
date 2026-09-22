@@ -312,14 +312,30 @@ async function goS3(){
   if(!nome){ err('f-nome',null,'Campo obrigatório'); ok=false; }
   if(!email||!email.includes('@')){ err('f-email',null,'Email inválido'); ok=false; }
   if(!ok) return;
+
   sessionStorage.setItem('co',JSON.stringify({nif,nome,email,plan,renewal}));
+
   document.getElementById('s2').style.display='none';
   document.getElementById('s3').style.display='block';
   si(3);
-  setTimeout(()=>{
-    const url=EP[plan]+'?nif='+encodeURIComponent(nif)+'&email='+encodeURIComponent(email)+'&nome='+encodeURIComponent(nome)+'&plan='+plan;
-    window.location.href=url;
-  },1500);
+
+  try {
+    // Criar pedido de pagamento via Worker
+    const res = await fetch(WORKER+'/viva/create-order',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({plan, nif, nome, email}),
+    });
+    const data = await res.json();
+    if(!res.ok || !data.payUrl) throw new Error(data.erro||'Erro ao criar pagamento');
+
+    setTimeout(()=>{ window.location.href = data.payUrl; }, 800);
+  } catch(e){
+    document.getElementById('s3').style.display='none';
+    document.getElementById('s2').style.display='block';
+    si(2);
+    alert('Erro ao iniciar pagamento: '+e.message+'\n\nTente novamente ou contacte suporte@haccpdigital.online');
+  }
 }
 
 function err(id,hintId,msg){
