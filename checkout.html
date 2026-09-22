@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscrever — HACCP Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1120;--s1:#131929;--s2:#1a2235;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.13);--txt:#e2e8f0;--txt2:#8b95b4;--txt3:#4b5270;--acc:#3b82f6;--green:#22c55e;--yellow:#eab308;--red:#ef4444}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.6}
+nav{padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(13,17,32,.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--txt)}
+.nav-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#4f46e5);border-radius:9px;display:grid;place-items:center;font-size:17px}
+.nav-logo-name{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px}
+.nav-back{font-size:13px;color:var(--txt2);text-decoration:none}
+.container{max-width:900px;margin:0 auto;padding:48px 20px 80px}
+.page-title{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(26px,5vw,40px);font-weight:800;letter-spacing:-.5px;text-align:center;margin-bottom:8px}
+.page-sub{text-align:center;color:var(--txt2);font-size:16px;margin-bottom:40px}
+.steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:40px}
+.step-item{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--txt3)}
+.step-item.active{color:var(--acc)}
+.step-item.done{color:var(--green)}
+.step-num{width:28px;height:28px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;font-size:12px;flex-shrink:0}
+.step-item.done .step-num{background:var(--green);border-color:var(--green);color:#000}
+.step-item.active .step-num{background:var(--acc);border-color:var(--acc);color:#fff}
+.step-line{width:40px;height:2px;background:var(--border2);margin:0 4px;flex-shrink:0}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:32px}
+.plan{background:var(--s1);border:2px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all .2s;position:relative;user-select:none}
+.plan:hover{border-color:rgba(59,130,246,.4)}
+.plan.selected{border-color:var(--acc);background:rgba(59,130,246,.08)}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-size:11px;font-weight:800;padding:3px 12px;border-radius:10px;white-space:nowrap}
+.plan-name{font-size:14px;font-weight:600;color:var(--txt2);margin-bottom:6px}
+.plan-price{font-family:'Bricolage Grotesque',sans-serif;font-size:36px;font-weight:800;color:var(--txt);line-height:1}
+.plan-price span{font-size:15px;font-weight:500;color:var(--txt2)}
+.plan-per{font-size:12px;color:var(--txt3);margin-top:4px;margin-bottom:16px}
+.plan-features{list-style:none;font-size:13px;color:var(--txt2);display:flex;flex-direction:column;gap:6px}
+.plan-features li::before{content:'✓ ';color:var(--green);font-weight:700}
+.plan-radio{position:absolute;top:16px;right:16px;width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);display:grid;place-items:center;transition:all .2s}
+.plan.selected .plan-radio{border-color:var(--acc);background:var(--acc)}
+.plan.selected .plan-radio::after{content:'';width:8px;height:8px;background:#fff;border-radius:50%}
+.form-card{background:var(--s1);border:1px solid var(--border2);border-radius:16px;padding:28px;margin-bottom:20px}
+.form-title{font-size:16px;font-weight:700;margin-bottom:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block}
+.form-input{width:100%;padding:12px 14px;background:var(--s2);border:1.5px solid var(--border2);border-radius:10px;color:var(--txt);font-size:15px;font-family:'Inter',sans-serif;transition:border-color .2s;outline:none}
+.form-input:focus{border-color:var(--acc)}
+.form-input::placeholder{color:var(--txt3)}
+.form-hint{font-size:12px;color:var(--txt3);margin-top:5px}
+.form-hint.err{color:var(--red)}
+.form-hint.ok{color:var(--green)}
+.nif-status{border-radius:10px;padding:10px 14px;margin-top:8px;font-size:13px;display:none}
+.nif-status.renewal{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.25);color:var(--yellow)}
+.nif-status.new{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:var(--green)}
+.summary{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:20px}
+.sum-row{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+.sum-row.total{border-top:1px solid var(--border);margin-top:8px;padding-top:12px;font-weight:700;font-size:16px}
+.sum-row.total .v{color:var(--acc);font-family:'Bricolage Grotesque',sans-serif;font-size:22px}
+.btn-pay{width:100%;padding:16px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s}
+.btn-pay:hover{opacity:.9}
+.btn-pay:disabled{opacity:.45;cursor:default}
+.btn-back{background:none;border:none;color:var(--txt2);font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;margin-top:12px;width:100%;text-align:center;padding:8px}
+.guarantee{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt3);justify-content:center;margin-top:14px}
+.success-wrap{text-align:center;padding:60px 20px}
+footer{text-align:center;padding:24px;color:var(--txt3);font-size:12px;border-top:1px solid var(--border)}
+footer a{color:var(--txt2);text-decoration:none}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}.plans{grid-template-columns:1fr}.step-line{width:20px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-icon">🛡️</div>
+    <span class="nav-logo-name">HACCP Pro</span>
+  </a>
+  <a class="nav-back" href="/">← Voltar</a>
+</nav>
+
+<div class="container">
+
+  <div class="steps" id="step-ind">
+    <div class="step-item active" id="si-1"><div class="step-num">1</div><span>Plano</span></div>
+    <div class="step-line"></div>
+    <div class="step-item" id="si-2"><div class="step-num">2</div><span>Dados</span></div>
+    <div class="step-line"></div>
+    <div class="step-item" id="si-3"><div class="step-num">3</div><span>Pagamento</span></div>
+  </div>
+
+  <!-- STEP 1 — PLANOS -->
+  <div id="s1">
+    <h1 class="page-title">Escolha o seu plano</h1>
+    <p class="page-sub">Trial de 14 dias incluído · Sem fidelização · Reembolso em 14 dias</p>
+
+    <div class="plans">
+      <div class="plan" id="plan-mensal" onclick="selPlan('mensal')">
+        <div class="plan-radio"></div>
+        <div class="plan-name">Mensal</div>
+        <div class="plan-price">€9<span>,90/mês</span></div>
+        <div class="plan-per">Facturado mensalmente</div>
+        <ul class="plan-features">
+          <li>Todos os 10 módulos</li>
+          <li>Relatórios PDF ilimitados</li>
+          <li>Suporte por email</li>
+          <li>Assistente IA 24h</li>
+        </ul>
+      </div>
+
+      <div class="plan" id="plan-anual" onclick="selPlan('anual')" style="padding-top:32px">
+        <div class="plan-badge">⭐ Mais popular</div>
+        <div class="plan-radio"></div>
+        <div class="plan-name">Anual</div>
+        <div class="plan-price">€79<span>/ano</span></div>
+        <div class="plan-per">€6,60/mês · Poupa 33%</div>
+        <ul class="plan-features">
+          <li>Tudo do plano Mensal</li>
+          <li>Backup automático</li>
+          <li>Suporte prioritário</li>
+          <li>Assistente IA 24h</li>
+        </ul>
+      </div>
+
+      <div class="plan" id="plan-bienal" onclick="selPlan('bienal')">
+        <div class="plan-radio"></div>
+        <div class="plan-name">Bienal (2 anos)</div>
+        <div class="plan-price">€129<span>/2 anos</span></div>
+        <div class="plan-per">€5,38/mês · Melhor valor</div>
+        <ul class="plan-features">
+          <li>Tudo do plano Anual</li>
+          <li>2 anos sem preocupações</li>
+          <li>Preço bloqueado</li>
+          <li>Assistente IA 24h</li>
+        </ul>
+      </div>
+    </div>
+
+    <button class="btn-pay" onclick="goS2()" id="btn-cont" disabled>Continuar →</button>
+    <div class="guarantee">🔒 Pagamento seguro · MB Way · Multibanco · Cartão</div>
+  </div>
+
+  <!-- STEP 2 — DADOS -->
+  <div id="s2" style="display:none">
+    <h1 class="page-title">Os seus dados</h1>
+    <p class="page-sub">O NIF identifica o estabelecimento e fica associado à licença</p>
+
+    <div class="form-card">
+      <div class="form-title">🏢 Estabelecimento</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">NIF *</label>
+          <input type="text" class="form-input" id="f-nif" placeholder="Ex: 516763482"
+            inputmode="numeric" maxlength="9" oninput="onNif(this.value)">
+          <div class="form-hint" id="nif-h">9 dígitos sem espaços</div>
+          <div class="nif-status" id="nif-s"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nome do Estabelecimento *</label>
+          <input type="text" class="form-input" id="f-nome" placeholder="Ex: Restaurante Central, Lda">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-title">📧 Contacto</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input type="email" class="form-input" id="f-email" placeholder="email@estabelecimento.pt">
+          <div class="form-hint">A chave de licença será enviada para este email</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Telefone (opcional)</label>
+          <input type="tel" class="form-input" id="f-tel" placeholder="912 345 678">
+        </div>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="sum-row"><span>Plano seleccionado</span><span id="sum-p">—</span></div>
+      <div class="sum-row"><span>Tipo</span><span id="sum-t">Nova licença</span></div>
+      <div class="sum-row total"><span>Total</span><span class="v" id="sum-v">—</span></div>
+    </div>
+
+    <button class="btn-pay" onclick="goS3()">🔒 Pagar com EuPago</button>
+    <button class="btn-back" onclick="goS1()">← Voltar aos planos</button>
+    <div class="guarantee">🔒 Dados protegidos · Reembolso em 14 dias</div>
+  </div>
+
+  <!-- STEP 3 — REDIRECT -->
+  <div id="s3" style="display:none;text-align:center;padding:80px 20px">
+    <div style="font-size:56px;margin-bottom:20px">⏳</div>
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;margin-bottom:10px">A redirecionar para o pagamento...</h2>
+    <p style="color:var(--txt2);font-size:15px">Será redireccionado para o EuPago em instantes.<br>Não feche esta página.</p>
+  </div>
+
+  <!-- SUCESSO -->
+  <div id="s-ok" style="display:none" class="success-wrap">
+    <div style="font-size:64px;margin-bottom:20px">🎉</div>
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-size:32px;font-weight:800;margin-bottom:14px">Pagamento confirmado!</h2>
+    <p style="color:var(--txt2);font-size:16px;line-height:1.7;max-width:480px;margin:0 auto">
+      A sua chave de licença foi enviada para <strong id="suc-em"></strong>.<br><br>
+      Instale o HACCP Pro em haccpdigital.online e introduza a chave no ecrã de activação.
+    </p>
+    <a href="/" style="display:inline-block;margin-top:28px;padding:14px 32px;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px">Ir para o site</a>
+  </div>
+
+</div>
+
+<footer>
+  <a href="/politica.html">Privacidade</a> &nbsp;·&nbsp;
+  <a href="/termos.html">Termos</a> &nbsp;·&nbsp;
+  <a href="/cookies.html">Cookies</a> &nbsp;·&nbsp;
+  <a href="mailto:suporte@haccpdigital.online">Suporte</a>
+  <div style="margin-top:8px">© 2026 L.Apps Studio</div>
+</footer>
+
+<script>
+const WORKER = 'https://haccp-sync.dontasko-geral.workers.dev';
+
+// ⚠️ Substituir pelos URLs reais do EuPago após criar conta
+const EP = {
+  mensal: 'https://eupago.pt/pagar/PLACEHOLDER-MENSAL',
+  anual:  'https://eupago.pt/pagar/PLACEHOLDER-ANUAL',
+  bienal: 'https://eupago.pt/pagar/PLACEHOLDER-BIENAL',
+};
+
+const PLANS = {
+  mensal: {nome:'Mensal',     label:'€9,90/mês',   total:'€9,90',  meses:1},
+  anual:  {nome:'Anual',      label:'€79/ano',     total:'€79',    meses:12},
+  bienal: {nome:'Bienal',     label:'€129/2 anos', total:'€129',   meses:24},
+};
+
+let plan=null, renewal=false, nifTimer;
+
+function selPlan(id){
+  plan=id;
+  document.querySelectorAll('.plan').forEach(p=>p.classList.remove('selected'));
+  document.getElementById('plan-'+id).classList.add('selected');
+  document.getElementById('btn-cont').disabled=false;
+}
+
+function si(n){
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('si-'+i);
+    el.classList.remove('active','done');
+    if(i<n) el.classList.add('done');
+    if(i===n) el.classList.add('active');
+  });
+}
+
+function goS2(){
+  if(!plan) return;
+  document.getElementById('s1').style.display='none';
+  document.getElementById('s2').style.display='block';
+  si(2);
+  updSum();
+}
+
+function goS1(){
+  document.getElementById('s2').style.display='none';
+  document.getElementById('s1').style.display='block';
+  si(1);
+}
+
+function updSum(){
+  const p=PLANS[plan];
+  if(!p) return;
+  document.getElementById('sum-p').textContent=p.nome+' — '+p.label;
+  document.getElementById('sum-v').textContent=p.total;
+  document.getElementById('sum-t').textContent=renewal?'🔄 Renovação':'✨ Nova licença';
+}
+
+function onNif(val){
+  const nif=val.replace(/\D/g,'');
+  const h=document.getElementById('nif-h');
+  const s=document.getElementById('nif-s');
+  s.style.display='none';
+  clearTimeout(nifTimer);
+  if(nif.length<9){ h.textContent=nif.length+'/9 dígitos'; h.className='form-hint'; renewal=false; updSum(); return; }
+  h.textContent='✓ NIF completo'; h.className='form-hint ok';
+  nifTimer=setTimeout(()=>checkNif(nif),700);
+}
+
+async function checkNif(nif){
+  const s=document.getElementById('nif-s');
+  try{
+    const r=await fetch(WORKER+'/nif/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nif})});
+    const d=await r.json();
+    if(d.ok && d.licenca){
+      renewal=true;
+      const exp=d.licenca.validade?d.licenca.validade.slice(4,6)+'/'+d.licenca.validade.slice(0,4):'—';
+      s.className='nif-status renewal';
+      s.innerHTML='🔄 <strong>Licença existente</strong> — Expira em '+exp+'. O pagamento irá renovar e extender.';
+    } else {
+      renewal=false;
+      s.className='nif-status new';
+      s.innerHTML='✨ <strong>Nova licença</strong> — Primeiro registo para este NIF.';
+    }
+    s.style.display='block';
+    updSum();
+  } catch(e){}
+}
+
+async function goS3(){
+  const nif  =document.getElementById('f-nif').value.replace(/\D/g,'');
+  const nome =document.getElementById('f-nome').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  let ok=true;
+  if(nif.length!==9){ err('f-nif','nif-h','NIF deve ter 9 dígitos'); ok=false; }
+  if(!nome){ err('f-nome',null,'Campo obrigatório'); ok=false; }
+  if(!email||!email.includes('@')){ err('f-email',null,'Email inválido'); ok=false; }
+  if(!ok) return;
+  sessionStorage.setItem('co',JSON.stringify({nif,nome,email,plan,renewal}));
+  document.getElementById('s2').style.display='none';
+  document.getElementById('s3').style.display='block';
+  si(3);
+  setTimeout(()=>{
+    const url=EP[plan]+'?nif='+encodeURIComponent(nif)+'&email='+encodeURIComponent(email)+'&nome='+encodeURIComponent(nome)+'&plan='+plan;
+    window.location.href=url;
+  },1500);
+}
+
+function err(id,hintId,msg){
+  const el=document.getElementById(id);
+  el.style.borderColor='var(--red)';
+  if(hintId){ const h=document.getElementById(hintId); h.textContent=msg; h.className='form-hint err'; }
+  el.addEventListener('input',()=>{el.style.borderColor='';},{ once:true });
+}
+
+// Verificar retorno após pagamento (?pago=ok)
+(function(){
+  const p=new URLSearchParams(window.location.search);
+  if(p.get('pago')==='ok'){
+    const d=JSON.parse(sessionStorage.getItem('co')||'{}');
+    ['step-ind','s1','s2','s3'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+    const ok=document.getElementById('s-ok');
+    ok.style.display='block';
+    document.getElementById('suc-em').textContent=d.email||'o seu email';
+  }
+  // Pré-seleccionar plano por URL
+  const pl=p.get('plano');
+  if(pl && ['mensal','anual','bienal'].includes(pl)) selPlan(pl);
+})();
+</script>
+
+<script>
+var HACCP_CHAT_CONTEXT='landing';
+var HACCP_CHAT_WORKER='https://haccp-sync.dontasko-geral.workers.dev';
+</script>
+<script src="chat-widget.js"></script>
+
+</body>
+</html>
