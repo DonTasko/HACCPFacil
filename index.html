@@ -1133,6 +1133,25 @@ input[type=range]::-webkit-slider-thumb{
   </div>
   <!-- ══ /ONBOARDING ══ -->
 
+  <!-- ══ POPUP ZONAS DE LIMPEZA ══ -->
+  <div id="zona-popup" style="display:none;position:fixed;inset:0;z-index:8700;background:rgba(0,0,0,.7)" onclick="if(event.target===this)closeZonaPopup()">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:24px;max-height:80vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800" id="zona-popup-title">Zonas</div>
+          <div style="font-size:12px;color:var(--txt2);margin-top:2px">Seleccione as zonas que foram limpas</div>
+        </div>
+        <button onclick="closeZonaPopup()" style="background:none;border:none;color:var(--txt2);font-size:22px;cursor:pointer;padding:4px">×</button>
+      </div>
+      <div id="zona-popup-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="closeZonaPopup()" style="flex:1;padding:13px;background:var(--s2);border:1px solid var(--border2);border-radius:10px;color:var(--txt);font-size:15px;font-weight:600;cursor:pointer">Cancelar</button>
+        <button onclick="confirmZonas()" style="flex:1;padding:13px;background:var(--acc);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">✅ Confirmar</button>
+      </div>
+    </div>
+  </div>
+  <!-- ══ /POPUP ZONAS ══ -->
+
   <!-- ══ MODAL RESTAURO AUTOMÁTICO ══ -->
   <div id="gh-restore-modal" style="display:none;position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,.8);place-items:center" onclick="if(event.target===this) ghRestoreDecline()">
     <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin:20px;max-width:400px;width:100%;animation:slideUp .3s cubic-bezier(.32,1,.22,1)">
@@ -1164,7 +1183,22 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
   </div>
-  <!-- ══ MODAL DIAGNÓSTICO GITHUB ══ -->
+  <!-- ══ MODAL ZONAS LIMPEZA ══ -->
+  <div id="zonas-modal" style="display:none;position:fixed;inset:0;z-index:8700;background:rgba(0,0,0,.85);place-items:center" onclick="if(event.target===this)closeZonasModal()">
+    <div style="background:var(--s1);border:1px solid var(--border2);border-radius:20px;padding:24px;margin:20px;max-width:380px;width:100%">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800" id="zonas-modal-titulo">Zonas a limpar</div>
+        <button onclick="closeZonasModal()" style="background:none;border:none;color:var(--txt2);font-size:20px;cursor:pointer">×</button>
+      </div>
+      <div style="font-size:13px;color:var(--txt2);margin-bottom:16px" id="zonas-modal-sub">Seleccione as zonas que foram limpas</div>
+      <div id="zonas-modal-grid" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-secondary btn-sm" onclick="selectAllZonas()" style="flex:1">☑️ Todas</button>
+        <button class="btn btn-primary" onclick="confirmZonas()" style="flex:2">✅ Confirmar</button>
+      </div>
+    </div>
+  </div>
+  <!-- ══ /MODAL ZONAS ══ -->
   <div id="gh-diag-modal" style="display:none;position:fixed;inset:0;z-index:8600;background:rgba(0,0,0,.85);place-items:center;overflow-y:auto" onclick="if(event.target===this)document.getElementById('gh-diag-modal').style.display='none'">
     <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin:20px;max-width:420px;width:100%">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
@@ -1551,11 +1585,6 @@ input[type=range]::-webkit-slider-thumb{
               <option value="mensal">Mensal</option>
               <option value="desinf">Desinfecção especial</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Zona / Equipamento <span style="color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
-            <input type="text" class="form-input" id="l-zona" placeholder="Ex: Fogão, Grelhador, Hotte, Bancada...">
-            <div style="font-size:11px;color:var(--txt3);margin-top:4px">Especifique a zona dentro do local seleccionado</div>
           </div>
         </div>
         <div class="form-row">
@@ -2520,11 +2549,13 @@ input[type=range]::-webkit-slider-thumb{
           <div class="cfg-section-body">
             <div class="alert alert-info">
               <span>ℹ️</span>
-              <span>Adicione todos os locais que precisam de registo de limpeza (cozinha, câmaras, casas de banho, etc.)</span>
+              <span>Adicione os locais e defina as zonas internas de cada um. Ao registar uma limpeza, poderá seleccionar quais as zonas limpas.</span>
             </div>
             <div class="form-group">
               <label class="form-label">Novo Local</label>
-              <input type="text" class="form-input" id="nl-nome" placeholder="Nome do local" style="margin-bottom:8px">
+              <input type="text" class="form-input" id="nl-nome" placeholder="Nome do local (ex: Cozinha)" style="margin-bottom:8px">
+              <input type="text" class="form-input" id="nl-zonas" placeholder="Zonas internas (separadas por vírgula, ex: Fogão, Grelhador, Hotte)" style="margin-bottom:8px">
+              <div style="font-size:11px;color:var(--txt3);margin-bottom:8px">Opcional — se definir zonas, ao registar limpeza aparece popup para seleccionar quais foram limpas</div>
               <select class="form-select" id="nl-freq" style="margin-bottom:10px">
                 <option value="diaria">Frequência: Diária</option>
                 <option value="semanal">Frequência: Semanal</option>
@@ -3030,47 +3061,120 @@ function populateEquips(){
     syncTempColor();
   };
 }
+// Mapa de zonas seleccionadas por local: { localId: ['Fogão', 'Grelhador'] }
+let _zonasSeleccionadas = {};
+let _zonaPopupLocalId   = null;
+
 function populateLocais(){
   const grid = document.getElementById('l-local-grid');
   if(!grid) return;
   const locais = DB.get('cfg_locais');
+  _zonasSeleccionadas = {};
   if(!locais.length){
     grid.innerHTML = '<div style="color:var(--txt3);font-size:13px;grid-column:1/-1;padding:8px 0">Adicione locais em ⚙️ Configurações → Locais</div>';
     return;
   }
-  grid.innerHTML = locais.map(l => `
-    <label style="display:flex;align-items:center;gap:9px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r3);padding:10px 12px;cursor:pointer;transition:all .15s" id="ll-${l.id}" onclick="toggleLocalChk('${l.id}')">
-      <div style="width:20px;height:20px;flex-shrink:0;border:2px solid var(--border2);border-radius:5px;display:grid;place-items:center;transition:all .2s;font-size:13px" id="llbox-${l.id}"></div>
-      <div style="min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--txt)">${l.nome}</div>
-        ${l.freq?`<div style="font-size:10px;color:var(--txt3)">${l.freq}</div>`:''}
+  grid.style.gridTemplateColumns = '1fr';
+  grid.innerHTML = locais.map(l => {
+    const temZonas = l.zonas && l.zonas.length > 0;
+    return `<div style="background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r3);transition:all .15s;overflow:hidden" id="ll-${l.id}">
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer" onclick="toggleLocalChk('${l.id}')">
+        <div style="width:22px;height:22px;flex-shrink:0;border:2px solid var(--border2);border-radius:6px;display:grid;place-items:center;transition:all .2s;font-size:13px" id="llbox-${l.id}"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;color:var(--txt)">📍 ${l.nome}</div>
+          <div id="ll-zonas-sel-${l.id}" style="font-size:11px;color:var(--txt3);margin-top:2px">${temZonas?l.zonas.join(' · '):'Sem zonas — toque para seleccionar'}</div>
+        </div>
+        ${temZonas?`<button onclick="event.stopPropagation();openZonaPopup('${l.id}')" style="flex-shrink:0;padding:5px 10px;background:var(--s3);border:1px solid var(--border2);border-radius:6px;color:var(--txt2);font-size:12px;font-weight:600;cursor:pointer">🔍 Zonas</button>`:''}
       </div>
-    </label>`).join('');
+    </div>`;
+  }).join('');
   updateLocalSelText();
 }
 
 function toggleLocalChk(id){
   const lbl  = document.getElementById('ll-'+id);
   const box  = document.getElementById('llbox-'+id);
+  if(!lbl) return;
   const active = lbl.dataset.sel === '1';
+  const local  = DB.get('cfg_locais').find(l=>l.id===id);
   if(active){
     lbl.dataset.sel = '0';
     lbl.style.borderColor = 'var(--border)';
-    lbl.style.background  = 'var(--s2)';
+    lbl.style.background  = '';
     box.style.background  = '';
     box.style.borderColor = 'var(--border2)';
     box.textContent       = '';
+    delete _zonasSeleccionadas[id];
   } else {
     lbl.dataset.sel = '1';
     lbl.style.borderColor = 'var(--acc)';
-    lbl.style.background  = 'rgba(59,130,246,.08)';
+    lbl.style.background  = 'rgba(59,130,246,.04)';
     box.style.background  = 'var(--acc)';
     box.style.borderColor = 'var(--acc)';
     box.textContent       = '✓';
     box.style.color       = '#fff';
     box.style.fontWeight  = '800';
+    // Se tem zonas, abrir popup automaticamente
+    if(local && local.zonas && local.zonas.length > 0){
+      openZonaPopup(id);
+    }
   }
   updateLocalSelText();
+}
+
+// ── Popup de zonas ──
+function openZonaPopup(localId){
+  const local = DB.get('cfg_locais').find(l=>l.id===localId);
+  if(!local || !local.zonas || !local.zonas.length) return;
+  _zonaPopupLocalId = localId;
+  const sel = _zonasSeleccionadas[localId] || [];
+  document.getElementById('zona-popup-title').textContent = '📍 ' + local.nome;
+  document.getElementById('zona-popup-list').innerHTML = local.zonas.map((z,i)=>{
+    const checked = sel.includes(z);
+    return `<label style="display:flex;align-items:center;gap:12px;background:${checked?'rgba(59,130,246,.08)':'var(--s2)'};border:1.5px solid ${checked?'var(--acc)':'var(--border)'};border-radius:10px;padding:13px 14px;cursor:pointer;transition:all .15s" id="zpop-${i}" onclick="toggleZona(${i},'${z.replace(/'/g,'\\'')}')">
+      <div style="width:22px;height:22px;flex-shrink:0;border:2px solid ${checked?'var(--acc)':'var(--border2)'};border-radius:6px;background:${checked?'var(--acc)':'none'};display:grid;place-items:center;font-size:13px;color:#fff;font-weight:800;transition:all .2s">${checked?'✓':''}</div>
+      <span style="font-size:14px;font-weight:600;color:var(--txt)">${z}</span>
+    </label>`;
+  }).join('');
+  document.getElementById('zona-popup').style.display = 'block';
+}
+
+function toggleZona(idx, nome){
+  const localId = _zonaPopupLocalId;
+  if(!localId) return;
+  if(!_zonasSeleccionadas[localId]) _zonasSeleccionadas[localId] = [];
+  const sel = _zonasSeleccionadas[localId];
+  const pos = sel.indexOf(nome);
+  if(pos === -1){ sel.push(nome); }
+  else { sel.splice(pos,1); }
+  const lbl = document.getElementById('zpop-'+idx);
+  const checked = sel.includes(nome);
+  if(lbl){
+    lbl.style.borderColor = checked ? 'var(--acc)' : 'var(--border)';
+    lbl.style.background  = checked ? 'rgba(59,130,246,.08)' : 'var(--s2)';
+    const box = lbl.querySelector('div');
+    if(box){
+      box.style.background  = checked ? 'var(--acc)' : 'none';
+      box.style.borderColor = checked ? 'var(--acc)' : 'var(--border2)';
+      box.textContent       = checked ? '✓' : '';
+    }
+  }
+}
+
+function confirmZonas(){
+  const localId = _zonaPopupLocalId;
+  if(localId){
+    const local = DB.get('cfg_locais').find(l=>l.id===localId);
+    const sel   = _zonasSeleccionadas[localId]||[];
+    const zonasTxt = document.getElementById('ll-zonas-sel-'+localId);
+    if(zonasTxt) zonasTxt.textContent = sel.length ? '✅ '+sel.join(', ') : (local?.zonas||[]).join(' · ');
+  }
+  closeZonaPopup();
+}
+
+function closeZonaPopup(){
+  document.getElementById('zona-popup').style.display = 'none';
+  _zonaPopupLocalId = null;
 }
 
 function getSelectedLocais(){
@@ -3080,6 +3184,15 @@ function getSelectedLocais(){
       return el && el.dataset.sel === '1';
     })
     .map(l => l.nome);
+}
+
+function getSelectedLocaisComZonas(){
+  return DB.get('cfg_locais')
+    .filter(l => { const el=document.getElementById('ll-'+l.id); return el && el.dataset.sel==='1'; })
+    .map(l => ({
+      local: l.nome,
+      zonas: _zonasSeleccionadas[l.id] || [],
+    }));
 }
 
 function toggleAllLocais(){
@@ -3159,7 +3272,7 @@ function saveTemp(){
 }
 
 function saveLimp(){
-  const locais = getSelectedLocais();
+  const locais = getSelectedLocaisComZonas();
   if(!locais.length){toast('Seleccione pelo menos um local','warn');return}
 
   const tipo        = document.getElementById('l-tipo').value;
@@ -3169,23 +3282,22 @@ function saveLimp(){
   const verificador = document.getElementById('l-verif').value;
   const obs         = document.getElementById('l-obs').value;
   const datetime    = document.getElementById('l-dt').value;
-  const zona        = document.getElementById('l-zona')?.value.trim() || '';
 
-  // Guardar um registo por local seleccionado
-  locais.forEach(local => {
-    DB.push('limp',{datetime, local, zona, tipo, produto, conformidade, colaborador, verificador, obs});
+  // Guardar um registo por local seleccionado (com zonas)
+  locais.forEach(({local, zonas}) => {
+    DB.push('limp',{datetime, local, zonas, tipo, produto, conformidade, colaborador, verificador, obs});
   });
 
   const msg = locais.length > 1
-    ? `${locais.length} limpezas guardadas! (${locais.join(', ')})`
+    ? `${locais.length} limpezas guardadas! (${locais.map(l=>l.local).join(', ')})`
     : 'Limpeza guardada!';
   toast(msg);
 
   // Reset form
   document.getElementById('l-prod-manual').value = '';
   document.getElementById('l-obs').value  = '';
-  if(document.getElementById('l-zona')) document.getElementById('l-zona').value = '';
   setNow('l-dt');
+  _zonasSeleccionadas = {};
 
   // Deseleccionar todos os locais
   DB.get('cfg_locais').forEach(l => {
@@ -3403,10 +3515,15 @@ function renderLimpTbl(){
   let d=DB.get('limp');if(fd2)d=d.filter(r=>r.datetime?.startsWith(fd2));
   const cm={ok:'<span class="badge b-ok">✅</span>',nc:'<span class="badge b-fail">NC</span>',parc:'<span class="badge b-warn">⚠️</span>'};
   const el=document.getElementById('l-tbody');if(!el)return;
-  el.innerHTML=d.length?d.map(r=>`<tr>
-    <td>${fd(r.datetime)}</td><td>${r.local||'—'}</td><td>${r.tipo||'—'}</td><td>${cm[r.conformidade]||'—'}</td>
-    <td>${delBtn('limp',r.id)}</td>
-  </tr>`).join(''):`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
+  el.innerHTML=d.length?d.map(r=>{
+    const zonasTxt = Array.isArray(r.zonas) && r.zonas.length ? r.zonas.join(', ') : (r.zona||'—');
+    return `<tr>
+      <td>${fd(r.datetime)}</td>
+      <td>${r.local||'—'}${zonasTxt&&zonasTxt!=='—'?`<br><span style="font-size:10px;color:var(--txt3)">${zonasTxt}</span>`:''}</td>
+      <td>${r.tipo||'—'}</td><td>${cm[r.conformidade]||'—'}</td>
+      <td>${delBtn('limp',r.id)}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
 }
 function renderOleoTbl(){
   const d=DB.get('oleo');const el=document.getElementById('o-tbody');if(!el)return;
@@ -4132,7 +4249,12 @@ function ghUpdateSyncCardState(state){
 // ═══════════════════════════════════════════
 function addCfgItem(type){
   let nome='',extra={};
-  if(type==='locais'){nome=document.getElementById('nl-nome').value.trim();extra={freq:document.getElementById('nl-freq').value}}
+  if(type==='locais'){
+    nome=document.getElementById('nl-nome').value.trim();
+    const zonasRaw=document.getElementById('nl-zonas')?.value.trim()||'';
+    const zonas=zonasRaw?zonasRaw.split(',').map(z=>z.trim()).filter(Boolean):[];
+    extra={freq:document.getElementById('nl-freq').value, zonas};
+  }
   if(type==='equipamentos'){nome=document.getElementById('ne-nome').value.trim();extra={tipo:document.getElementById('ne-tipo').value,tmin:document.getElementById('ne-tmin').value,tmax:document.getElementById('ne-tmax').value}}
   if(type==='colaboradores'){nome=document.getElementById('nc2-nome').value.trim();extra={funcao:document.getElementById('nc2-func').value}}
   if(type==='sobremesas'){nome=document.getElementById('ns-nome').value.trim();extra={alergenios:document.getElementById('ns-aleg').value}}
@@ -4141,7 +4263,7 @@ function addCfgItem(type){
   arr.push({id:Date.now().toString(36),nome,...extra});
   DB.set('cfg_'+type,arr);
   // Clear inputs
-  if(type==='locais')document.getElementById('nl-nome').value='';
+  if(type==='locais'){document.getElementById('nl-nome').value='';if(document.getElementById('nl-zonas'))document.getElementById('nl-zonas').value='';}
   if(type==='equipamentos'){document.getElementById('ne-nome').value='';document.getElementById('ne-tmin').value='';document.getElementById('ne-tmax').value=''}
   if(type==='colaboradores')document.getElementById('nc2-nome').value='';
   if(type==='sobremesas'){document.getElementById('ns-nome').value='';document.getElementById('ns-aleg').value=''}
@@ -4156,6 +4278,33 @@ function rmCfgItem(type,id){
 
 function renderCfgList(type){
   const items=DB.get('cfg_'+type);
+  if(type==='locais'){
+    const el=document.getElementById('locais-list');if(!el)return;
+    if(!items.length){el.innerHTML='<div style="color:var(--txt3);font-size:13px;padding:8px 0">Nenhum local adicionado.</div>';return;}
+    el.innerHTML=items.map(i=>{
+      const zonas=i.zonas||[];
+      return `<div style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <span style="font-size:14px;font-weight:600">📍 ${i.nome}</span>
+            ${i.freq?`<span class="badge b-info" style="font-size:10px;margin-left:6px">${i.freq}</span>`:''}
+          </div>
+          <button class="btn-icon" style="width:28px;height:28px;font-size:12px;color:var(--red);background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2)" onclick="rmCfgItem('locais','${i.id}')">×</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+          ${zonas.map((z,zi)=>`<span style="background:var(--s3);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;font-size:12px;display:flex;align-items:center;gap:4px">${z}<span style="cursor:pointer;color:var(--txt3);font-size:14px;line-height:1" onclick="rmZona('${i.id}',${zi})">×</span></span>`).join('')}
+          ${!zonas.length?'<span style="font-size:12px;color:var(--txt3)">Sem zonas configuradas</span>':''}
+        </div>
+        <div style="display:flex;gap:6px">
+          <input type="text" placeholder="Nova zona (ex: Fogão)" id="nz-${i.id}"
+            style="flex:1;background:var(--s1);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--txt);font-size:13px;outline:none;font-family:inherit"
+            onkeydown="if(event.key==='Enter'){addZona('${i.id}');event.preventDefault()}">
+          <button onclick="addZona('${i.id}')" style="padding:7px 14px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">＋</button>
+        </div>
+      </div>`;
+    }).join('');
+    return;
+  }
   if(type==='equipamentos'){
     const el=document.getElementById('equipamentos-list');if(!el)return;
     el.innerHTML=items.length?`<div class="table-wrap"><table><thead><tr><th>Nome</th><th>Tipo</th><th>T°min</th><th>T°max</th><th></th></tr></thead><tbody>`+
@@ -4173,6 +4322,33 @@ function renderCfgList(type){
   const el=document.getElementById(type+'-list');if(!el)return;
   el.innerHTML=items.length?items.map(i=>`<div class="tag">${i.nome}${i.alergenios?` <span style="font-size:11px;color:var(--txt3)">(${i.alergenios})</span>`:''}${i.freq?` <span class="badge b-info" style="font-size:10px">${i.freq}</span>`:''}<span class="tag-x" onclick="rmCfgItem('${type}','${i.id}')">×</span></div>`).join(''):
     '<div style="color:var(--txt3);font-size:13px;padding:8px 0">Nenhum item adicionado.</div>';
+}
+
+function addZona(localId){
+  const inp = document.getElementById('nz-'+localId);
+  if(!inp) return;
+  const nome = inp.value.trim();
+  if(!nome) return;
+  const locais = DB.get('cfg_locais');
+  const idx = locais.findIndex(l=>l.id===localId);
+  if(idx===-1) return;
+  if(!locais[idx].zonas) locais[idx].zonas=[];
+  if(locais[idx].zonas.includes(nome)){toast('Zona já existe','warn');return;}
+  locais[idx].zonas.push(nome);
+  DB.set('cfg_locais',locais);
+  inp.value='';
+  renderCfgList('locais');
+  toast('Zona adicionada!');
+}
+
+function rmZona(localId, zonaIdx){
+  const locais = DB.get('cfg_locais');
+  const idx = locais.findIndex(l=>l.id===localId);
+  if(idx===-1) return;
+  if(!locais[idx].zonas) return;
+  locais[idx].zonas.splice(zonaIdx,1);
+  DB.set('cfg_locais',locais);
+  renderCfgList('locais');
 }
 
 // ═══════════════════════════════════════════
