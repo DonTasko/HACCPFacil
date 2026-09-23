@@ -1400,6 +1400,22 @@ input[type=range]::-webkit-slider-thumb{
           <span class="lnch-count lnch-count-nc" id="lc-nc">—</span>
         </button>
 
+        <button class="lnch-btn" onclick="navigate('hort');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#16a34a">
+            <span class="lnch-icon">🥬</span>
+          </div>
+          <span class="lnch-label">Hortícolas</span>
+          <span class="lnch-count" id="lc-hort">—</span>
+        </button>
+
+        <button class="lnch-btn" onclick="navigate('tconf');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#dc2626">
+            <span class="lnch-icon">🔥</span>
+          </div>
+          <span class="lnch-label">T° Confecção</span>
+          <span class="lnch-count" id="lc-tconf">—</span>
+        </button>
+
         <button class="lnch-btn" onclick="navigate('exp');closeMore()">
           <div class="lnch-icon-wrap" style="--lc:#6366f1">
             <span class="lnch-icon">📤</span>
@@ -1535,6 +1551,11 @@ input[type=range]::-webkit-slider-thumb{
               <option value="mensal">Mensal</option>
               <option value="desinf">Desinfecção especial</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Zona / Equipamento <span style="color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+            <input type="text" class="form-input" id="l-zona" placeholder="Ex: Fogão, Grelhador, Hotte, Bancada...">
+            <div style="font-size:11px;color:var(--txt3);margin-top:4px">Especifique a zona dentro do local seleccionado</div>
           </div>
         </div>
         <div class="form-row">
@@ -1862,6 +1883,174 @@ input[type=range]::-webkit-slider-thumb{
     </div>
 
     <!-- ══════════ CHECK-LIST ══════════ -->
+    <!-- ══ HORTÍCOLAS ══ -->
+    <div class="page" id="page-hort">
+      <div class="section-hd"><h2>🥬 Desinfecção de Hortícolas</h2><p>Registo obrigatório de desinfecção de vegetais e saladas</p></div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data e Hora</label>
+            <input type="datetime-local" class="form-input" id="ht-dt">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Colaborador</label>
+            <select class="form-select" id="ht-colab"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Produto / Hortícola *</label>
+            <input type="text" class="form-input" id="ht-prod" placeholder="Ex: Alface, Tomate, Rúcula...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quantidade (kg)</label>
+            <input type="number" class="form-input" id="ht-qtd" placeholder="Ex: 2.5" step="0.1" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Método de Desinfecção</label>
+            <select class="form-select" id="ht-metodo">
+              <option value="cloro">Água + Hipoclorito de sódio (cloro)</option>
+              <option value="vinagre">Água + Vinagre</option>
+              <option value="comercial">Desinfectante comercial alimentar</option>
+              <option value="lavagem">Lavagem intensa em água corrente</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Desinfectante / Produto usado</label>
+            <input type="text" class="form-input" id="ht-desinf" placeholder="Ex: Hipoclorito 200ppm, 10min...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tempo de contacto (min)</label>
+            <input type="number" class="form-input" id="ht-tempo" placeholder="Ex: 10" min="0" value="10">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Conformidade</label>
+            <select class="form-select" id="ht-conf">
+              <option value="ok">✅ Conforme</option>
+              <option value="nc">❌ Não Conforme</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <textarea class="form-textarea" id="ht-obs" placeholder="Notas, desvios, estado do produto..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveHort()">💾 Guardar Desinfecção</button>
+      </div>
+
+      <!-- Histórico -->
+      <div class="card" style="margin-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">Histórico</div>
+          <input type="date" class="form-input" id="ht-flt" style="width:auto;font-size:13px" onchange="renderHortTbl()">
+        </div>
+        <div id="hort-tbl"></div>
+      </div>
+    </div>
+
+    <!-- ══ TEMPERATURA DE CONFECÇÃO ══ -->
+    <div class="page" id="page-tconf">
+      <div class="section-hd"><h2>🔥 Temperaturas de Confecção</h2><p>Temperatura interna dos alimentos confeccionados</p></div>
+
+      <!-- Tabela de referência de temperaturas mínimas -->
+      <div class="card" style="margin-bottom:16px;background:rgba(220,38,38,.05);border-color:rgba(220,38,38,.2)">
+        <div class="card-title" style="color:#fca5a5">📋 Temperaturas mínimas legais (interno)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;margin-top:8px">
+          <div>🐔 Aves e derivados</div><div style="font-weight:700;color:#fca5a5">≥ 75°C</div>
+          <div>🐷 Suíno e derivados</div><div style="font-weight:700;color:#fca5a5">≥ 70°C</div>
+          <div>🐟 Peixe</div><div style="font-weight:700;color:#fca5a5">≥ 65°C</div>
+          <div>🥩 Carne picada / hambúrguer</div><div style="font-weight:700;color:#fca5a5">≥ 70°C</div>
+          <div>🍳 Ovos (gema não líquida)</div><div style="font-weight:700;color:#fca5a5">≥ 70°C</div>
+          <div>♨️ Reaquecimento</div><div style="font-weight:700;color:#fca5a5">≥ 75°C</div>
+          <div>🥩 Bovino (inteiro)</div><div style="font-weight:700;color:#f97316">≥ 60°C (médio)</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data e Hora</label>
+            <input type="datetime-local" class="form-input" id="tc-dt">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Colaborador</label>
+            <select class="form-select" id="tc-colab"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Alimento / Prato *</label>
+            <input type="text" class="form-input" id="tc-alim" placeholder="Ex: Frango assado, Bacalhau, Hambúrguer...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de alimento</label>
+            <select class="form-select" id="tc-tipo" onchange="updateTconfLimit()">
+              <option value="ave" data-min="75">Aves e derivados (min. 75°C)</option>
+              <option value="suino" data-min="70">Suíno e derivados (min. 70°C)</option>
+              <option value="peixe" data-min="65">Peixe (min. 65°C)</option>
+              <option value="bovino" data-min="60">Bovino inteiro (min. 60°C)</option>
+              <option value="picada" data-min="70">Carne picada / hambúrguer (min. 70°C)</option>
+              <option value="ovo" data-min="70">Ovos (min. 70°C)</option>
+              <option value="requentado" data-min="75">Reaquecimento (min. 75°C)</option>
+              <option value="outro" data-min="65">Outro (min. 65°C)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Temperatura com indicador visual -->
+        <div class="form-group">
+          <label class="form-label">Temperatura Interna Medida (°C)</label>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+            <input type="range" id="tc-slider" min="50" max="100" value="75"
+              oninput="document.getElementById('tc-val').value=this.value;updateTconfConf()"
+              style="flex:1">
+            <input type="number" class="form-input" id="tc-val" value="75" min="50" max="100"
+              oninput="document.getElementById('tc-slider').value=this.value;updateTconfConf()"
+              style="width:80px;text-align:center;font-size:18px;font-weight:700">
+            <span style="font-size:15px;font-weight:700">°C</span>
+          </div>
+          <div id="tc-conf-indicator" style="padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Método de medição</label>
+            <select class="form-select" id="tc-metodo">
+              <option value="termometro">Termómetro de sonda</option>
+              <option value="ir">Termómetro infravermelho</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Conformidade</label>
+            <select class="form-select" id="tc-conf">
+              <option value="ok">✅ Conforme</option>
+              <option value="nc">❌ Não Conforme</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <textarea class="form-textarea" id="tc-obs" placeholder="Notas, acções correctivas..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveTconf()">💾 Guardar Temperatura</button>
+      </div>
+
+      <!-- Histórico -->
+      <div class="card" style="margin-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">Histórico</div>
+          <input type="date" class="form-input" id="tc-flt" style="width:auto;font-size:13px" onchange="renderTconfTbl()">
+        </div>
+        <div id="tconf-tbl"></div>
+      </div>
+    </div>
+
+    <!-- ══ CHECK-LIST ══ -->
     <div class="page" id="page-chk">
       <div class="section-hd"><h2>✅ Check-list Semanal</h2><p>Verificação periódica HACCP</p></div>
       <div class="card">
@@ -2783,6 +2972,8 @@ function navigate(page){
   if(page==='val'){setToday('v-data');populateColabs('v-colab');renderValTbl()}
   if(page==='sob'){setNow('sb-dt');populateSobs();populateColabs('sb-colab');renderSobTbl()}
   if(page==='rec'){setNow('rc-dt');populateColabs('rc-colab');renderRecTbl()}
+  if(page==='hort'){setNow('ht-dt');populateColabs('ht-colab');setToday('ht-flt');renderHortTbl()}
+  if(page==='tconf'){setNow('tc-dt');populateColabs('tc-colab');setToday('tc-flt');renderTconfTbl();updateTconfLimit();updateTconfConf()}
   if(page==='chk'){setToday('ck-data');populateColabs('ck-colab');renderChkForm();renderChkTbl()}
   if(page==='nc'){setNow('nc-dt');populateColabs('nc-colab');renderNcTbl()}
   if(page==='exp') { updatePdfPreview(); updatePdfAreaFilter(); ghUpdateSyncCard(); initPdfPeriod(); }
@@ -2978,10 +3169,11 @@ function saveLimp(){
   const verificador = document.getElementById('l-verif').value;
   const obs         = document.getElementById('l-obs').value;
   const datetime    = document.getElementById('l-dt').value;
+  const zona        = document.getElementById('l-zona')?.value.trim() || '';
 
   // Guardar um registo por local seleccionado
   locais.forEach(local => {
-    DB.push('limp',{datetime, local, tipo, produto, conformidade, colaborador, verificador, obs});
+    DB.push('limp',{datetime, local, zona, tipo, produto, conformidade, colaborador, verificador, obs});
   });
 
   const msg = locais.length > 1
@@ -2992,6 +3184,7 @@ function saveLimp(){
   // Reset form
   document.getElementById('l-prod-manual').value = '';
   document.getElementById('l-obs').value  = '';
+  if(document.getElementById('l-zona')) document.getElementById('l-zona').value = '';
   setNow('l-dt');
 
   // Deseleccionar todos os locais
@@ -3327,8 +3520,11 @@ function updateDashStats(){
   setLC('lc-oleo', DB.get('oleo').length > 0 ? `${DB.get('oleo').length} reg.` : '0');
   const valExp=DB.get('val').filter(r=>r.estado==='exp'||r.estado==='aviso').length;
   setLC('lc-val',  valExp>0?`${valExp} alertas`:`${DB.get('val').length} total`);
-  setLC('lc-sob',  DB.get('sob').length > 0 ? `${DB.get('sob').length} reg.` : '0');
-  setLC('lc-rec',  DB.get('rec').length > 0 ? `${DB.get('rec').length} reg.` : '0');
+  setLC('lc-sob',   DB.get('sob').length > 0 ? `${DB.get('sob').length} reg.` : '0');
+  setLC('lc-rec',   DB.get('rec').length > 0 ? `${DB.get('rec').length} reg.` : '0');
+  setLC('lc-hort',  DB.get('hort').length > 0 ? `${DB.get('hort').length} reg.` : '0');
+  const tconfNc = DB.get('tconf').filter(r=>r.conformidade==='nc').length;
+  setLC('lc-tconf', DB.get('tconf').length > 0 ? (tconfNc>0?`${tconfNc} NC`:`${DB.get('tconf').length} reg.`) : '0');
   const chkTotal=DB.get('chk').length;
   setLC('lc-chk',  chkTotal > 0 ? `${chkTotal} feitas` : '0');
   const ncEl=document.getElementById('lc-nc');
@@ -3698,6 +3894,8 @@ async function syncToGitHub(){
       sob:  DB.get('sob'),
       rec:  DB.get('rec'),
       chk:  DB.get('chk'),
+      hort: DB.get('hort'),
+      tconf:DB.get('tconf'),
       nc:   DB.get('nc').map(r=>({...r, fotos:[]})),
     };
 
@@ -5674,6 +5872,136 @@ function toggleProdutosManual(){
 }
 
 // ═══════════════════════════════════════════
+// DESINFECÇÃO DE HORTÍCOLAS
+// ═══════════════════════════════════════════
+function saveHort(){
+  const prod = document.getElementById('ht-prod').value.trim();
+  if(!prod){toast('Indique o produto/hortícola','warn');return}
+  const r = DB.push('hort',{
+    datetime:   document.getElementById('ht-dt').value,
+    produto:    prod,
+    quantidade: document.getElementById('ht-qtd').value,
+    metodo:     document.getElementById('ht-metodo').value,
+    desinf:     document.getElementById('ht-desinf').value.trim(),
+    tempo:      document.getElementById('ht-tempo').value,
+    conf:       document.getElementById('ht-conf').value,
+    colaborador:document.getElementById('ht-colab').value,
+    obs:        document.getElementById('ht-obs').value,
+  });
+  toast('✅ Desinfecção guardada!');
+  document.getElementById('ht-prod').value  = '';
+  document.getElementById('ht-qtd').value   = '';
+  document.getElementById('ht-desinf').value= '';
+  document.getElementById('ht-obs').value   = '';
+  setNow('ht-dt');
+  renderHortTbl();
+  renderDash();
+}
+
+function renderHortTbl(){
+  const tbl  = document.getElementById('hort-tbl');
+  if(!tbl) return;
+  const flt  = document.getElementById('ht-flt')?.value || '';
+  const all  = DB.get('hort');
+  const rows = flt ? all.filter(r=>(r.datetime||'').slice(0,10)===flt) : all.slice(0,30);
+  if(!rows.length){ tbl.innerHTML=`<div style="color:var(--txt3);font-size:13px;padding:12px 0">Sem registos${flt?' para esta data':''}</div>`; return; }
+  const confIcon = {ok:'✅',nc:'❌'};
+  tbl.innerHTML = rows.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);gap:8px">
+      <div style="min-width:0">
+        <div style="font-size:14px;font-weight:600">🥬 ${r.produto||'—'} ${r.quantidade?'('+r.quantidade+'kg)':''}</div>
+        <div style="font-size:12px;color:var(--txt2);margin-top:2px">${r.metodo||''} · ${r.tempo||'?'}min${r.desinf?' · '+r.desinf:''}</div>
+        <div style="font-size:11px;color:var(--txt3)">${fdo(r.datetime)} ${r.colaborador?'· '+r.colaborador:''}</div>
+      </div>
+      <span style="flex-shrink:0;font-size:18px">${confIcon[r.conf]||'—'}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// TEMPERATURAS DE CONFECÇÃO
+// ═══════════════════════════════════════════
+const TCONF_LIMITS = {ave:75,suino:70,peixe:65,bovino:60,picada:70,ovo:70,requentado:75,outro:65};
+
+function updateTconfLimit(){
+  const tipo = document.getElementById('tc-tipo')?.value||'ave';
+  const min  = TCONF_LIMITS[tipo]||65;
+  updateTconfConf();
+}
+
+function updateTconfConf(){
+  const tipo = document.getElementById('tc-tipo')?.value||'ave';
+  const min  = TCONF_LIMITS[tipo]||65;
+  const val  = parseFloat(document.getElementById('tc-val')?.value||0);
+  const ind  = document.getElementById('tc-conf-indicator');
+  const sel  = document.getElementById('tc-conf');
+  if(!ind) return;
+  if(val >= min){
+    ind.textContent = `✅ ${val}°C ≥ ${min}°C — Conforme`;
+    ind.style.background = 'rgba(34,197,94,.1)';
+    ind.style.color = 'var(--green)';
+    ind.style.border = '1px solid rgba(34,197,94,.2)';
+    if(sel) sel.value = 'ok';
+  } else {
+    ind.textContent = `❌ ${val}°C < ${min}°C — Não Conforme (mínimo ${min}°C)`;
+    ind.style.background = 'rgba(239,68,68,.1)';
+    ind.style.color = '#f87171';
+    ind.style.border = '1px solid rgba(239,68,68,.2)';
+    if(sel) sel.value = 'nc';
+  }
+}
+
+function saveTconf(){
+  const alim = document.getElementById('tc-alim').value.trim();
+  if(!alim){toast('Indique o alimento','warn');return}
+  const val  = parseFloat(document.getElementById('tc-val').value||0);
+  const tipo = document.getElementById('tc-tipo').value;
+  const min  = TCONF_LIMITS[tipo]||65;
+  const conf = val >= min ? 'ok' : 'nc';
+  const r = DB.push('tconf',{
+    datetime:   document.getElementById('tc-dt').value,
+    alimento:   alim,
+    tipo,
+    temperatura:val,
+    temp_min:   min,
+    metodo:     document.getElementById('tc-metodo').value,
+    conformidade: conf,
+    colaborador:document.getElementById('tc-colab').value,
+    obs:        document.getElementById('tc-obs').value,
+  });
+  if(conf==='nc'){
+    toast('⚠️ Temperatura abaixo do mínimo! Registo guardado.','warn');
+  } else {
+    toast('✅ Temperatura de confecção guardada!');
+  }
+  document.getElementById('tc-alim').value = '';
+  document.getElementById('tc-obs').value  = '';
+  document.getElementById('tc-val').value  = '75';
+  document.getElementById('tc-slider').value='75';
+  setNow('tc-dt');
+  updateTconfConf();
+  renderTconfTbl();
+  renderDash();
+}
+
+function renderTconfTbl(){
+  const tbl  = document.getElementById('tconf-tbl');
+  if(!tbl) return;
+  const flt  = document.getElementById('tc-flt')?.value||'';
+  const all  = DB.get('tconf');
+  const rows = flt ? all.filter(r=>(r.datetime||'').slice(0,10)===flt) : all.slice(0,30);
+  if(!rows.length){ tbl.innerHTML=`<div style="color:var(--txt3);font-size:13px;padding:12px 0">Sem registos${flt?' para esta data':''}</div>`; return; }
+  tbl.innerHTML = rows.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);gap:8px">
+      <div style="min-width:0">
+        <div style="font-size:14px;font-weight:600">🔥 ${r.alimento||'—'}</div>
+        <div style="font-size:12px;color:var(--txt2);margin-top:2px">${r.temperatura}°C (mín. ${r.temp_min||'—'}°C) · ${r.metodo||''}</div>
+        <div style="font-size:11px;color:var(--txt3)">${fdo(r.datetime)} ${r.colaborador?'· '+r.colaborador:''}</div>
+      </div>
+      <span style="flex-shrink:0;font-size:18px">${r.conformidade==='ok'?'✅':'❌'}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
 // AUTO-SYNC
 // ═══════════════════════════════════════════
 
@@ -5762,7 +6090,7 @@ async function ghAutoSave(silent){
       cfg_locais:DB.get('cfg_locais'),cfg_equipamentos:DB.get('cfg_equipamentos'),
       cfg_colaboradores:DB.get('cfg_colaboradores'),cfg_sobremesas:DB.get('cfg_sobremesas'),
       temp:DB.get('temp'),limp:DB.get('limp'),oleo:DB.get('oleo'),val:DB.get('val'),
-      sob:DB.get('sob'),rec:DB.get('rec'),chk:DB.get('chk'),
+      sob:DB.get('sob'),rec:DB.get('rec'),chk:DB.get('chk'),hort:DB.get('hort'),tconf:DB.get('tconf'),
       nc:DB.get('nc').map(r=>({...r,fotos:[]})),
     };
     const enc=new TextEncoder(),bytes=enc.encode(JSON.stringify(payload,null,2));
@@ -5790,7 +6118,7 @@ async function ghAutoSave(silent){
 // MERGE CENTRAL — usado por todos os imports
 // ═══════════════════════════════════════════
 function ghMergeData(data){
-  const RECORD_KEYS = ['temp','limp','oleo','val','sob','rec','chk','nc'];
+  const RECORD_KEYS = ['temp','limp','oleo','val','sob','rec','chk','nc','hort','tconf'];
   const labels = {temp:'🌡️',limp:'🧹',oleo:'🫙',val:'📅',sob:'🍮',rec:'📦',chk:'✅',nc:'⚠️'};
   let added = 0;
   const summary = [];
