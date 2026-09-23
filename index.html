@@ -6380,27 +6380,52 @@ function ghMergeData(data){
     if(!data[k] || !Array.isArray(data[k]) || !data[k].length) return;
     const local = DB.get(k);
 
-    // Se local está vazio — substituir directamente (sem precisar de deduplicar)
+    // Se local está vazio — substituir directamente
     if(!local.length){
       DB.set(k, data[k]);
       return;
     }
 
-    // Deduplicar por nome (case-insensitive) com fallback para id
-    const localKeys = new Set([
-      ...local.map(x=>x.nome?.toLowerCase()).filter(Boolean),
-      ...local.map(x=>x.id).filter(Boolean),
-    ]);
-    const newItems = data[k].filter(x => {
-      const byNome = x.nome && !localKeys.has(x.nome.toLowerCase());
-      const byId   = x.id   && !localKeys.has(x.id);
-      // incluir se não existe por nome NEM por id
-      if(x.nome && x.id) return byNome && byId;
-      if(x.nome)         return byNome;
-      if(x.id)           return byId;
-      return true; // sem nome nem id — incluir sempre (não há como deduplicar)
+    // Estratégia: ACTUALIZAR itens existentes (por id ou nome) E adicionar novos
+    const merged = [...local];
+    let changed = false;
+
+    data[k].forEach(remoteItem => {
+      // Procurar item correspondente localmente
+      const idxById   = remoteItem.id   ? merged.findIndex(l => l.id === remoteItem.id) : -1;
+      const idxByNome = remoteItem.nome ? merged.findIndex(l => l.nome?.toLowerCase() === remoteItem.nome?.toLowerCase()) : -1;
+      const idx = idxById >= 0 ? idxById : idxByNome;
+
+      if(idx >= 0){
+        // Item existe — actualizar com dados remotos (mantém campos locais que o remoto não tem)
+        const updated = {...remoteItem, ...Object.fromEntries(
+          Object.entries(merged[idx]).filter(([key, val]) => {
+            // Preservar campos locais só se o remoto não os tem ou está vazio
+            const remoteVal = remoteItem[key];
+            if(remoteVal === undefined) return true;  // remoto não tem — preservar local
+            if(Array.isArray(remoteVal) && remoteVal.length === 0 && Array.isArray(val) && val.length > 0) return true; // remoto tem array vazio mas local tem — preservar local
+            return false;
+          })
+        )};
+        // Zonas: usar a versão mais completa (mais zonas)
+        if(k === 'cfg_locais' && Array.isArray(remoteItem.zonas)){
+          const localZonas  = merged[idx].zonas || [];
+          const remoteZonas = remoteItem.zonas || [];
+          // Mesclar: usar remoto se tiver mais zonas, senão preservar local
+          updated.zonas = remoteZonas.length >= localZonas.length ? remoteZonas : localZonas;
+        }
+        if(JSON.stringify(merged[idx]) !== JSON.stringify(updated)){
+          merged[idx] = updated;
+          changed = true;
+        }
+      } else {
+        // Item novo — adicionar
+        merged.push(remoteItem);
+        changed = true;
+      }
     });
-    if(newItems.length) DB.set(k, [...local, ...newItems]);
+
+    if(changed) DB.set(k, merged);
   });
 
   return {added, summary};
