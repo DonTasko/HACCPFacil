@@ -3129,13 +3129,38 @@ function openZonaPopup(localId){
   _zonaPopupLocalId = localId;
   const sel = _zonasSeleccionadas[localId] || [];
   document.getElementById('zona-popup-title').textContent = '📍 ' + local.nome;
-  document.getElementById('zona-popup-list').innerHTML = local.zonas.map((z,i)=>{
+
+  const list = document.getElementById('zona-popup-list');
+  list.innerHTML = local.zonas.map((z,i)=>{
     const checked = sel.includes(z);
-    return `<label style="display:flex;align-items:center;gap:12px;background:${checked?'rgba(59,130,246,.08)':'var(--s2)'};border:1.5px solid ${checked?'var(--acc)':'var(--border)'};border-radius:10px;padding:13px 14px;cursor:pointer;transition:all .15s" id="zpop-${i}" onclick="toggleZona(${i},'${z.replace(/'/g,'\\'')}')">
-      <div style="width:22px;height:22px;flex-shrink:0;border:2px solid ${checked?'var(--acc)':'var(--border2)'};border-radius:6px;background:${checked?'var(--acc)':'none'};display:grid;place-items:center;font-size:13px;color:#fff;font-weight:800;transition:all .2s">${checked?'✓':''}</div>
+    return `<div class="zpop-item" data-idx="${i}" style="display:flex;align-items:center;gap:12px;background:${checked?'rgba(59,130,246,.08)':'var(--s2)'};border:1.5px solid ${checked?'var(--acc)':'var(--border)'};border-radius:10px;padding:13px 14px;cursor:pointer;transition:all .15s" id="zpop-${i}">
+      <div class="zpop-box" style="width:22px;height:22px;flex-shrink:0;border:2px solid ${checked?'var(--acc)':'var(--border2)'};border-radius:6px;background:${checked?'var(--acc)':'none'};display:grid;place-items:center;font-size:13px;color:#fff;font-weight:800;transition:all .2s">${checked?'✓':''}</div>
       <span style="font-size:14px;font-weight:600;color:var(--txt)">${z}</span>
-    </label>`;
+    </div>`;
   }).join('');
+
+  // Bind clicks via addEventListener — sem onclick inline
+  list.querySelectorAll('.zpop-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx  = parseInt(el.dataset.idx);
+      const nome = local.zonas[idx];
+      if(!nome) return;
+      if(!_zonasSeleccionadas[localId]) _zonasSeleccionadas[localId]=[];
+      const s   = _zonasSeleccionadas[localId];
+      const pos = s.indexOf(nome);
+      if(pos===-1) s.push(nome); else s.splice(pos,1);
+      const checked2 = s.includes(nome);
+      el.style.borderColor = checked2?'var(--acc)':'var(--border)';
+      el.style.background  = checked2?'rgba(59,130,246,.08)':'var(--s2)';
+      const box = el.querySelector('.zpop-box');
+      if(box){
+        box.style.background  = checked2?'var(--acc)':'none';
+        box.style.borderColor = checked2?'var(--acc)':'var(--border2)';
+        box.textContent       = checked2?'✓':'';
+      }
+    });
+  });
+
   document.getElementById('zona-popup').style.display = 'block';
 }
 
