@@ -3811,9 +3811,11 @@ function ghLicense(){
   catch{ return null; }
 }
 
-// Usa Worker se tiver licença activada; senão usa token directo (legado)
+// Usa sempre o Worker para sync (sync_key não precisa de licença)
 function ghUseWorker(){
-  return !!ghLicense();
+  // Usa Worker se URL configurado, senão modo legado com token
+  const custom = localStorage.getItem('h2_worker_url')||'';
+  return custom.startsWith('https://') || WORKER_URL_DEFAULT !== '';
 }
 
 function ghWorkerUrl(){
@@ -3839,14 +3841,16 @@ async function ghFetchRemoteData(){
   return JSON.parse(new TextDecoder('utf-8').decode(bytes));
 }
 
+// Segredo partilhado para sync — não exige licença activada
+const SYNC_SECRET = 'HACCP-SYNC-2026-XKQM';
+
 async function ghWorkerPull(){
-  const lic = ghLicense();
   const nif = ghNif();
-  if(!lic) throw new Error('Licença não activada.');
+  const lic = ghLicense(); // opcional — usado como fallback
   const res = await fetch(ghWorkerUrl() + '/sync/pull', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({license:lic, nif}),
+    body:JSON.stringify({nif, sync_key: SYNC_SECRET, license: lic||undefined}),
   });
   const json = await res.json();
   if(!res.ok) throw new Error(json.erro||'Erro no servidor');
@@ -3854,13 +3858,12 @@ async function ghWorkerPull(){
 }
 
 async function ghWorkerPush(payload){
-  const lic = ghLicense();
   const nif = ghNif();
-  if(!lic) throw new Error('Licença não activada.');
+  const lic = ghLicense();
   const res = await fetch(ghWorkerUrl() + '/sync/push', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({license:lic, nif, data:payload}),
+    body:JSON.stringify({nif, sync_key: SYNC_SECRET, license: lic||undefined, data:payload}),
   });
   const json = await res.json();
   if(!res.ok) throw new Error(json.erro||'Erro no servidor');
