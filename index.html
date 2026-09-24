@@ -1317,7 +1317,7 @@ input[type=range]::-webkit-slider-thumb{
     <div class="topbar-logo">
       <div class="logo-pill">🛡️</div>
       <div>
-        <div class="topbar-name" id="tb-name">HACCP Pro</div>
+        <div class="topbar-name" id="tb-name" onclick="navigate('cfg');setTimeout(()=>switchCfgTab('empresa'),100)" style="cursor:pointer" title="Clique para editar empresa">HACCP Pro</div>
         <div class="topbar-sub" id="tb-sub">Segurança Alimentar</div>
       </div>
       <!-- Logo do parceiro — visível só se configurado -->
@@ -2790,6 +2790,8 @@ input[type=range]::-webkit-slider-thumb{
               </div>
             </div>
             <button class="btn btn-primary" onclick="saveCfg('empresa')">💾 Guardar Empresa</button>
+            <button class="btn btn-secondary" onclick="loadDemoData()" style="margin-top:8px;width:100%;background:rgba(139,92,246,.15);border-color:rgba(139,92,246,.3);color:#a78bfa">🎬 Carregar dados de demonstração</button>
+            <div style="font-size:11px;color:var(--txt3);margin-top:6px;text-align:center">Preenche a app com uma empresa fictícia e registos de exemplo para apresentações</div>
           </div>
         </div>
       </div>
@@ -6757,6 +6759,115 @@ function preencherExistente(extId){
   document.getElementById('ex-id').value = r.ext_id;
   window.scrollTo({top:0,behavior:'smooth'});
   toast('📝 Pronto para editar — guarda quando terminar');
+}
+
+// ═══════════════════════════════════════════
+// MODO DEMONSTRAÇÃO
+// ═══════════════════════════════════════════
+function loadDemoData(){
+  if(!confirm('Isto vai substituir TODOS os dados actuais por dados de demonstração fictícios.\n\nContinuar?')) return;
+
+  // ── Empresa fictícia ──
+  const emp = {
+    nome:'Restaurante Sabor da Terra, Lda',
+    nif:'509876543',
+    morada:'Rua do Comércio, 42 — 1100-150 Lisboa',
+    tel:'213 456 789',
+    email:'geral@sabordaterra.pt',
+    resp:'Ana Ferreira',
+    consultoria:'HigieneFood Consultores',
+    tipo:'Restaurante'
+  };
+  Object.entries(emp).forEach(([k,v])=>{
+    const el=document.getElementById('cfg-'+k)||document.getElementById('n-'+k);
+    if(el) el.value=v;
+  });
+  saveCfg('empresa');
+
+  // ── Locais ──
+  const locais=[
+    {id:'loc1',nome:'Cozinha',freq:'diária',zonas:['Fogão','Grelhador','Fritadeira','Hotte','Bancada','Micro-ondas','Frigorífico']},
+    {id:'loc2',nome:'Salão',freq:'diária',zonas:['Mesas','Cadeiras','Balcão','WC Clientes']},
+    {id:'loc3',nome:'Câmara Frigorífica',freq:'semanal',zonas:['Interior','Prateleiras','Porta','Pavimento']},
+    {id:'loc4',nome:'Armazém',freq:'semanal',zonas:['Prateleiras','Pavimento']},
+    {id:'loc5',nome:'WC Funcionários',freq:'diária',zonas:[]},
+  ];
+  DB.set('cfg_locais',locais);
+
+  // ── Equipamentos ──
+  DB.set('cfg_equipamentos',[
+    {id:'eq1',nome:'Câmara Frigorífica',tipo:'frio',tmin:'0',tmax:'5'},
+    {id:'eq2',nome:'Arca Bebidas',tipo:'frio',tmin:'2',tmax:'8'},
+    {id:'eq3',nome:'Congelador Carne',tipo:'congelado',tmin:'-22',tmax:'-18'},
+    {id:'eq4',nome:'Banho-maria',tipo:'quente',tmin:'65',tmax:'90'},
+  ]);
+
+  // ── Colaboradores ──
+  DB.set('cfg_colaboradores',[
+    {id:'col1',nome:'Ana Ferreira',funcao:'Responsável HACCP'},
+    {id:'col2',nome:'João Silva',funcao:'Cozinheiro'},
+    {id:'col3',nome:'Maria Santos',funcao:'Empregada de Mesa'},
+  ]);
+
+  // ── Produtos de limpeza ──
+  DB.set('cfg_produtos',[
+    {id:'pr1',nome:'Biodet',tipo:'Detergente'},
+    {id:'pr2',nome:'SD Desengordurante',tipo:'Desengordurante'},
+    {id:'pr3',nome:'Sanit 2000',tipo:'Sanitizante'},
+    {id:'pr4',nome:'Lava Tudo Perfumado',tipo:'Detergente'},
+  ]);
+
+  // ── Registos de temperatura (últimos 5 dias) ──
+  const now = new Date();
+  const temps=[];
+  for(let d=4;d>=0;d--){
+    const dt=new Date(now); dt.setDate(dt.getDate()-d);
+    const dd=dt.toISOString().slice(0,10);
+    temps.push({id:DB._id(),datetime:dd+'T08:00',equipamento:'Câmara Frigorífica',valor:'3',conformidade:'ok',colaborador:'Ana Ferreira',obs:''});
+    temps.push({id:DB._id(),datetime:dd+'T08:05',equipamento:'Arca Bebidas',valor:'6',conformidade:'ok',colaborador:'Ana Ferreira',obs:''});
+    temps.push({id:DB._id(),datetime:dd+'T08:10',equipamento:'Congelador Carne',valor:'-20',conformidade:'ok',colaborador:'João Silva',obs:''});
+    temps.push({id:DB._id(),datetime:dd+'T12:30',equipamento:'Banho-maria',valor:'72',conformidade:'ok',colaborador:'João Silva',obs:''});
+  }
+  DB.set('temp',temps);
+
+  // ── Registos de limpeza ──
+  const limps=[];
+  for(let d=4;d>=0;d--){
+    const dt=new Date(now); dt.setDate(dt.getDate()-d);
+    const dd=dt.toISOString().slice(0,10);
+    limps.push({id:DB._id(),datetime:dd+'T07:30',local:'Cozinha',zonas:['Fogão','Grelhador','Bancada'],tipo:'diaria',produto:'Biodet',conformidade:'ok',colaborador:'João Silva',verificador:'Ana Ferreira',obs:''});
+    limps.push({id:DB._id(),datetime:dd+'T07:45',local:'Salão',zonas:['Mesas','Cadeiras'],tipo:'diaria',produto:'Lava Tudo Perfumado',conformidade:'ok',colaborador:'Maria Santos',verificador:'',obs:''});
+    limps.push({id:DB._id(),datetime:dd+'T08:00',local:'WC Funcionários',zonas:[],tipo:'diaria',produto:'Sanit 2000',conformidade:'ok',colaborador:'Maria Santos',verificador:'',obs:''});
+  }
+  DB.set('limp',limps);
+
+  // ── Óleos ──
+  DB.set('oleo',[
+    {id:DB._id(),datetime:new Date(now.getTime()-2*86400000).toISOString().slice(0,16),equipamento:'Fritadeira 1',valor:'18',conformidade:'ok',colaborador:'João Silva',obs:''},
+    {id:DB._id(),datetime:new Date(now.getTime()-86400000).toISOString().slice(0,16),equipamento:'Fritadeira 1',valor:'21',conformidade:'ok',colaborador:'João Silva',obs:''},
+    {id:DB._id(),datetime:now.toISOString().slice(0,16),equipamento:'Fritadeira 1',valor:'24',conformidade:'ok',colaborador:'João Silva',obs:'Próximo da renovação'},
+  ]);
+
+  // ── Validades ──
+  const amanha = new Date(now); amanha.setDate(amanha.getDate()+30);
+  DB.set('val',[
+    {id:DB._id(),produto:'Fiambre fatiado',lote:'L240901',validade:amanha.toISOString().slice(0,10),local:'Câmara Frigorífica',conformidade:'ok',colaborador:'Ana Ferreira',obs:''},
+    {id:DB._id(),produto:'Queijo flamengo',lote:'QF24112',validade:amanha.toISOString().slice(0,10),local:'Câmara Frigorífica',conformidade:'ok',colaborador:'Ana Ferreira',obs:''},
+  ]);
+
+  // ── Check-list ──
+  DB.set('chk',[
+    {id:DB._id(),data:now.toISOString().slice(0,10),colaborador:'Ana Ferreira',score:92,respostas:{},obs:'Boa conformidade geral'},
+  ]);
+
+  // ── T° Confecção ──
+  DB.set('tconf',[
+    {id:DB._id(),datetime:now.toISOString().slice(0,16),alimento:'Frango assado',tipo:'ave',temperatura:78,temp_min:75,metodo:'termometro',conformidade:'ok',colaborador:'João Silva',obs:''},
+    {id:DB._id(),datetime:new Date(now.getTime()-86400000).toISOString().slice(0,16),alimento:'Bacalhau à Brás',tipo:'peixe',temperatura:71,temp_min:65,metodo:'termometro',conformidade:'ok',colaborador:'João Silva',obs:''},
+  ]);
+
+  toast('🎬 Dados de demonstração carregados!');
+  setTimeout(()=>{ loadCfg(); renderDash(); navigate('dash'); }, 500);
 }
 
 // ═══════════════════════════════════════════
