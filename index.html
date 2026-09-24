@@ -6767,34 +6767,21 @@ function preencherExistente(extId){
 function loadDemoData(){
   if(!confirm('Isto vai substituir TODOS os dados actuais por dados de demonstração fictícios.\n\nContinuar?')) return;
 
-  // ── Empresa fictícia — escrever directamente no storage ──
-  const cfgEmpresa = {
-    nome:        'Restaurante Sabor da Terra, Lda',
-    nif:         '509876543',
-    morada:      'Rua do Comércio, 42 — 1100-150 Lisboa',
-    tel:         '213 456 789',
-    email:       'geral@sabordaterra.pt',
-    resp:        'Ana Ferreira',
-    consultoria: 'HigieneFood Consultores',
-    tipo:        'restaurante',
-    lic:         '',
-  };
-  DB.set('cfg_empresa', cfgEmpresa);
+  // ── Empresa fictícia — escrever na chave correcta ──
+  const cfg = DB.getObj('config');
+  cfg.nome        = 'Restaurante Sabor da Terra, Lda';
+  cfg.nif         = '509876543';
+  cfg.morada      = 'Rua do Comércio, 42 — 1100-150 Lisboa';
+  cfg.telefone    = '213 456 789';
+  cfg.email       = 'geral@sabordaterra.pt';
+  cfg.responsavel = 'Ana Ferreira';
+  cfg.consultoria = 'HigieneFood Consultores';
+  cfg.tipo        = 'restaurante';
+  DB.set('config', cfg);
 
-  // Preencher também os campos do formulário visível
-  Object.entries({
-    'c-nome':  cfgEmpresa.nome,
-    'c-nif':   cfgEmpresa.nif,
-    'c-morada':cfgEmpresa.morada,
-    'c-tel':   cfgEmpresa.tel,
-    'c-email': cfgEmpresa.email,
-    'c-resp':  cfgEmpresa.resp,
-    'c-cons':  cfgEmpresa.consultoria,
-    'c-tipo':  cfgEmpresa.tipo,
-  }).forEach(([id,val])=>{
-    const el=document.getElementById(id);
-    if(el) el.value=val;
-  });
+  // Actualizar cabeçalho imediatamente
+  const tbName = document.getElementById('tb-name');
+  if(tbName) tbName.textContent = cfg.nome;
 
   // ── Locais ──
   DB.set('cfg_locais',[
