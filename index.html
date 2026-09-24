@@ -5736,14 +5736,18 @@ function generatePDF(){
   toast('📋 Relatório pronto! Carregue em Imprimir.','ok');
 }
 
+// Guarda o HTML do PDF para impressão
+let _pdfHtmlCache = '';
+
 function showPdfPreviewInApp(pdfHtml){
   const overlay = document.getElementById('print-overlay');
   const wrap    = document.getElementById('pdf-content-wrap');
   if(!overlay || !wrap) return;
 
+  _pdfHtmlCache = pdfHtml;
   wrap.innerHTML = '';
 
-  // Usar iframe srcdoc — isolamento total: CSS da app não interfere de forma alguma
+  // Usar iframe srcdoc para preview — isolamento total do tema escuro
   const iframe = document.createElement('iframe');
   iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;display:block;flex:1';
   iframe.setAttribute('srcdoc', pdfHtml);
@@ -5753,29 +5757,47 @@ function showPdfPreviewInApp(pdfHtml){
 }
 
 function doPrint(){
-  const ui   = document.getElementById('print-ui');
-  const tip  = document.getElementById('print-tip');
-  const wrap = document.getElementById('pdf-content-wrap');
-  const iframe = wrap?.querySelector('iframe');
+  const ui  = document.getElementById('print-ui');
+  const tip = document.getElementById('print-tip');
 
   if(ui)  ui.style.display  = 'none';
   if(tip) tip.style.display = 'none';
 
-  setTimeout(()=>{
-    try{
+  try {
+    // Criar Blob URL com o HTML do PDF — garante fundo branco em qualquer browser
+    const blob = new Blob([_pdfHtmlCache], {type:'text/html;charset=utf-8'});
+    const url  = URL.createObjectURL(blob);
+    const win  = window.open(url, '_blank');
+
+    if(win){
+      win.addEventListener('load', () => {
+        setTimeout(()=>{
+          win.print();
+          // Limpar URL após algum tempo
+          setTimeout(()=> URL.revokeObjectURL(url), 60000);
+        }, 300);
+      });
+    } else {
+      // Popup bloqueado — fallback: imprimir via iframe
+      const wrap   = document.getElementById('pdf-content-wrap');
+      const iframe = wrap?.querySelector('iframe');
       if(iframe && iframe.contentWindow){
         iframe.contentWindow.focus();
         iframe.contentWindow.print();
-      } else {
-        window.print();
       }
-    } catch(e){ window.print(); }
+    }
+  } catch(e) {
+    // Último fallback
+    const wrap   = document.getElementById('pdf-content-wrap');
+    const iframe = wrap?.querySelector('iframe');
+    if(iframe && iframe.contentWindow) iframe.contentWindow.print();
+    else window.print();
+  }
 
-    setTimeout(()=>{
-      if(ui)  ui.style.display  = 'flex';
-      if(tip) tip.style.display = 'block';
-    }, 500);
-  }, 150);
+  setTimeout(()=>{
+    if(ui)  ui.style.display  = 'flex';
+    if(tip) tip.style.display = 'block';
+  }, 800);
 }
 
 function closePrintOverlay(){
