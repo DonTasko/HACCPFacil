@@ -6767,59 +6767,69 @@ function preencherExistente(extId){
 function loadDemoData(){
   if(!confirm('Isto vai substituir TODOS os dados actuais por dados de demonstração fictícios.\n\nContinuar?')) return;
 
-  // ── Empresa fictícia ──
-  const emp = {
-    nome:'Restaurante Sabor da Terra, Lda',
-    nif:'509876543',
-    morada:'Rua do Comércio, 42 — 1100-150 Lisboa',
-    tel:'213 456 789',
-    email:'geral@sabordaterra.pt',
-    resp:'Ana Ferreira',
-    consultoria:'HigieneFood Consultores',
-    tipo:'Restaurante'
+  // ── Empresa fictícia — escrever directamente no storage ──
+  const cfgEmpresa = {
+    nome:        'Restaurante Sabor da Terra, Lda',
+    nif:         '509876543',
+    morada:      'Rua do Comércio, 42 — 1100-150 Lisboa',
+    tel:         '213 456 789',
+    email:       'geral@sabordaterra.pt',
+    resp:        'Ana Ferreira',
+    consultoria: 'HigieneFood Consultores',
+    tipo:        'restaurante',
+    lic:         '',
   };
-  Object.entries(emp).forEach(([k,v])=>{
-    const el=document.getElementById('cfg-'+k)||document.getElementById('n-'+k);
-    if(el) el.value=v;
+  DB.set('cfg_empresa', cfgEmpresa);
+
+  // Preencher também os campos do formulário visível
+  Object.entries({
+    'c-nome':  cfgEmpresa.nome,
+    'c-nif':   cfgEmpresa.nif,
+    'c-morada':cfgEmpresa.morada,
+    'c-tel':   cfgEmpresa.tel,
+    'c-email': cfgEmpresa.email,
+    'c-resp':  cfgEmpresa.resp,
+    'c-cons':  cfgEmpresa.consultoria,
+    'c-tipo':  cfgEmpresa.tipo,
+  }).forEach(([id,val])=>{
+    const el=document.getElementById(id);
+    if(el) el.value=val;
   });
-  saveCfg('empresa');
 
   // ── Locais ──
-  const locais=[
-    {id:'loc1',nome:'Cozinha',freq:'diária',zonas:['Fogão','Grelhador','Fritadeira','Hotte','Bancada','Micro-ondas','Frigorífico']},
-    {id:'loc2',nome:'Salão',freq:'diária',zonas:['Mesas','Cadeiras','Balcão','WC Clientes']},
-    {id:'loc3',nome:'Câmara Frigorífica',freq:'semanal',zonas:['Interior','Prateleiras','Porta','Pavimento']},
-    {id:'loc4',nome:'Armazém',freq:'semanal',zonas:['Prateleiras','Pavimento']},
+  DB.set('cfg_locais',[
+    {id:'loc1',nome:'Cozinha',      freq:'diária',  zonas:['Fogão','Grelhador','Fritadeira','Hotte','Bancada','Frigorífico']},
+    {id:'loc2',nome:'Salão',        freq:'diária',  zonas:['Mesas','Cadeiras','Balcão']},
+    {id:'loc3',nome:'Câmara Fria',  freq:'semanal', zonas:['Interior','Prateleiras','Porta']},
+    {id:'loc4',nome:'Armazém',      freq:'semanal', zonas:['Prateleiras','Pavimento']},
     {id:'loc5',nome:'WC Funcionários',freq:'diária',zonas:[]},
-  ];
-  DB.set('cfg_locais',locais);
+  ]);
 
   // ── Equipamentos ──
   DB.set('cfg_equipamentos',[
-    {id:'eq1',nome:'Câmara Frigorífica',tipo:'frio',tmin:'0',tmax:'5'},
-    {id:'eq2',nome:'Arca Bebidas',tipo:'frio',tmin:'2',tmax:'8'},
-    {id:'eq3',nome:'Congelador Carne',tipo:'congelado',tmin:'-22',tmax:'-18'},
-    {id:'eq4',nome:'Banho-maria',tipo:'quente',tmin:'65',tmax:'90'},
+    {id:'eq1',nome:'Câmara Frigorífica',tipo:'frio',     tmin:'0', tmax:'5'},
+    {id:'eq2',nome:'Arca Bebidas',       tipo:'frio',     tmin:'2', tmax:'8'},
+    {id:'eq3',nome:'Congelador Carne',   tipo:'congelado',tmin:'-22',tmax:'-18'},
+    {id:'eq4',nome:'Banho-maria',        tipo:'quente',   tmin:'65',tmax:'90'},
   ]);
 
   // ── Colaboradores ──
   DB.set('cfg_colaboradores',[
-    {id:'col1',nome:'Ana Ferreira',funcao:'Responsável HACCP'},
-    {id:'col2',nome:'João Silva',funcao:'Cozinheiro'},
-    {id:'col3',nome:'Maria Santos',funcao:'Empregada de Mesa'},
+    {id:'col1',nome:'Ana Ferreira',  funcao:'Responsável HACCP'},
+    {id:'col2',nome:'João Silva',    funcao:'Cozinheiro'},
+    {id:'col3',nome:'Maria Santos',  funcao:'Empregada de Mesa'},
   ]);
 
   // ── Produtos de limpeza ──
   DB.set('cfg_produtos',[
-    {id:'pr1',nome:'Biodet',tipo:'Detergente'},
-    {id:'pr2',nome:'SD Desengordurante',tipo:'Desengordurante'},
-    {id:'pr3',nome:'Sanit 2000',tipo:'Sanitizante'},
-    {id:'pr4',nome:'Lava Tudo Perfumado',tipo:'Detergente'},
+    {id:'pr1',nome:'Biodet',              tipo:'Detergente'},
+    {id:'pr2',nome:'SD Desengordurante',  tipo:'Desengordurante'},
+    {id:'pr3',nome:'Sanit 2000',          tipo:'Sanitizante'},
+    {id:'pr4',nome:'Lava Tudo Perfumado', tipo:'Detergente'},
   ]);
 
   // ── Registos de temperatura (últimos 5 dias) ──
-  const now = new Date();
-  const temps=[];
+  const now=new Date(), temps=[];
   for(let d=4;d>=0;d--){
     const dt=new Date(now); dt.setDate(dt.getDate()-d);
     const dd=dt.toISOString().slice(0,10);
@@ -6843,32 +6853,34 @@ function loadDemoData(){
 
   // ── Óleos ──
   DB.set('oleo',[
-    {id:DB._id(),datetime:new Date(now.getTime()-2*86400000).toISOString().slice(0,16),equipamento:'Fritadeira 1',valor:'18',conformidade:'ok',colaborador:'João Silva',obs:''},
-    {id:DB._id(),datetime:new Date(now.getTime()-86400000).toISOString().slice(0,16),equipamento:'Fritadeira 1',valor:'21',conformidade:'ok',colaborador:'João Silva',obs:''},
+    {id:DB._id(),datetime:new Date(now-2*864e5).toISOString().slice(0,16),equipamento:'Fritadeira 1',valor:'18',conformidade:'ok',colaborador:'João Silva',obs:''},
+    {id:DB._id(),datetime:new Date(now-864e5).toISOString().slice(0,16),equipamento:'Fritadeira 1',valor:'21',conformidade:'ok',colaborador:'João Silva',obs:''},
     {id:DB._id(),datetime:now.toISOString().slice(0,16),equipamento:'Fritadeira 1',valor:'24',conformidade:'ok',colaborador:'João Silva',obs:'Próximo da renovação'},
   ]);
 
   // ── Validades ──
-  const amanha = new Date(now); amanha.setDate(amanha.getDate()+30);
+  const val1=new Date(now); val1.setDate(val1.getDate()+30);
   DB.set('val',[
-    {id:DB._id(),produto:'Fiambre fatiado',lote:'L240901',validade:amanha.toISOString().slice(0,10),local:'Câmara Frigorífica',conformidade:'ok',colaborador:'Ana Ferreira',obs:''},
-    {id:DB._id(),produto:'Queijo flamengo',lote:'QF24112',validade:amanha.toISOString().slice(0,10),local:'Câmara Frigorífica',conformidade:'ok',colaborador:'Ana Ferreira',obs:''},
-  ]);
-
-  // ── Check-list ──
-  DB.set('chk',[
-    {id:DB._id(),data:now.toISOString().slice(0,10),colaborador:'Ana Ferreira',score:92,respostas:{},obs:'Boa conformidade geral'},
+    {id:DB._id(),produto:'Fiambre fatiado',lote:'L240901',validade:val1.toISOString().slice(0,10),local:'Câmara Fria',conformidade:'ok',colaborador:'Ana Ferreira',obs:''},
+    {id:DB._id(),produto:'Queijo flamengo',lote:'QF24112',validade:val1.toISOString().slice(0,10),local:'Câmara Fria',conformidade:'ok',colaborador:'Ana Ferreira',obs:''},
   ]);
 
   // ── T° Confecção ──
   DB.set('tconf',[
     {id:DB._id(),datetime:now.toISOString().slice(0,16),alimento:'Frango assado',tipo:'ave',temperatura:78,temp_min:75,metodo:'termometro',conformidade:'ok',colaborador:'João Silva',obs:''},
-    {id:DB._id(),datetime:new Date(now.getTime()-86400000).toISOString().slice(0,16),alimento:'Bacalhau à Brás',tipo:'peixe',temperatura:71,temp_min:65,metodo:'termometro',conformidade:'ok',colaborador:'João Silva',obs:''},
+    {id:DB._id(),datetime:new Date(now-864e5).toISOString().slice(0,16),alimento:'Bacalhau à Brás',tipo:'peixe',temperatura:71,temp_min:65,metodo:'termometro',conformidade:'ok',colaborador:'João Silva',obs:''},
   ]);
 
+  // ── Check-list ──
+  DB.set('chk',[{id:DB._id(),data:now.toISOString().slice(0,10),colaborador:'Ana Ferreira',score:92,respostas:{},obs:'Boa conformidade geral'}]);
+
+  // ── Actualizar UI ──
+  loadCfg();
+  renderDash();
+  navigate('dash');
   toast('🎬 Dados de demonstração carregados!');
-  setTimeout(()=>{ loadCfg(); renderDash(); navigate('dash'); }, 500);
 }
+
 
 // ═══════════════════════════════════════════
 // AUTO-SYNC
