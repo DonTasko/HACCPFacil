@@ -23,11 +23,11 @@
   // ── Estilos ──
   const style = document.createElement('style');
   style.textContent = `
-    #hpw-btn{position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#4f46e5);border:none;cursor:pointer;z-index:9999;box-shadow:0 4px 20px rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center;font-size:24px;transition:transform .2s,box-shadow .2s;color:#fff}
+    #hpw-btn{position:fixed;bottom:calc(64px + 16px);right:16px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#4f46e5);border:none;cursor:pointer;z-index:9999;box-shadow:0 4px 20px rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform .2s,box-shadow .2s;color:#fff}
     #hpw-btn:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(37,99,235,.5)}
     #hpw-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:#ef4444;border-radius:50%;font-size:11px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid #fff;opacity:0;transition:opacity .3s}
     #hpw-badge.visible{opacity:1}
-    #hpw-box{position:fixed;bottom:86px;right:20px;width:340px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 100px);background:#131929;border:1px solid rgba(255,255,255,.1);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:9998;display:flex;flex-direction:column;transform:scale(.92) translateY(16px);opacity:0;pointer-events:none;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s;overflow:hidden}
+    #hpw-box{position:fixed;bottom:calc(64px + 76px);right:16px;width:340px;max-width:calc(100vw - 32px);height:500px;max-height:calc(100vh - 160px);background:#131929;border:1px solid rgba(255,255,255,.1);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:9998;display:flex;flex-direction:column;transform:scale(.92) translateY(16px);opacity:0;pointer-events:none;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s;overflow:hidden}
     #hpw-box.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
     #hpw-head{padding:14px 16px;background:linear-gradient(135deg,#1e3a8a,#312e81);display:flex;align-items:center;gap:10px;flex-shrink:0}
     #hpw-head-icon{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
@@ -62,7 +62,7 @@
     #hpw-send:disabled{opacity:.4;cursor:default}
     @keyframes hpwFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
     @keyframes hpwBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
-    @media(max-width:400px){#hpw-box{width:calc(100vw - 16px);right:8px;bottom:80px}}
+    @media(max-width:400px){#hpw-box{width:calc(100vw - 16px);right:8px;bottom:calc(64px + 76px)}}
   `;
   document.head.appendChild(style);
 
