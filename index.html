@@ -1367,105 +1367,115 @@ input[type=range]::-webkit-slider-thumb{
         </div>
       </div>
 
-      <!-- Module launcher grid -->
-      <div class="launcher-grid">
+      <!-- Module launcher grid - Registos Diários -->
+      <div style="padding:8px 12px 4px;font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.5px;text-transform:uppercase">Registos Diários</div>
+      <div class="launcher-grid" id="grid-diarios">
 
-        <button class="lnch-btn" onclick="navigate('temp')">
-          <div class="lnch-icon-wrap" style="--lc:#3b82f6">
-            <span class="lnch-icon">🌡️</span>
-          </div>
+        <button class="lnch-btn mod-btn" data-mod="temp" onclick="navigate('temp')">
+          <div class="lnch-icon-wrap" style="--lc:#3b82f6"><span class="lnch-icon">🌡️</span></div>
           <span class="lnch-label">Temperaturas</span>
           <span class="lnch-count" id="lc-temp">—</span>
         </button>
 
-        <button class="lnch-btn" onclick="navigate('limp')">
-          <div class="lnch-icon-wrap" style="--lc:#22c55e">
-            <span class="lnch-icon">🧹</span>
-          </div>
+        <button class="lnch-btn mod-btn" data-mod="limp" onclick="navigate('limp')">
+          <div class="lnch-icon-wrap" style="--lc:#22c55e"><span class="lnch-icon">🧹</span></div>
           <span class="lnch-label">Limpeza</span>
           <span class="lnch-count" id="lc-limp">—</span>
         </button>
 
-        <button class="lnch-btn" onclick="navigate('oleo');closeMore()">
-          <div class="lnch-icon-wrap" style="--lc:#f97316">
-            <span class="lnch-icon">🫙</span>
-          </div>
+        <button class="lnch-btn mod-btn" data-mod="oleo" onclick="navigate('oleo');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#f97316"><span class="lnch-icon">🫙</span></div>
           <span class="lnch-label">Óleos</span>
           <span class="lnch-count" id="lc-oleo">—</span>
         </button>
 
-        <button class="lnch-btn" onclick="navigate('val');closeMore()">
-          <div class="lnch-icon-wrap" style="--lc:#eab308">
-            <span class="lnch-icon">📅</span>
-          </div>
+        <button class="lnch-btn mod-btn" data-mod="val" onclick="navigate('val');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#eab308"><span class="lnch-icon">📅</span></div>
           <span class="lnch-label">Validades</span>
           <span class="lnch-count" id="lc-val">—</span>
         </button>
 
-        <button class="lnch-btn" onclick="navigate('sob');closeMore()">
-          <div class="lnch-icon-wrap" style="--lc:#a855f7">
-            <span class="lnch-icon">🍮</span>
-          </div>
+        <button class="lnch-btn mod-btn" data-mod="sob" onclick="navigate('sob');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#a855f7"><span class="lnch-icon">🍮</span></div>
           <span class="lnch-label">Sobremesas</span>
           <span class="lnch-count" id="lc-sob">—</span>
         </button>
 
-        <button class="lnch-btn" onclick="navigate('rec');closeMore()">
-          <div class="lnch-icon-wrap" style="--lc:#06b6d4">
-            <span class="lnch-icon">📦</span>
-          </div>
+        <button class="lnch-btn mod-btn" data-mod="rec" onclick="navigate('rec');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#06b6d4"><span class="lnch-icon">📦</span></div>
           <span class="lnch-label">Recepção</span>
           <span class="lnch-count" id="lc-rec">—</span>
         </button>
 
-        <button class="lnch-btn" onclick="navigate('chk');closeMore()">
-          <div class="lnch-icon-wrap" style="--lc:#10b981">
-            <span class="lnch-icon">✅</span>
-          </div>
-          <span class="lnch-label">Check-list</span>
-          <span class="lnch-count" id="lc-chk">—</span>
-        </button>
-
-        <button class="lnch-btn" onclick="navigate('nc')">
-          <div class="lnch-icon-wrap" style="--lc:#ef4444">
-            <span class="lnch-icon">⚠️</span>
-          </div>
-          <span class="lnch-label">Não Conform.</span>
-          <span class="lnch-count lnch-count-nc" id="lc-nc">—</span>
-        </button>
-
-        <button class="lnch-btn" onclick="navigate('hort');closeMore()">
-          <div class="lnch-icon-wrap" style="--lc:#16a34a">
-            <span class="lnch-icon">🥬</span>
-          </div>
+        <button class="lnch-btn mod-btn" data-mod="hort" onclick="navigate('hort');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#16a34a"><span class="lnch-icon">🥬</span></div>
           <span class="lnch-label">Hortícolas</span>
           <span class="lnch-count" id="lc-hort">—</span>
         </button>
 
-        <button class="lnch-btn" onclick="navigate('tconf');closeMore()">
-          <div class="lnch-icon-wrap" style="--lc:#dc2626">
-            <span class="lnch-icon">🔥</span>
-          </div>
+        <button class="lnch-btn mod-btn" data-mod="tconf" onclick="navigate('tconf');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#dc2626"><span class="lnch-icon">🔥</span></div>
           <span class="lnch-label">T° Confecção</span>
           <span class="lnch-count" id="lc-tconf">—</span>
         </button>
 
+        <button class="lnch-btn mod-btn" data-mod="chk" onclick="navigate('chk');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#10b981"><span class="lnch-icon">✅</span></div>
+          <span class="lnch-label">Check-list</span>
+          <span class="lnch-count" id="lc-chk">—</span>
+        </button>
+
+        <button class="lnch-btn mod-btn" data-mod="nc" onclick="navigate('nc')">
+          <div class="lnch-icon-wrap" style="--lc:#ef4444"><span class="lnch-icon">⚠️</span></div>
+          <span class="lnch-label">Não Conform.</span>
+          <span class="lnch-count lnch-count-nc" id="lc-nc">—</span>
+        </button>
+
+      </div>
+
+      <!-- Registos Ocasionais -->
+      <div id="section-ocasionais" style="padding:8px 12px 4px;font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.5px;text-transform:uppercase;margin-top:4px">Registos Ocasionais</div>
+      <div class="launcher-grid" id="grid-ocasionais">
+
+        <button class="lnch-btn mod-btn" data-mod="oleo_rec" onclick="navigate('oleo_rec');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#78350f"><span class="lnch-icon">🛢️</span></div>
+          <span class="lnch-label">Recolha Óleos</span>
+          <span class="lnch-count" id="lc-oleo_rec">—</span>
+        </button>
+
+        <button class="lnch-btn mod-btn" data-mod="pragas" onclick="navigate('pragas');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#7c3aed"><span class="lnch-icon">🐀</span></div>
+          <span class="lnch-label">Controlo Pragas</span>
+          <span class="lnch-count" id="lc-pragas">—</span>
+        </button>
+
+        <button class="lnch-btn mod-btn" data-mod="medicos" onclick="navigate('medicos');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#0891b2"><span class="lnch-icon">🩺</span></div>
+          <span class="lnch-label">Médicos Equipa</span>
+          <span class="lnch-count" id="lc-medicos">—</span>
+        </button>
+
+        <button class="lnch-btn mod-btn" data-mod="extintores" onclick="navigate('extintores');closeMore()">
+          <div class="lnch-icon-wrap" style="--lc:#dc2626"><span class="lnch-icon">🧯</span></div>
+          <span class="lnch-label">Extintores</span>
+          <span class="lnch-count" id="lc-extintores">—</span>
+        </button>
+
+      </div>
+
+      <!-- Utilitários -->
+      <div style="padding:8px 12px 4px;font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.5px;text-transform:uppercase;margin-top:4px">Utilitários</div>
+      <div class="launcher-grid">
         <button class="lnch-btn" onclick="navigate('exp');closeMore()">
-          <div class="lnch-icon-wrap" style="--lc:#6366f1">
-            <span class="lnch-icon">📤</span>
-          </div>
+          <div class="lnch-icon-wrap" style="--lc:#6366f1"><span class="lnch-icon">📤</span></div>
           <span class="lnch-label">Exportar PDF</span>
           <span class="lnch-count" style="background:transparent"></span>
         </button>
-
         <button class="lnch-btn" onclick="navigate('cfg')">
-          <div class="lnch-icon-wrap" style="--lc:#64748b">
-            <span class="lnch-icon">⚙️</span>
-          </div>
+          <div class="lnch-icon-wrap" style="--lc:#64748b"><span class="lnch-icon">⚙️</span></div>
           <span class="lnch-label">Configurações</span>
           <span class="lnch-count" style="background:transparent"></span>
         </button>
-
       </div>
 
       <!-- Last activity -->
@@ -2079,6 +2089,247 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
+    <!-- ══ RECOLHA DE ÓLEOS USADOS ══ -->
+    <div class="page" id="page-oleo_rec">
+      <div class="section-hd"><h2>🛢️ Recolha de Óleos Usados</h2><p>Registo de entrega a operador licenciado</p></div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data</label>
+            <input type="date" class="form-input" id="or-dt">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Responsável</label>
+            <select class="form-select" id="or-colab"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Quantidade recolhida (litros)</label>
+            <input type="number" class="form-input" id="or-qtd" placeholder="Ex: 25" min="0" step="0.5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Operador de recolha *</label>
+            <input type="text" class="form-input" id="or-operador" placeholder="Ex: SOGILUB, SISAV...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nº Guia de transporte</label>
+            <input type="text" class="form-input" id="or-guia" placeholder="Ex: GT-2026-0001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Destino / Tratamento</label>
+            <select class="form-select" id="or-destino">
+              <option value="biodiesel">Produção de biodiesel</option>
+              <option value="reutilizacao">Reutilização industrial</option>
+              <option value="outro">Outro (ver obs.)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <textarea class="form-textarea" id="or-obs" placeholder="Notas adicionais..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveOleoRec()">💾 Guardar Recolha</button>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Histórico</div>
+        <div id="oleo_rec-tbl"></div>
+      </div>
+    </div>
+
+    <!-- ══ CONTROLO DE PRAGAS ══ -->
+    <div class="page" id="page-pragas">
+      <div class="section-hd"><h2>🐀 Controlo de Pragas</h2><p>Registos de inspecção e tratamento</p></div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data</label>
+            <input type="date" class="form-input" id="pr-dt">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de registo</label>
+            <select class="form-select" id="pr-tipo">
+              <option value="inspeccao">Inspecção periódica</option>
+              <option value="tratamento">Tratamento / Desinfestação</option>
+              <option value="ocorrencia">Ocorrência detectada</option>
+              <option value="preventivo">Medida preventiva</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Empresa / Técnico responsável</label>
+            <input type="text" class="form-input" id="pr-empresa" placeholder="Ex: Rentokil, Técnico João Silva...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Praga / Tipo de infestação</label>
+            <select class="form-select" id="pr-praga">
+              <option value="ratos">Roedores (ratos/ratazanas)</option>
+              <option value="baratas">Baratas</option>
+              <option value="moscas">Moscas/insectos voadores</option>
+              <option value="formigas">Formigas</option>
+              <option value="outros">Outros insectos</option>
+              <option value="nenhuma">Nenhuma ocorrência</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Produto utilizado</label>
+            <input type="text" class="form-input" id="pr-produto" placeholder="Nome do produto / isca...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Próxima inspecção prevista</label>
+            <input type="date" class="form-input" id="pr-proxima">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Locais intervencionados</label>
+          <input type="text" class="form-input" id="pr-locais" placeholder="Ex: Cozinha, Armazém, Exterior...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Conformidade</label>
+          <select class="form-select" id="pr-conf">
+            <option value="ok">✅ Conforme — sem ocorrências activas</option>
+            <option value="nc">❌ Não Conforme — ocorrência activa</option>
+            <option value="em_tratamento">⚠️ Em tratamento</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações / Relatório</label>
+          <textarea class="form-textarea" id="pr-obs" placeholder="Descrição detalhada da inspecção ou tratamento..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="savePragas()">💾 Guardar Registo</button>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Histórico</div>
+        <div id="pragas-tbl"></div>
+      </div>
+    </div>
+
+    <!-- ══ CONTROLOS MÉDICOS DA EQUIPA ══ -->
+    <div class="page" id="page-medicos">
+      <div class="section-hd"><h2>🩺 Controlos Médicos da Equipa</h2><p>Fichas de aptidão e certificados de saúde</p></div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Colaborador *</label>
+            <select class="form-select" id="md-colab"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de exame</label>
+            <select class="form-select" id="md-tipo">
+              <option value="admissao">Exame de admissão</option>
+              <option value="periodico">Exame periódico</option>
+              <option value="ocasional">Exame ocasional</option>
+              <option value="regresso">Regresso ao trabalho</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data do exame</label>
+            <input type="date" class="form-input" id="md-dt">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data de validade / próximo exame</label>
+            <input type="date" class="form-input" id="md-validade">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Médico / Clínica</label>
+            <input type="text" class="form-input" id="md-medico" placeholder="Ex: Clínica Saúde Total...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Aptidão</label>
+            <select class="form-select" id="md-aptidao">
+              <option value="apto">✅ Apto</option>
+              <option value="apto_cond">⚠️ Apto com condicionantes</option>
+              <option value="inapto">❌ Inapto temporário</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <textarea class="form-textarea" id="md-obs" placeholder="Condicionantes, restrições, notas..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveMedicos()">💾 Guardar Registo</button>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Histórico</div>
+        <div id="medicos-tbl"></div>
+      </div>
+    </div>
+
+    <!-- ══ VALIDADES DE EXTINTORES ══ -->
+    <div class="page" id="page-extintores">
+      <div class="section-hd"><h2>🧯 Validades de Extintores</h2><p>Controlo de inspecção e manutenção</p></div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Identificação / Nº extintor *</label>
+            <input type="text" class="form-input" id="ex-id" placeholder="Ex: EXT-01, Cozinha-1...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de extintor</label>
+            <select class="form-select" id="ex-tipo">
+              <option value="po_abc">Pó ABC (polivalente)</option>
+              <option value="co2">CO₂ (dióxido de carbono)</option>
+              <option value="agua">Água pressurizada</option>
+              <option value="espuma">Espuma</option>
+              <option value="halocarb">Halocarbonetos</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Localização</label>
+            <input type="text" class="form-input" id="ex-local" placeholder="Ex: Cozinha, entrada, armazém...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Capacidade (kg/L)</label>
+            <input type="text" class="form-input" id="ex-cap" placeholder="Ex: 6kg, 9L...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data da última inspecção</label>
+            <input type="date" class="form-input" id="ex-dt-insp">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data de validade / próxima inspecção</label>
+            <input type="date" class="form-input" id="ex-dt-val">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Empresa de manutenção</label>
+            <input type="text" class="form-input" id="ex-empresa" placeholder="Ex: Extifer, Extinport...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-select" id="ex-estado">
+              <option value="ok">✅ Válido e operacional</option>
+              <option value="alerta">⚠️ A vencer em breve</option>
+              <option value="vencido">❌ Vencido / substituir</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <textarea class="form-textarea" id="ex-obs" placeholder="Notas de manutenção, problemas detectados..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveExtintores()">💾 Guardar Extintor</button>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Extintores registados</div>
+        <div id="extintores-tbl"></div>
+      </div>
+    </div>
+
     <!-- ══ CHECK-LIST ══ -->
     <div class="page" id="page-chk">
       <div class="section-hd"><h2>✅ Check-list Semanal</h2><p>Verificação periódica HACCP</p></div>
@@ -2473,6 +2724,7 @@ input[type=range]::-webkit-slider-thumb{
         <button class="cfg-tab" onclick="switchCfgTab('produtos')">🧴<br><span>Produtos</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('email')">📧<br><span>Email</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('visual')">🎨<br><span>Visual</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('modulos')">🧩<br><span>Módulos</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('github')" style="grid-column:2/4">🐙<br><span>GitHub</span></button>
       </div>
 
@@ -2822,6 +3074,14 @@ input[type=range]::-webkit-slider-thumb{
       <!-- GITHUB -->
       <div id="cfg-github" style="display:none">
         <div class="cfg-section">
+          <!-- ══ MÓDULOS ══ -->
+          <div class="cfg-section" id="cfg-modulos" style="display:none">
+            <div class="cfg-section-hd">🧩 Módulos Activos</div>
+            <p style="font-size:13px;color:var(--txt2);margin-bottom:16px">Activar ou desactivar módulos. Os módulos desactivados não aparecem no dashboard.</p>
+            <div id="modules-cfg-list"></div>
+          </div>
+
+          <!-- ══ GITHUB ══ -->
           <div class="cfg-section-hd">🐙 Sincronização com GitHub</div>
           <div class="cfg-section-body">
             <div class="alert alert-info" style="margin-bottom:14px">
@@ -3003,6 +3263,10 @@ function navigate(page){
   if(page==='val'){setToday('v-data');populateColabs('v-colab');renderValTbl()}
   if(page==='sob'){setNow('sb-dt');populateSobs();populateColabs('sb-colab');renderSobTbl()}
   if(page==='rec'){setNow('rc-dt');populateColabs('rc-colab');renderRecTbl()}
+  if(page==='oleo_rec') {setToday('or-dt');populateColabs('or-colab');renderOleoRecTbl()}
+  if(page==='pragas')   {setToday('pr-dt');renderPragasTbl()}
+  if(page==='medicos')  {setToday('md-dt');populateColabs('md-colab');renderMedicosTbl()}
+  if(page==='extintores'){setToday('ex-dt-insp');renderExtintoresTbl()}
   if(page==='hort'){setNow('ht-dt');populateColabs('ht-colab');setToday('ht-flt');renderHortTbl()}
   if(page==='tconf'){setNow('tc-dt');populateColabs('tc-colab');setToday('tc-flt');renderTconfTbl();updateTconfLimit();updateTconfConf()}
   if(page==='chk'){setToday('ck-data');populateColabs('ck-colab');renderChkForm();renderChkTbl()}
@@ -3662,6 +3926,11 @@ function updateDashStats(){
   setLC('lc-oleo', DB.get('oleo').length > 0 ? `${DB.get('oleo').length} reg.` : '0');
   const valExp=DB.get('val').filter(r=>r.estado==='exp'||r.estado==='aviso').length;
   setLC('lc-val',  valExp>0?`${valExp} alertas`:`${DB.get('val').length} total`);
+  setLC('lc-oleo_rec',  DB.get('oleo_rec').length  > 0 ? `${DB.get('oleo_rec').length} reg.`  : '0');
+  setLC('lc-pragas',    DB.get('pragas').length    > 0 ? `${DB.get('pragas').length} reg.`    : '0');
+  setLC('lc-medicos',   DB.get('medicos').length   > 0 ? `${DB.get('medicos').length} reg.`   : '0');
+  const extNc = DB.get('extintores').filter(e=>e.estado==='vencido').length;
+  setLC('lc-extintores',DB.get('extintores').length> 0 ? (extNc>0?`${extNc} venc.`:`${DB.get('extintores').length} reg.`) : '0');
   setLC('lc-sob',   DB.get('sob').length > 0 ? `${DB.get('sob').length} reg.` : '0');
   setLC('lc-rec',   DB.get('rec').length > 0 ? `${DB.get('rec').length} reg.` : '0');
   setLC('lc-hort',  DB.get('hort').length > 0 ? `${DB.get('hort').length} reg.` : '0');
@@ -3679,7 +3948,7 @@ function updateDashStats(){
 // ═══════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════
-const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','produtos','email','visual','github'];
+const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','produtos','email','visual','modulos','github'];
 
 function switchCfgTab(tab){
   CFG_TABS.forEach(t=>{const e=document.getElementById('cfg-'+t);if(e)e.style.display=t===tab?'':'none'});
@@ -3690,6 +3959,7 @@ function switchCfgTab(tab){
   if(tab==='sobremesas')renderCfgList('sobremesas');
   if(tab==='produtos')renderProdutosList();
   if(tab==='visual'){ renderThemeGrid(); updateFontSizeBtns(localStorage.getItem('h2_fontsize')||'normal'); }
+  if(tab==='modulos'){ renderModulesCfg(); }
 }
 
 function loadCfg(){
@@ -4041,6 +4311,10 @@ async function syncToGitHub(){
       chk:  DB.get('chk'),
       hort: DB.get('hort'),
       tconf:DB.get('tconf'),
+      oleo_rec:   DB.get('oleo_rec'),
+      pragas:     DB.get('pragas'),
+      medicos:    DB.get('medicos'),
+      extintores: DB.get('extintores'),
       nc:   DB.get('nc').map(r=>({...r, fotos:[]})),
     };
 
@@ -6206,6 +6480,269 @@ function renderTconfTbl(){
 }
 
 // ═══════════════════════════════════════════
+// SISTEMA DE MÓDULOS
+// ═══════════════════════════════════════════
+const ALL_MODULES = {
+  // Registos diários
+  temp:       {label:'🌡️ Temperaturas',      group:'diarios'},
+  limp:       {label:'🧹 Limpeza',            group:'diarios'},
+  oleo:       {label:'🫙 Óleos fritos',       group:'diarios'},
+  val:        {label:'📅 Validades',           group:'diarios'},
+  sob:        {label:'🍮 Sobremesas',          group:'diarios'},
+  rec:        {label:'📦 Recepção mercadoria', group:'diarios'},
+  hort:       {label:'🥬 Hortícolas',          group:'diarios'},
+  tconf:      {label:'🔥 T° Confecção',        group:'diarios'},
+  chk:        {label:'✅ Check-list semanal',  group:'diarios'},
+  nc:         {label:'⚠️ Não Conformidades',   group:'diarios'},
+  // Registos ocasionais
+  oleo_rec:   {label:'🛢️ Recolha de Óleos',   group:'ocasionais'},
+  pragas:     {label:'🐀 Controlo de Pragas',  group:'ocasionais'},
+  medicos:    {label:'🩺 Médicos da Equipa',   group:'ocasionais'},
+  extintores: {label:'🧯 Extintores',          group:'ocasionais'},
+};
+
+function getModules(){
+  try {
+    const saved = JSON.parse(localStorage.getItem('h2_modules')||'{}');
+    // Por defeito todos activos
+    const result = {};
+    Object.keys(ALL_MODULES).forEach(k => {
+      result[k] = saved[k] !== undefined ? saved[k] : true;
+    });
+    return result;
+  } catch(e) {
+    return Object.fromEntries(Object.keys(ALL_MODULES).map(k=>[k,true]));
+  }
+}
+
+function saveModules(mods){
+  localStorage.setItem('h2_modules', JSON.stringify(mods));
+  applyModules();
+}
+
+function applyModules(){
+  const mods = getModules();
+  // Mostrar/esconder botões do launcher
+  document.querySelectorAll('.mod-btn').forEach(btn => {
+    const mod = btn.dataset.mod;
+    if(!mod) return;
+    btn.style.display = mods[mod] !== false ? '' : 'none';
+  });
+  // Mostrar/esconder secção "Registos Ocasionais" se nenhum activo
+  const algumOcasional = ['oleo_rec','pragas','medicos','extintores'].some(k => mods[k] !== false);
+  const secOcas = document.getElementById('section-ocasionais');
+  const gridOcas = document.getElementById('grid-ocasionais');
+  if(secOcas)  secOcas.style.display  = algumOcasional ? '' : 'none';
+  if(gridOcas) gridOcas.style.display = algumOcasional ? '' : 'none';
+}
+
+function renderModulesCfg(){
+  const el = document.getElementById('modules-cfg-list');
+  if(!el) return;
+  const mods = getModules();
+  const groups = {diarios:'📋 Registos Diários', ocasionais:'📁 Registos Ocasionais'};
+  let html = '';
+  Object.entries(groups).forEach(([group, groupLabel]) => {
+    html += `<div style="font-size:12px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px">${groupLabel}</div>`;
+    Object.entries(ALL_MODULES).filter(([k,v])=>v.group===group).forEach(([k,v])=>{
+      const on = mods[k] !== false;
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:14px">${v.label}</span>
+        <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+          <input type="checkbox" ${on?'checked':''} onchange="toggleModule('${k}',this.checked)"
+            style="opacity:0;width:0;height:0;position:absolute">
+          <span style="position:absolute;inset:0;border-radius:24px;background:${on?'var(--acc)':'var(--s3)'};transition:.2s;border:1px solid var(--border2)">
+            <span style="position:absolute;top:2px;left:${on?'22':'2'}px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)"></span>
+          </span>
+        </label>
+      </div>`;
+    });
+  });
+  el.innerHTML = html;
+}
+
+function toggleModule(mod, on){
+  const mods = getModules();
+  mods[mod] = on;
+  saveModules(mods);
+  renderModulesCfg();
+}
+
+// ═══════════════════════════════════════════
+// RECOLHA DE ÓLEOS USADOS
+// ═══════════════════════════════════════════
+function saveOleoRec(){
+  const op = document.getElementById('or-operador').value.trim();
+  if(!op){toast('Indique o operador de recolha','warn');return}
+  DB.push('oleo_rec',{
+    data:       document.getElementById('or-dt').value,
+    quantidade: document.getElementById('or-qtd').value,
+    operador:   op,
+    guia:       document.getElementById('or-guia').value.trim(),
+    destino:    document.getElementById('or-destino').value,
+    colaborador:document.getElementById('or-colab').value,
+    obs:        document.getElementById('or-obs').value,
+  });
+  toast('✅ Recolha guardada!');
+  ['or-qtd','or-operador','or-guia','or-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  setToday('or-dt');
+  renderOleoRecTbl();
+  renderDash();
+}
+
+function renderOleoRecTbl(){
+  const el=document.getElementById('oleo_rec-tbl');if(!el)return;
+  const rows=DB.get('oleo_rec');
+  if(!rows.length){el.innerHTML='<div style="color:var(--txt3);font-size:13px;padding:12px 0">Sem registos</div>';return}
+  el.innerHTML=rows.slice(0,20).map(r=>`
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:8px">
+      <div>
+        <div style="font-size:14px;font-weight:600">🛢️ ${r.quantidade||'?'}L → ${r.operador||'—'}</div>
+        <div style="font-size:12px;color:var(--txt2)">${r.guia?'Guia: '+r.guia+' · ':''}{${r.data||'—'}}</div>
+      </div>
+      <span style="font-size:11px;color:var(--txt3);white-space:nowrap">${r.data||''}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// CONTROLO DE PRAGAS
+// ═══════════════════════════════════════════
+function savePragas(){
+  const empresa = document.getElementById('pr-empresa').value.trim();
+  DB.push('pragas',{
+    data:      document.getElementById('pr-dt').value,
+    tipo:      document.getElementById('pr-tipo').value,
+    empresa,
+    praga:     document.getElementById('pr-praga').value,
+    produto:   document.getElementById('pr-produto').value.trim(),
+    proxima:   document.getElementById('pr-proxima').value,
+    locais:    document.getElementById('pr-locais').value.trim(),
+    conf:      document.getElementById('pr-conf').value,
+    obs:       document.getElementById('pr-obs').value,
+  });
+  toast('✅ Registo de pragas guardado!');
+  ['pr-empresa','pr-produto','pr-locais','pr-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  setToday('pr-dt');
+  renderPragasTbl();
+  renderDash();
+}
+
+function renderPragasTbl(){
+  const el=document.getElementById('pragas-tbl');if(!el)return;
+  const rows=DB.get('pragas');
+  if(!rows.length){el.innerHTML='<div style="color:var(--txt3);font-size:13px;padding:12px 0">Sem registos</div>';return}
+  const conf={ok:'✅',nc:'❌',em_tratamento:'⚠️'};
+  el.innerHTML=rows.slice(0,20).map(r=>`
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:8px">
+      <div>
+        <div style="font-size:14px;font-weight:600">${conf[r.conf]||'—'} ${r.tipo||'—'}</div>
+        <div style="font-size:12px;color:var(--txt2)">${r.praga||''} ${r.empresa?'· '+r.empresa:''}</div>
+        <div style="font-size:11px;color:var(--txt3)">${r.data||'—'}${r.proxima?' → próx: '+r.proxima:''}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// CONTROLOS MÉDICOS
+// ═══════════════════════════════════════════
+function saveMedicos(){
+  const colab = document.getElementById('md-colab').value;
+  if(!colab){toast('Seleccione o colaborador','warn');return}
+  DB.push('medicos',{
+    data:      document.getElementById('md-dt').value,
+    colaborador:colab,
+    tipo:      document.getElementById('md-tipo').value,
+    validade:  document.getElementById('md-validade').value,
+    medico:    document.getElementById('md-medico').value.trim(),
+    aptidao:   document.getElementById('md-aptidao').value,
+    obs:       document.getElementById('md-obs').value,
+  });
+  toast('✅ Registo médico guardado!');
+  ['md-medico','md-validade','md-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  setToday('md-dt');
+  renderMedicosTbl();
+  renderDash();
+}
+
+function renderMedicosTbl(){
+  const el=document.getElementById('medicos-tbl');if(!el)return;
+  const rows=DB.get('medicos');
+  if(!rows.length){el.innerHTML='<div style="color:var(--txt3);font-size:13px;padding:12px 0">Sem registos</div>';return}
+  const apt={apto:'✅ Apto',apto_cond:'⚠️ C/ cond.',inapto:'❌ Inapto'};
+  el.innerHTML=rows.slice(0,30).map(r=>`
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:8px">
+      <div>
+        <div style="font-size:14px;font-weight:600">🩺 ${r.colaborador||'—'}</div>
+        <div style="font-size:12px;color:var(--txt2)">${apt[r.aptidao]||r.aptidao||'—'} · ${r.tipo||''}</div>
+        <div style="font-size:11px;color:var(--txt3)">${r.data||'—'}${r.validade?' → validade: '+r.validade:''}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// EXTINTORES
+// ═══════════════════════════════════════════
+function saveExtintores(){
+  const extId = document.getElementById('ex-id').value.trim();
+  if(!extId){toast('Indique a identificação do extintor','warn');return}
+  // Verificar se já existe — actualizar
+  const todos  = DB.get('extintores');
+  const idxExistente = todos.findIndex(e=>e.ext_id===extId);
+  const reg = {
+    ext_id:    extId,
+    tipo:      document.getElementById('ex-tipo').value,
+    local:     document.getElementById('ex-local').value.trim(),
+    cap:       document.getElementById('ex-cap').value.trim(),
+    dt_insp:   document.getElementById('ex-dt-insp').value,
+    dt_val:    document.getElementById('ex-dt-val').value,
+    empresa:   document.getElementById('ex-empresa').value.trim(),
+    estado:    document.getElementById('ex-estado').value,
+    obs:       document.getElementById('ex-obs').value,
+    updated:   new Date().toISOString(),
+  };
+  if(idxExistente>=0){
+    todos[idxExistente]={...todos[idxExistente],...reg};
+    DB.set('extintores',todos);
+    toast('✅ Extintor actualizado!');
+  } else {
+    DB.push('extintores',reg);
+    toast('✅ Extintor registado!');
+  }
+  ['ex-id','ex-local','ex-cap','ex-dt-val','ex-empresa','ex-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  setToday('ex-dt-insp');
+  renderExtintoresTbl();
+  renderDash();
+}
+
+function renderExtintoresTbl(){
+  const el=document.getElementById('extintores-tbl');if(!el)return;
+  const rows=DB.get('extintores');
+  if(!rows.length){el.innerHTML='<div style="color:var(--txt3);font-size:13px;padding:12px 0">Nenhum extintor registado</div>';return}
+  const est={ok:'✅',alerta:'⚠️',vencido:'❌'};
+  el.innerHTML=rows.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:8px">
+      <div style="min-width:0">
+        <div style="font-size:14px;font-weight:600">${est[r.estado]||'—'} ${r.ext_id} — ${r.tipo||''}</div>
+        <div style="font-size:12px;color:var(--txt2)">${r.local||'—'} ${r.cap?'· '+r.cap:''}</div>
+        <div style="font-size:11px;color:var(--txt3)">Insp: ${r.dt_insp||'—'}${r.dt_val?' · Val: '+r.dt_val:''}</div>
+      </div>
+      <button onclick="preencherExistente('${r.ext_id}')" style="flex-shrink:0;padding:5px 10px;background:var(--s3);border:1px solid var(--border2);border-radius:6px;font-size:12px;color:var(--txt2);cursor:pointer">✏️</button>
+    </div>`).join('');
+}
+
+function preencherExistente(extId){
+  const r = DB.get('extintores').find(e=>e.ext_id===extId);
+  if(!r) return;
+  ['id','tipo','local','cap','dt_insp','dt_val','empresa','estado','obs'].forEach(f=>{
+    const el=document.getElementById('ex-'+f.replace('_','-'));
+    if(el) el.value=r[f.replace('-','_')]||r[f]||'';
+  });
+  document.getElementById('ex-id').value = r.ext_id;
+  window.scrollTo({top:0,behavior:'smooth'});
+  toast('📝 Pronto para editar — guarda quando terminar');
+}
+
+// ═══════════════════════════════════════════
 // AUTO-SYNC
 // ═══════════════════════════════════════════
 
@@ -6322,7 +6859,7 @@ async function ghAutoSave(silent){
 // MERGE CENTRAL — usado por todos os imports
 // ═══════════════════════════════════════════
 function ghMergeData(data){
-  const RECORD_KEYS = ['temp','limp','oleo','val','sob','rec','chk','nc','hort','tconf'];
+  const RECORD_KEYS = ['temp','limp','oleo','val','sob','rec','chk','nc','hort','tconf','oleo_rec','pragas','medicos','extintores'];
   const labels = {temp:'🌡️',limp:'🧹',oleo:'🫙',val:'📅',sob:'🍮',rec:'📦',chk:'✅',nc:'⚠️'};
   let added = 0;
   const summary = [];
@@ -7090,6 +7627,8 @@ function init(){
   loadThemeSettings();
   // ── Logo do parceiro ──
   loadPartnerLogo();
+  // ── Aplicar módulos activos ──
+  applyModules();
 
   // ── Verificar licença / trial ──
   const licStatus = licCheck();
