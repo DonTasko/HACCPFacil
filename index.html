@@ -1134,8 +1134,8 @@ input[type=range]::-webkit-slider-thumb{
   <!-- ══ /ONBOARDING ══ -->
 
   <!-- ══ POPUP ZONAS DE LIMPEZA ══ -->
-  <div id="zona-popup" style="display:none;position:fixed;inset:0;z-index:8700;background:rgba(0,0,0,.7)" onclick="if(event.target===this)closeZonaPopup()">
-    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;max-height:75vh;display:flex;flex-direction:column" onclick="event.stopPropagation()">
+  <div id="zona-popup" style="display:none;position:fixed;inset:0;z-index:8700;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeZonaPopup()">
+    <div style="width:100%;max-width:520px;background:var(--s1);border-radius:20px 20px 0 0;max-height:75vh;display:flex;flex-direction:column" onclick="event.stopPropagation()">
       <div style="padding:20px 24px 12px;flex-shrink:0;border-bottom:1px solid var(--border)">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800" id="zona-popup-title">Zonas</div>
@@ -1143,8 +1143,8 @@ input[type=range]::-webkit-slider-thumb{
         </div>
         <div style="font-size:12px;color:var(--txt2)">Seleccione as zonas que foram limpas</div>
       </div>
-      <div id="zona-popup-list" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:12px 24px;display:flex;flex-direction:column;gap:10px"></div>
-      <div style="padding:16px 24px;flex-shrink:0;display:flex;gap:10px;border-top:1px solid var(--border);background:var(--s1)">
+      <div id="zona-popup-list" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 24px;display:flex;flex-direction:column;gap:10px"></div>
+      <div style="padding:16px 24px;flex-shrink:0;display:flex;gap:10px;border-top:1px solid var(--border)">
         <button onclick="closeZonaPopup()" style="flex:1;padding:13px;background:var(--s2);border:1px solid var(--border2);border-radius:10px;color:var(--txt);font-size:15px;font-weight:600;cursor:pointer">Cancelar</button>
         <button onclick="confirmZonas()" style="flex:1;padding:13px;background:var(--acc);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">✅ Confirmar</button>
       </div>
@@ -3428,7 +3428,7 @@ function openZonaPopup(localId){
     });
   });
 
-  document.getElementById('zona-popup').style.display = 'block';
+  document.getElementById('zona-popup').style.display = 'flex';
 }
 
 function toggleZona(idx, nome){
