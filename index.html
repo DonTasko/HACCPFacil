@@ -1135,16 +1135,16 @@ input[type=range]::-webkit-slider-thumb{
 
   <!-- ══ POPUP ZONAS DE LIMPEZA ══ -->
   <div id="zona-popup" style="display:none;position:fixed;inset:0;z-index:8700;background:rgba(0,0,0,.7)" onclick="if(event.target===this)closeZonaPopup()">
-    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:24px;max-height:80vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div>
+    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;max-height:75vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+      <div style="padding:20px 24px 12px;flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800" id="zona-popup-title">Zonas</div>
-          <div style="font-size:12px;color:var(--txt2);margin-top:2px">Seleccione as zonas que foram limpas</div>
+          <button onclick="closeZonaPopup()" style="background:none;border:none;color:var(--txt2);font-size:22px;cursor:pointer;padding:4px">×</button>
         </div>
-        <button onclick="closeZonaPopup()" style="background:none;border:none;color:var(--txt2);font-size:22px;cursor:pointer;padding:4px">×</button>
+        <div style="font-size:12px;color:var(--txt2)">Seleccione as zonas que foram limpas</div>
       </div>
-      <div id="zona-popup-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
-      <div style="display:flex;gap:10px">
+      <div id="zona-popup-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 24px;touch-action:pan-y"></div>
+      <div style="padding:16px 24px;flex-shrink:0;display:flex;gap:10px;border-top:1px solid var(--border)">
         <button onclick="closeZonaPopup()" style="flex:1;padding:13px;background:var(--s2);border:1px solid var(--border2);border-radius:10px;color:var(--txt);font-size:15px;font-weight:600;cursor:pointer">Cancelar</button>
         <button onclick="confirmZonas()" style="flex:1;padding:13px;background:var(--acc);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">✅ Confirmar</button>
       </div>
@@ -3071,16 +3071,18 @@ input[type=range]::-webkit-slider-thumb{
         </div>
       </div>
 
+      <!-- MÓDULOS -->
+      <div id="cfg-modulos" style="display:none">
+        <div class="cfg-section">
+          <div class="cfg-section-hd">🧩 Módulos Activos</div>
+          <p style="font-size:13px;color:var(--txt2);margin-bottom:16px">Activar ou desactivar módulos. Os módulos desactivados não aparecem no dashboard.</p>
+          <div id="modules-cfg-list"></div>
+        </div>
+      </div>
+
       <!-- GITHUB -->
       <div id="cfg-github" style="display:none">
         <div class="cfg-section">
-          <!-- ══ MÓDULOS ══ -->
-          <div class="cfg-section" id="cfg-modulos" style="display:none">
-            <div class="cfg-section-hd">🧩 Módulos Activos</div>
-            <p style="font-size:13px;color:var(--txt2);margin-bottom:16px">Activar ou desactivar módulos. Os módulos desactivados não aparecem no dashboard.</p>
-            <div id="modules-cfg-list"></div>
-          </div>
-
           <!-- ══ GITHUB ══ -->
           <div class="cfg-section-hd">🐙 Sincronização com GitHub</div>
           <div class="cfg-section-body">
@@ -3395,6 +3397,7 @@ function openZonaPopup(localId){
   document.getElementById('zona-popup-title').textContent = '📍 ' + local.nome;
 
   const list = document.getElementById('zona-popup-list');
+  list.style.cssText = 'flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 24px 16px;touch-action:pan-y;display:flex;flex-direction:column;gap:10px';
   list.innerHTML = local.zonas.map((z,i)=>{
     const checked = sel.includes(z);
     return `<div class="zpop-item" data-idx="${i}" style="display:flex;align-items:center;gap:12px;background:${checked?'rgba(59,130,246,.08)':'var(--s2)'};border:1.5px solid ${checked?'var(--acc)':'var(--border)'};border-radius:10px;padding:13px 14px;cursor:pointer;transition:all .15s" id="zpop-${i}">
@@ -7646,7 +7649,7 @@ function init(){
     let el = e.target;
     let insideScroll = false;
     while(el && el !== document.body){
-      if(el.classList && (el.classList.contains('scroll-area') || el.classList.contains('modal') || el.classList.contains('more-drawer') || el.classList.contains('tab-row') || el.classList.contains('pv-strip') || el.classList.contains('table-wrap') || el.id==='print-overlay' || el.id==='pdf-content-wrap' || el.id==='onboarding' || el.id==='license-screen')){
+      if(el.classList && (el.classList.contains('scroll-area') || el.classList.contains('modal') || el.classList.contains('more-drawer') || el.classList.contains('tab-row') || el.classList.contains('pv-strip') || el.classList.contains('table-wrap') || el.id==='print-overlay' || el.id==='pdf-content-wrap' || el.id==='onboarding' || el.id==='license-screen' || el.id==='zona-popup-list' || el.id==='zona-popup')){
         insideScroll = true; break;
       }
       el = el.parentElement;
