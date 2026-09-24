@@ -3169,7 +3169,7 @@ input[type=range]::-webkit-slider-thumb{
     💡 Toque em <strong>Imprimir</strong> e escolha "Guardar como PDF" ou envie para impressora
   </div>
   <!-- Conteúdo do relatório injectado aqui em vez de iframe -->
-  <div id="pdf-content-wrap" style="flex:1;overflow-y:auto;background:#fff;-webkit-overflow-scrolling:touch"></div>
+  <div id="pdf-content-wrap" style="flex:1;overflow-y:auto;background:#fff;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column"></div>
 </div>
 
 <!-- ── MORE DRAWER ── -->
@@ -5418,6 +5418,18 @@ function generatePDF(){
     font-size:8.5pt;line-height:1.4;
   }
 
+  /* ── Forçar branco na impressão ── */
+  @media print{
+    html,body,*{
+      background-color:#fff!important;
+      color:#1e293b!important;
+      -webkit-print-color-adjust:exact!important;
+      print-color-adjust:exact!important;
+    }
+    .toolbar{display:none!important}
+    .doc{margin:0!important;max-width:100%!important}
+  }
+
   /* ── TOOLBAR (só ecrã) ── */
   .toolbar{
     position:sticky;top:0;z-index:100;
@@ -5729,28 +5741,13 @@ function showPdfPreviewInApp(pdfHtml){
   const wrap    = document.getElementById('pdf-content-wrap');
   if(!overlay || !wrap) return;
 
-  // Usar Shadow DOM para isolamento total de CSS — o estilo do PDF não
-  // interfere com a app e o CSS da app não afecta o PDF
   wrap.innerHTML = '';
 
-  // Criar container com Shadow DOM
-  const host = document.createElement('div');
-  host.style.cssText = 'width:100%;min-height:100%;background:#fff;display:block';
-  wrap.appendChild(host);
-
-  let shadow;
-  try {
-    shadow = host.attachShadow({mode:'open'});
-    shadow.innerHTML = pdfHtml;
-  } catch(e) {
-    // Fallback se Shadow DOM não suportado (Android antigo)
-    // Usar iframe com srcdoc
-    wrap.innerHTML = '';
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'width:100%;height:100vh;border:none;background:#fff;display:block';
-    iframe.srcdoc = pdfHtml;
-    wrap.appendChild(iframe);
-  }
+  // Usar iframe srcdoc — isolamento total: CSS da app não interfere de forma alguma
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'width:100%;height:100%;border:none;background:#fff;display:block;flex:1';
+  iframe.setAttribute('srcdoc', pdfHtml);
+  wrap.appendChild(iframe);
 
   overlay.style.display = 'flex';
 }
@@ -5759,34 +5756,26 @@ function doPrint(){
   const ui   = document.getElementById('print-ui');
   const tip  = document.getElementById('print-tip');
   const wrap = document.getElementById('pdf-content-wrap');
-
-  // Verificar se usou iframe fallback
   const iframe = wrap?.querySelector('iframe');
-  if(iframe){
-    // Imprimir via iframe
-    if(ui)  ui.style.display = 'none';
-    if(tip) tip.style.display= 'none';
-    setTimeout(()=>{
-      try{ iframe.contentWindow.print(); }
-      catch(e){ window.print(); }
-      setTimeout(()=>{
-        if(ui)  ui.style.display = 'flex';
-        if(tip) tip.style.display= 'block';
-      },500);
-    },100);
-    return;
-  }
 
-  // Shadow DOM — imprimir via window.print() com @media print
-  if(ui)  ui.style.display = 'none';
-  if(tip) tip.style.display= 'none';
+  if(ui)  ui.style.display  = 'none';
+  if(tip) tip.style.display = 'none';
+
   setTimeout(()=>{
-    window.print();
+    try{
+      if(iframe && iframe.contentWindow){
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      } else {
+        window.print();
+      }
+    } catch(e){ window.print(); }
+
     setTimeout(()=>{
-      if(ui)  ui.style.display = 'flex';
-      if(tip) tip.style.display= 'block';
-    },500);
-  },100);
+      if(ui)  ui.style.display  = 'flex';
+      if(tip) tip.style.display = 'block';
+    }, 500);
+  }, 150);
 }
 
 function closePrintOverlay(){
