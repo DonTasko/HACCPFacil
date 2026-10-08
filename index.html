@@ -2725,7 +2725,8 @@ input[type=range]::-webkit-slider-thumb{
         <button class="cfg-tab" onclick="switchCfgTab('email')">📧<br><span>Email</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('visual')">🎨<br><span>Visual</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('modulos')">🧩<br><span>Módulos</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('github')" style="grid-column:2/4">🐙<br><span>GitHub</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('notif')">🔔<br><span>Alertas</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('github')" style="grid-column:1/4">🐙<br><span>GitHub</span></button>
       </div>
 
       <!-- EMPRESA -->
@@ -3082,7 +3083,70 @@ input[type=range]::-webkit-slider-thumb{
         </div>
       </div>
 
-      <!-- GITHUB -->
+      <!-- NOTIFICAÇÕES -->
+      <div id="cfg-notif" style="display:none">
+        <div class="cfg-section">
+          <div class="cfg-section-hd">🔔 Lembretes Diários</div>
+          <div class="cfg-section-body">
+            <p style="font-size:13px;color:var(--txt-2);margin:0 0 14px">Recebe uma notificação todos os dias para não esquecer os registos obrigatórios.</p>
+
+            <!-- Estado da permissão -->
+            <div id="notif-status-bar" style="padding:10px 12px;border-radius:8px;margin-bottom:14px;font-size:13px;background:var(--card-bg);border:1px solid var(--border)">
+              <span id="notif-status-icon">⏳</span> <span id="notif-status-txt">A verificar...</span>
+            </div>
+
+            <!-- Toggle -->
+            <div class="toggle-row" style="margin-bottom:16px">
+              <div><div class="toggle-lbl">Activar lembretes</div></div>
+              <label class="toggle"><input type="checkbox" id="notif-enabled" onchange="notifToggle(this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+
+            <!-- Hora do lembrete -->
+            <div id="notif-time-row" style="margin-bottom:16px">
+              <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">⏰ Hora do lembrete</label>
+              <input type="time" id="notif-time" value="08:00" onchange="notifSaveSettings()"
+                style="width:120px;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg,var(--card-bg));color:var(--txt);font-size:15px">
+            </div>
+
+            <!-- Modules a verificar -->
+            <div id="notif-mods-row" style="margin-bottom:16px">
+              <label style="font-size:13px;font-weight:600;display:block;margin-bottom:8px">📋 Verificar módulos</label>
+              <div id="notif-mods-list" style="display:flex;flex-wrap:wrap;gap:8px">
+                <!-- gerado por JS -->
+              </div>
+            </div>
+
+            <!-- Mensagem personalizada -->
+            <div style="margin-bottom:16px">
+              <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">💬 Mensagem do lembrete</label>
+              <input type="text" id="notif-msg" placeholder="Bom dia! Não esqueça os registos de hoje." maxlength="100" onchange="notifSaveSettings()"
+                style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg,var(--card-bg));color:var(--txt);font-size:13px">
+            </div>
+
+            <!-- Botões -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" onclick="notifTestNow()" style="flex:1;min-width:120px;background:var(--acc)">🔔 Testar agora</button>
+              <button class="btn" onclick="notifSaveSettings()" style="flex:1;min-width:120px">💾 Guardar</button>
+            </div>
+
+            <!-- Info push background -->
+            <div class="alert alert-info" style="margin-top:14px;font-size:12px">
+              <span>📱</span>
+              <span>Para receber notificações com a app fechada, instala o HACCP Pro no ecrã inicial (Adicionar ao ecrã inicial no browser).</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Última notificação -->
+        <div class="cfg-section">
+          <div class="cfg-section-hd">📊 Histórico de Lembretes</div>
+          <div class="cfg-section-body">
+            <div id="notif-history" style="font-size:13px;color:var(--txt-2)">—</div>
+          </div>
+        </div>
+      </div>
+
+<!-- GITHUB -->
       <div id="cfg-github" style="display:none">
         <div class="cfg-section">
           <!-- ══ GITHUB ══ -->
@@ -3953,7 +4017,7 @@ function updateDashStats(){
 // ═══════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════
-const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','produtos','email','visual','modulos','github'];
+const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','produtos','email','visual','modulos','notif','github'];
 
 function switchCfgTab(tab){
   CFG_TABS.forEach(t=>{const e=document.getElementById('cfg-'+t);if(e)e.style.display=t===tab?'':'none'});
@@ -3962,6 +4026,7 @@ function switchCfgTab(tab){
   if(tab==='equipamentos')renderCfgList('equipamentos');
   if(tab==='colaboradores')renderCfgList('colaboradores');
   if(tab==='sobremesas')renderCfgList('sobremesas');
+  if(tab==='notif')notifInitPanel();
   if(tab==='produtos')renderProdutosList();
   if(tab==='visual'){ renderThemeGrid(); updateFontSizeBtns(localStorage.getItem('h2_fontsize')||'normal'); }
   if(tab==='modulos'){ renderModulesCfg(); }
@@ -7749,6 +7814,301 @@ function loadThemeSettings(){
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// 🔔 NOTIFICAÇÕES — Web Push + Browser Notifications
+// ══════════════════════════════════════════════════════
+
+const NOTIF_MODS = [
+  {id:'temp',  label:'🌡️ Temperaturas'},
+  {id:'limp',  label:'🧹 Limpeza'},
+  {id:'oleo',  label:'🛢️ Óleos'},
+  {id:'val',   label:'📦 Validades'},
+  {id:'sob',   label:'🍮 Sobremesas'},
+  {id:'rec',   label:'📥 Recepção'},
+  {id:'hort',  label:'🥬 Hortícolas'},
+  {id:'tconf', label:'🔥 T° Confecção'},
+  {id:'chk',   label:'✅ Check-list'},
+  {id:'nc',    label:'⚠️ Não Conformidades'},
+];
+
+const VAPID_PUBLIC_KEY = 'BKRKA_LvrJ9Ma8kZT3gXyGR6KOsuJOjP-u_8PT_rSznPBTl2aMZPKGKyk-ZKXhkYIYdEkcO7pfCesM1Wb2qn3C8';
+const WORKER_URL = 'https://haccp-sync.dontasko-geral.workers.dev';
+
+// Converter base64url para Uint8Array (para applicationServerKey)
+function urlBase64ToUint8Array(b64url) {
+  const pad = '='.repeat((4 - b64url.length % 4) % 4);
+  const b64 = (b64url + pad).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(b64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+// Ler/guardar preferências de notificação
+function notifGetPrefs() {
+  try { return JSON.parse(localStorage.getItem('h2_notif_prefs') || '{}'); } catch(e) { return {}; }
+}
+function notifSavePrefs(p) {
+  localStorage.setItem('h2_notif_prefs', JSON.stringify(p));
+}
+
+// Inicializar painel
+async function notifInitPanel() {
+  const prefs = notifGetPrefs();
+
+  // Renderizar módulos
+  const list = document.getElementById('notif-mods-list');
+  if (list) {
+    const activeMods = DB.getObj('cfg_modules') || {};
+    list.innerHTML = NOTIF_MODS
+      .filter(m => activeMods[m.id] !== false)
+      .map(m => {
+        const checked = prefs.mods ? prefs.mods.includes(m.id) : true;
+        return `<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;background:var(--card-bg);padding:6px 10px;border-radius:8px;border:1px solid var(--border)">
+          <input type="checkbox" data-mod="${m.id}" ${checked?'checked':''} onchange="notifSaveSettings()" style="margin:0"> ${m.label}
+        </label>`;
+      }).join('');
+  }
+
+  // Hora e mensagem
+  const el = document.getElementById('notif-time');
+  if (el) el.value = prefs.time || '08:00';
+  const msg = document.getElementById('notif-msg');
+  if (msg) msg.value = prefs.msg || '';
+
+  // Estado da permissão
+  await notifUpdateStatus();
+
+  // Toggle
+  const tog = document.getElementById('notif-enabled');
+  if (tog) tog.checked = !!prefs.enabled;
+
+  // Histórico
+  notifRenderHistory();
+}
+
+async function notifUpdateStatus() {
+  const bar = document.getElementById('notif-status-bar');
+  const icon = document.getElementById('notif-status-icon');
+  const txt = document.getElementById('notif-status-txt');
+  if (!bar) return;
+
+  if (!('Notification' in window)) {
+    icon.textContent = '❌'; txt.textContent = 'Este browser não suporta notificações.';
+    bar.style.background = '#7f1d1d22'; return;
+  }
+
+  const perm = Notification.permission;
+  if (perm === 'granted') {
+    icon.textContent = '✅'; txt.textContent = 'Notificações autorizadas.';
+    bar.style.background = '#14532d22';
+  } else if (perm === 'denied') {
+    icon.textContent = '🚫'; txt.textContent = 'Notificações bloqueadas. Activa nas definições do browser.';
+    bar.style.background = '#7f1d1d22';
+  } else {
+    icon.textContent = '❓'; txt.textContent = 'Permissão não solicitada ainda. Activa para receber lembretes.';
+    bar.style.background = 'var(--card-bg)';
+  }
+}
+
+async function notifToggle(enabled) {
+  if (enabled) {
+    // Pedir permissão
+    if (!('Notification' in window)) {
+      showAlert('Este browser não suporta notificações.', 'error'); return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      document.getElementById('notif-enabled').checked = false;
+      showAlert('Permissão negada. Activa nas definições do browser.', 'error');
+      return;
+    }
+    // Registar service worker
+    await notifRegisterSW();
+  }
+  const prefs = notifGetPrefs();
+  prefs.enabled = enabled;
+  notifSavePrefs(prefs);
+  notifUpdateStatus();
+  notifSaveSettings();
+  showAlert(enabled ? '🔔 Lembretes activados!' : '🔕 Lembretes desactivados.', 'success');
+}
+
+async function notifRegisterSW() {
+  if (!('serviceWorker' in navigator)) return null;
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    await reg.update();
+    return reg;
+  } catch(e) {
+    console.warn('SW registration failed:', e);
+    return null;
+  }
+}
+
+function notifSaveSettings() {
+  const prefs = notifGetPrefs();
+  const time = document.getElementById('notif-time');
+  const msg  = document.getElementById('notif-msg');
+  const mods = [...document.querySelectorAll('#notif-mods-list input[type=checkbox]')]
+    .filter(c => c.checked).map(c => c.dataset.mod);
+  if (time) prefs.time = time.value;
+  if (msg)  prefs.msg  = msg.value.trim();
+  prefs.mods = mods;
+  notifSavePrefs(prefs);
+
+  // Guardar hora no Worker (para push futuro)
+  const cfg = DB.getObj('config');
+  const nif = cfg.nif;
+  if (nif && prefs.enabled) {
+    fetch(`${WORKER_URL}/push/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nif, sync_key: 'HACCP-SYNC-2026-XKQM', notif_time: prefs.time, subscription: { endpoint: 'local', keys: {} } })
+    }).catch(() => {});
+  }
+}
+
+// Verificar se há registos hoje para um módulo
+function notifModHasToday(modId) {
+  const today = new Date().toISOString().slice(0,10);
+  const data = DB.getObj(modId);
+  if (!Array.isArray(data)) return false;
+  return data.some(r => (r.datetime || r.data || '').slice(0,10) === today);
+}
+
+// Módulos em falta hoje
+function notifMissingModsToday() {
+  const prefs = notifGetPrefs();
+  const activeMods = DB.getObj('cfg_modules') || {};
+  const modsToCheck = prefs.mods && prefs.mods.length > 0 ? prefs.mods : NOTIF_MODS.map(m=>m.id);
+  return modsToCheck.filter(id => {
+    if (activeMods[id] === false) return false;
+    return !notifModHasToday(id);
+  });
+}
+
+// Mostrar notificação browser
+async function notifShow(title, body, tag) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    // Tentar via Service Worker (funciona em background)
+    const swReg = await navigator.serviceWorker.ready.catch(() => null);
+    if (swReg) {
+      await swReg.showNotification(title, {
+        body, icon: '/logo.png', badge: '/logo.png',
+        tag: tag || 'haccp-daily',
+        renotify: false,
+        actions: [
+          { action: 'open', title: '📋 Abrir App' },
+          { action: 'dismiss', title: 'Dispensar' }
+        ]
+      });
+    } else {
+      new Notification(title, { body, icon: '/logo.png', tag: tag || 'haccp-daily' });
+    }
+    // Guardar histórico
+    const hist = JSON.parse(localStorage.getItem('h2_notif_hist') || '[]');
+    hist.unshift({ ts: new Date().toISOString(), title, body });
+    if (hist.length > 10) hist.pop();
+    localStorage.setItem('h2_notif_hist', JSON.stringify(hist));
+    notifRenderHistory();
+  } catch(e) { console.warn('Notif error:', e); }
+}
+
+// Testar notificação imediatamente
+async function notifTestNow() {
+  if (!('Notification' in window)) { showAlert('Este browser não suporta notificações.', 'error'); return; }
+  const perm = Notification.permission === 'granted'
+    ? 'granted'
+    : await Notification.requestPermission();
+  if (perm !== 'granted') { showAlert('Permissão negada.', 'error'); return; }
+
+  const prefs = notifGetPrefs();
+  const missing = notifMissingModsToday();
+  const body = missing.length > 0
+    ? `Módulos por preencher hoje: ${missing.map(id => NOTIF_MODS.find(m=>m.id===id)?.label||id).join(', ')}`
+    : (prefs.msg || 'Todos os registos de hoje estão preenchidos! ✅');
+
+  await notifShow('🛡️ HACCP Pro — Lembrete Diário', body, 'haccp-test');
+  showAlert('Notificação enviada!', 'success');
+}
+
+// Renderizar histórico de lembretes
+function notifRenderHistory() {
+  const el = document.getElementById('notif-history');
+  if (!el) return;
+  try {
+    const hist = JSON.parse(localStorage.getItem('h2_notif_hist') || '[]');
+    if (!hist.length) { el.innerHTML = '<span style="color:var(--txt-2)">Nenhum lembrete enviado ainda.</span>'; return; }
+    el.innerHTML = hist.map(h =>
+      `<div style="padding:6px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--txt-2)">${new Date(h.ts).toLocaleString('pt-PT')}</div>
+        <div style="font-size:13px">${h.title}</div>
+        <div style="font-size:12px;color:var(--txt-2)">${h.body}</div>
+      </div>`
+    ).join('');
+  } catch(e) { el.innerHTML = '—'; }
+}
+
+// ── Verificador periódico (chamado a cada minuto) ──
+let _notifCheckedToday = null;
+function notifDailyCheck() {
+  const prefs = notifGetPrefs();
+  if (!prefs.enabled) return;
+  if (Notification.permission !== 'granted') return;
+
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
+  const hhmm  = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const target = prefs.time || '08:00';
+
+  // Só disparar uma vez por dia, na hora certa (±1 min)
+  if (_notifCheckedToday === today) return;
+  if (hhmm !== target) return;
+
+  _notifCheckedToday = today;
+  localStorage.setItem('h2_notif_last', now.toISOString());
+
+  const missing = notifMissingModsToday();
+  if (missing.length === 0) return; // Tudo preenchido
+
+  const labels = missing.slice(0,4).map(id => NOTIF_MODS.find(m=>m.id===id)?.label||id).join(', ');
+  const extra  = missing.length > 4 ? ` e mais ${missing.length-4}...` : '';
+  const body   = (prefs.msg || '') + (prefs.msg ? '\n' : '') + `Por preencher: ${labels}${extra}`;
+
+  notifShow('🛡️ HACCP Pro — Registo Diário', body, 'haccp-daily');
+}
+
+// ── Verificar ao abrir app (se passou da hora e não foi enviado hoje) ──
+function notifCheckOnOpen() {
+  const prefs = notifGetPrefs();
+  if (!prefs.enabled) return;
+  if (Notification.permission !== 'granted') return;
+
+  const now   = new Date();
+  const today = now.toISOString().slice(0,10);
+  const last  = localStorage.getItem('h2_notif_last') || '';
+
+  if (last.slice(0,10) === today) return; // Já notificou hoje
+
+  const [h, m] = (prefs.time || '08:00').split(':').map(Number);
+  const target  = new Date(now); target.setHours(h, m, 0, 0);
+  if (now < target) return; // Ainda não chegou a hora
+
+  _notifCheckedToday = today;
+  localStorage.setItem('h2_notif_last', now.toISOString());
+
+  const missing = notifMissingModsToday();
+  if (missing.length === 0) return;
+
+  const labels = missing.slice(0,4).map(id => NOTIF_MODS.find(m=>m.id===id)?.label||id).join(', ');
+  const extra  = missing.length > 4 ? ` e mais ${missing.length-4}` : '';
+  const body   = (prefs.msg || '') + (prefs.msg ? ' ' : '') + `Por preencher: ${labels}${extra}`;
+  notifShow('🛡️ HACCP Pro — Registo Diário', body, 'haccp-daily');
+}
+
+// ── Hook no navigate para abrir painel Notificações ──
+const _origNavigate = typeof navigate !== 'undefined' ? navigate : null;
+
 function init(){
   // ── Aplicar tema antes de qualquer render ──
   loadThemeSettings();
@@ -7816,6 +8176,13 @@ function init(){
   // Schedule checker (every minute)
   setInterval(checkDailyReportSchedule, 60000);
   checkDailyReportSchedule();
+
+  // 🔔 Notificações — registar SW e verificar ao abrir
+  if ('serviceWorker' in navigator) {
+    notifRegisterSW();
+  }
+  setTimeout(notifCheckOnOpen, 3000); // Verificar 3s após abrir
+  setInterval(notifDailyCheck, 60000); // Verificar a cada minuto
 
   // ── Auto-sync periódico (a cada hora) ──
   setInterval(()=>ghAutoSyncPeriodic(), 60 * 60 * 1000);
