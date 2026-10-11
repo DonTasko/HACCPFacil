@@ -156,12 +156,12 @@ body{
 
 /* ── TOP BAR ── */
 .topbar{
-   height:calc(var(--top-h) + env(safe-area-inset-top));
+  height:calc(var(--top-h) + env(safe-area-inset-top));
   min-height:calc(var(--top-h) + env(safe-area-inset-top));
   background:var(--s1);
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;
-  padding:0 16px;
+  padding:env(safe-area-inset-top) 16px 0;
   gap:10px;
   z-index:100;
   position:relative;
@@ -2741,14 +2741,7 @@ input[type=range]::-webkit-slider-thumb{
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">NIF</label>
-                <div style="display:flex;gap:8px">
-                  <input type="text" class="form-input" id="c-nif" placeholder="Número de identificação fiscal" style="flex:1" inputmode="numeric" maxlength="9">
-                  <button type="button" id="nif-lookup-btn" onclick="lookupNifEmpresa()" title="Preencher dados pelo NIF"
-                    style="padding:0 14px;background:var(--acc);color:#fff;border:none;border-radius:var(--r3);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">
-                    🔍 Pesquisar
-                  </button>
-                </div>
-                <div style="font-size:11px;color:var(--txt3);margin-top:4px">Introduza o NIF e toque em Pesquisar para preencher os dados automaticamente</div>
+                <input type="text" class="form-input" id="c-nif" placeholder="Número de identificação fiscal" inputmode="numeric" maxlength="9">
               </div>
               <div class="form-group">
                 <label class="form-label">Tipo de Negócio</label>
