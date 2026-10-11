@@ -156,8 +156,8 @@ body{
 
 /* ── TOP BAR ── */
 .topbar{
-  height:var(--top-h);
-  min-height:var(--top-h);
+   height:calc(var(--top-h) + env(safe-area-inset-top));
+  min-height:calc(var(--top-h) + env(safe-area-inset-top));
   background:var(--s1);
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;
