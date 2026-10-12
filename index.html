@@ -8454,9 +8454,27 @@ const SB = {
           <input id="sb-email" type="email" placeholder="Email" autocomplete="email" style="padding:11px 14px;background:var(--s3);border:1px solid var(--border);border-radius:10px;color:var(--txt);font-size:.9rem;outline:none;width:100%;box-sizing:border-box">
           <input id="sb-pw" type="password" placeholder="Password" autocomplete="current-password" style="padding:11px 14px;background:var(--s3);border:1px solid var(--border);border-radius:10px;color:var(--txt);font-size:.9rem;outline:none;width:100%;box-sizing:border-box">
           <div id="sb-error" style="font-size:.8rem;color:var(--red);min-height:18px"></div>
+          <div id="sb-forgot" style="text-align:right;font-size:.78rem;margin-top:-4px"><a href="#" onclick="SB.resetPassword();return false" style="color:var(--acc);text-decoration:none">Esqueceste a password?</a></div>
           <button id="sb-submit-btn" onclick="SB._submit()" style="padding:12px;background:var(--acc);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">Entrar</button>
         </div>`;
       this._sbMode = 'in';
+    }
+  },
+  async resetPassword() {
+    const email = (document.getElementById('sb-email')?.value||'').trim();
+    const errEl = document.getElementById('sb-error');
+    if (!email) {
+      if(errEl) errEl.textContent='Introduz o teu email primeiro.';
+      return;
+    }
+    try {
+      const { error } = await this.client.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.href
+      });
+      if (error) throw error;
+      if(errEl) { errEl.style.color='var(--ok,#22c55e)'; errEl.textContent='Email enviado! Verifica a caixa de entrada.'; }
+    } catch(e) {
+      if(errEl) { errEl.style.color='var(--red)'; errEl.textContent='Erro: ' + (e.message||'tenta de novo'); }
     }
   },
   _sbMode: 'in',
@@ -8476,7 +8494,9 @@ const SB = {
       if(sub) sub.textContent='Criar conta';
     }
     const errEl = document.getElementById('sb-error');
-    if(errEl) errEl.textContent='';
+    if(errEl) { errEl.style.color='var(--red)'; errEl.textContent=''; }
+    const forgot = document.getElementById('sb-forgot');
+    if(forgot) forgot.style.display = mode==='in' ? '' : 'none';
   },
   async _submit() {
     const email = (document.getElementById('sb-email')?.value||'').trim();
