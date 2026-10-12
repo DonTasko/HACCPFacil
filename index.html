@@ -8291,7 +8291,10 @@ const SB = {
     this.client.auth.onAuthStateChange((event, session) => {
       this.user = session?.user || null;
       this._updateTopbar();
-      if (event === 'SIGNED_IN') {
+      if (event === 'PASSWORD_RECOVERY') {
+        // Utilizador chegou pelo link de reset — mostrar UI para nova password
+        setTimeout(() => this._showPasswordUpdateModal(), 400);
+      } else if (event === 'SIGNED_IN') {
         setTimeout(() => this.pull(), 800);
       }
     });
@@ -8460,6 +8463,45 @@ const SB = {
       this._sbMode = 'in';
     }
   },
+  _showPasswordUpdateModal() {
+    // Abrir modal com formulário para definir nova password
+    const overlay = document.getElementById('sb-modal-overlay');
+    const body    = document.getElementById('sb-modal-body');
+    if (!overlay || !body) return;
+    overlay.style.display = 'flex';
+    body.innerHTML = `
+      <div style="text-align:center;padding:8px 0 12px">
+        <div style="font-size:2rem;margin-bottom:6px">🔑</div>
+        <div style="font-size:.9rem;font-weight:600">Define nova password</div>
+        <div style="font-size:.78rem;color:var(--txt2);margin-top:4px">Mínimo 6 caracteres</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input id="sb-newpw1" type="password" placeholder="Nova password" style="padding:11px 14px;background:var(--s3);border:1px solid var(--border);border-radius:10px;color:var(--txt);font-size:.9rem;outline:none;width:100%;box-sizing:border-box">
+        <input id="sb-newpw2" type="password" placeholder="Confirmar password" style="padding:11px 14px;background:var(--s3);border:1px solid var(--border);border-radius:10px;color:var(--txt);font-size:.9rem;outline:none;width:100%;box-sizing:border-box">
+        <div id="sb-pw-error" style="font-size:.8rem;color:var(--red);min-height:18px"></div>
+        <button id="sb-pw-btn" onclick="SB.updatePassword()" style="padding:12px;background:var(--acc);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">Guardar password</button>
+      </div>`;
+  },
+  async updatePassword() {
+    const pw1   = (document.getElementById('sb-newpw1')?.value||'').trim();
+    const pw2   = (document.getElementById('sb-newpw2')?.value||'').trim();
+    const errEl = document.getElementById('sb-pw-error');
+    const btn   = document.getElementById('sb-pw-btn');
+    if (pw1.length < 6) { if(errEl) errEl.textContent='Mínimo 6 caracteres.'; return; }
+    if (pw1 !== pw2)    { if(errEl) errEl.textContent='As passwords não coincidem.'; return; }
+    if(btn){ btn.disabled=true; btn.textContent='...'; }
+    try {
+      const { error } = await this.client.auth.updateUser({ password: pw1 });
+      if (error) throw error;
+      this.closeModal();
+      toast('✅ Password actualizada! Sessão iniciada.', 'ok');
+      // A sessão já está activa após o reset — sincronizar
+      setTimeout(() => this.pull(), 800);
+    } catch(e) {
+      if(errEl) errEl.textContent = e.message || 'Erro ao actualizar password.';
+      if(btn){ btn.disabled=false; btn.textContent='Guardar password'; }
+    }
+  },
   async resetPassword() {
     const email = (document.getElementById('sb-email')?.value||'').trim();
     const errEl = document.getElementById('sb-error');
@@ -8469,7 +8511,7 @@ const SB = {
     }
     try {
       const { error } = await this.client.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.href
+        redirectTo: 'https://haccpdigital.online'
       });
       if (error) throw error;
       if(errEl) { errEl.style.color='var(--ok,#22c55e)'; errEl.textContent='Email enviado! Verifica a caixa de entrada.'; }
