@@ -7427,7 +7427,7 @@ function licCheck(){
   const saved = JSON.parse(localStorage.getItem('h2_license')||'null');
   if(saved && saved.chave){
     const v = licValidate(saved.chave, saved.nif);
-    if(v.ok) return {type:'license', ...v};
+    if(v.ok) return {type:'license', ...v, activadoEm: saved.activadoEm||null};
   }
 
   // 2. Trial activo?
@@ -7723,10 +7723,29 @@ function licShowExpiryWarning(status){
   }
 
   if(status.type === 'trial'){
-    if(subEl){ subEl.textContent=`⏳ Trial: ${status.diasRestantes} dias restantes`; subEl.style.color='var(--yellow)'; }
+    const pct = Math.round((status.diasRestantes / TRIAL_DAYS) * 100);
+    if(subEl){ subEl.textContent=`⏳ Trial: ${pct}% · ${status.diasRestantes} dias restantes`; subEl.style.color='var(--yellow)'; }
   }
-  if(status.type === 'license' && status.diasRestantes <= 30){
-    if(subEl){ subEl.textContent=`⚠️ Licença expira em ${status.diasRestantes} dias`; subEl.style.color='var(--yellow)'; }
+  if(status.type === 'license'){
+    // Calcular % de tempo restante (se temos data de activação)
+    let pctStr = '';
+    if(status.activadoEm && status.validade){
+      const ano = parseInt(status.validade.slice(0,4));
+      const mes = parseInt(status.validade.slice(4,6));
+      const expiry = new Date(ano, mes, 1);
+      const activated = new Date(status.activadoEm);
+      const totalMs = expiry - activated;
+      if(totalMs > 0){
+        const remainMs = Math.max(0, expiry - Date.now());
+        const pct = Math.round((remainMs / totalMs) * 100);
+        pctStr = ` · ${pct}%`;
+      }
+    }
+    if(status.diasRestantes <= 30){
+      if(subEl){ subEl.textContent=`⚠️ Licença expira em ${status.diasRestantes} dias${pctStr}`; subEl.style.color='var(--yellow)'; }
+    } else {
+      if(subEl){ subEl.textContent=`✅ Licença ativa${pctStr} · ${status.diasRestantes} dias`; subEl.style.color='var(--ok,#22c55e)'; }
+    }
   }
 }
 const THEMES = [
