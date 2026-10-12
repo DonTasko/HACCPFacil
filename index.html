@@ -8316,9 +8316,10 @@ const SB = {
   async signOut() {
     await this.client.auth.signOut();
     this.user = null;
-    this._updateTopbar();
+    // Limpar dados locais ao terminar sessão — SaaS multi-empresa
+    DATA_KEYS.forEach(k => localStorage.removeItem('h2_' + k));
     this.closeModal();
-    toast('👋 Sessão terminada', 'ok');
+    location.reload();
   },
 
   // ── PUSH (local → nuvem) ──────────────────
