@@ -8359,17 +8359,11 @@ const SB = {
         .maybeSingle();
       if (error) throw error;
       if (!data?.data) {
-        // Conta nova — sem dados na nuvem
-        // Verificar se há dados locais de outra empresa/sessão
-        const cfg = DB.getObj('config');
-        if (cfg && cfg.nome) {
-          // Perguntar o que fazer com os dados locais existentes
-          this._showFirstSyncModal(cfg.nome);
-        } else {
-          // Nada relevante localmente — começar limpo
-          await this.push();
-          toast('☁️ Conta ligada!', 'ok');
-        }
+        // Conta nova — sem dados na nuvem: começar sempre limpo
+        DATA_KEYS.forEach(k => localStorage.removeItem('h2_' + k));
+        await this.push(); // push vazio para criar registo
+        toast('☁️ Conta criada — a começar do zero!', 'ok');
+        setTimeout(() => location.reload(), 800);
         return;
       }
       const remote = data.data;
