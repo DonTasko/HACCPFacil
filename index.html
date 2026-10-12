@@ -10,6 +10,7 @@
 <title>HACCP Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
 /* ════════════════════════════════
    TOKENS & RESET
@@ -1331,6 +1332,10 @@ input[type=range]::-webkit-slider-thumb{
         <div id="gh-auto-indicator" style="font-size:11px;color:var(--txt3);transition:color .3s"></div>
         <div class="date-chip" id="date-chip"></div>
       </div>
+      <button id="sb-cloud-btn" onclick="SB.openModal()" title="Conta / Sincronização nuvem" style="background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:8px;font-size:18px;line-height:1;color:var(--txt2);transition:color .2s,background .2s;position:relative" onmouseenter="this.style.background='var(--s3)'" onmouseleave="this.style.background='none'">
+        <span id="sb-cloud-icon">☁️</span>
+        <span id="sb-sync-dot" style="display:none;position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:var(--green)"></span>
+      </button>
       <button class="btn-plus" onclick="openMore()" title="Novo registo">＋</button>
     </div>
   </div>
@@ -8266,6 +8271,242 @@ async function widgetSync() {
   };
 })();
 
+// ═══════════════════════════════════════════
+// SUPABASE AUTH + CLOUD SYNC
+// ═══════════════════════════════════════════
+const SUPABASE_URL  = 'https://pqrqxvpzxqwblhxtmdns.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcnF4dnB6eHF3YmxoeHRtZG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MzA1OTEsImV4cCI6MjA4NTAwNjU5MX0.84XwHtn3XLph28DOHFEaM8pFZL_dvT60pSo8mOCaJkY';
+const DATA_KEYS = ['config','cfg_locais','cfg_equipamentos','cfg_colaboradores','cfg_sobremesas','cfg_produtos',
+                   'temp','limp','oleo','val','sob','rec','chk','hort','tconf','oleo_rec','pragas','medicos','extintores','nc'];
+
+const SB = {
+  client: null,
+  user: null,
+  _syncTimer: null,
+  _syncing: false,
+
+  init() {
+    if (!window.supabase) { console.warn('supabase-js não carregou'); return; }
+    this.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    this.client.auth.onAuthStateChange((event, session) => {
+      this.user = session?.user || null;
+      this._updateTopbar();
+      if (event === 'SIGNED_IN') {
+        setTimeout(() => this.pull(), 800);
+      }
+    });
+    this.client.auth.getSession().then(({ data: { session } }) => {
+      this.user = session?.user || null;
+      this._updateTopbar();
+    });
+  },
+
+  // ── AUTH ──────────────────────────────────
+  async signIn(email, pw) {
+    const { error } = await this.client.auth.signInWithPassword({ email, password: pw });
+    if (error) throw error;
+  },
+  async signUp(email, pw) {
+    const { error } = await this.client.auth.signUp({ email, password: pw });
+    if (error) throw error;
+  },
+  async signOut() {
+    await this.client.auth.signOut();
+    this.user = null;
+    this._updateTopbar();
+    this.closeModal();
+    toast('👋 Sessão terminada', 'ok');
+  },
+
+  // ── PUSH (local → nuvem) ──────────────────
+  schedulePush() {
+    clearTimeout(this._syncTimer);
+    this._syncTimer = setTimeout(() => this.push(), 4000);
+  },
+  async push() {
+    if (!this.user || this._syncing) return;
+    this._syncing = true;
+    this._setSyncDot('syncing');
+    try {
+      const payload = {};
+      DATA_KEYS.forEach(k => { payload[k] = k === 'config' ? DB.getObj(k) : DB.get(k); });
+      const { error } = await this.client.from('haccp_user_data').upsert({
+        user_id: this.user.id,
+        data: payload,
+      });
+      if (error) throw error;
+      this._setSyncDot('ok');
+    } catch(e) {
+      console.warn('SB push error:', e.message);
+      this._setSyncDot('error');
+    } finally {
+      this._syncing = false;
+    }
+  },
+
+  // ── PULL (nuvem → local) ──────────────────
+  async pull() {
+    if (!this.user) return;
+    try {
+      const { data, error } = await this.client
+        .from('haccp_user_data')
+        .select('data')
+        .eq('user_id', this.user.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data?.data) {
+        // Primeira vez — guardar dados locais na nuvem
+        await this.push();
+        toast('☁️ Dados guardados na nuvem!', 'ok');
+        return;
+      }
+      const remote = data.data;
+      // Merge strategy: só substituir se o remoto tiver registos
+      DATA_KEYS.forEach(k => {
+        if (remote[k] !== undefined && remote[k] !== null) {
+          DB.set(k, remote[k]);
+        }
+      });
+      toast('✅ Dados sincronizados da nuvem!', 'ok');
+      navigate(currentPage);
+      this._setSyncDot('ok');
+    } catch(e) {
+      console.warn('SB pull error:', e.message);
+    }
+  },
+
+  // ── UI ────────────────────────────────────
+  _updateTopbar() {
+    const btn = document.getElementById('sb-cloud-btn');
+    const icon = document.getElementById('sb-cloud-icon');
+    const dot  = document.getElementById('sb-sync-dot');
+    if (!btn) return;
+    if (this.user) {
+      icon.textContent = '👤';
+      if (dot) { dot.style.display = 'block'; dot.style.background = 'var(--green)'; }
+    } else {
+      icon.textContent = '☁️';
+      if (dot) dot.style.display = 'none';
+    }
+  },
+  _setSyncDot(state) {
+    const dot = document.getElementById('sb-sync-dot');
+    if (!dot) return;
+    if (state === 'syncing') { dot.style.display = 'block'; dot.style.background = 'var(--yellow)'; }
+    else if (state === 'ok')  { dot.style.display = 'block'; dot.style.background = 'var(--green)'; }
+    else if (state === 'error') { dot.style.display = 'block'; dot.style.background = 'var(--red)'; }
+  },
+
+  // ── MODAL ─────────────────────────────────
+  openModal() {
+    let el = document.getElementById('sb-modal');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'sb-modal';
+      el.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px';
+      el.innerHTML = `
+        <div style="background:var(--s1);border:1px solid var(--border);border-radius:16px;width:100%;max-width:360px;overflow:hidden">
+          <div style="padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:1rem;font-weight:700;color:var(--txt)">☁️ Conta & Sincronização</div>
+            <button onclick="SB.closeModal()" style="background:none;border:none;color:var(--txt2);font-size:20px;cursor:pointer;line-height:1;padding:0">×</button>
+          </div>
+          <div id="sb-modal-body" style="padding:20px"></div>
+        </div>`;
+      el.addEventListener('click', e => { if (e.target === el) this.closeModal(); });
+      document.body.appendChild(el);
+    }
+    this._renderModalBody();
+    el.style.display = 'flex';
+  },
+  closeModal() {
+    const el = document.getElementById('sb-modal');
+    if (el) el.style.display = 'none';
+  },
+  _renderModalBody() {
+    const body = document.getElementById('sb-modal-body');
+    if (!body) return;
+    if (this.user) {
+      body.innerHTML = `
+        <div style="text-align:center;padding:8px 0 16px">
+          <div style="font-size:2rem;margin-bottom:8px">👤</div>
+          <div style="font-size:.85rem;color:var(--txt2);word-break:break-all">${this.user.email}</div>
+          <div style="font-size:.75rem;color:var(--txt3);margin-top:4px">Sessão activa</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button onclick="SB.push().then(()=>toast('✅ Sincronizado!','ok'))" style="padding:11px;background:var(--acc);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">
+            ☁️ Sincronizar agora
+          </button>
+          <button onclick="SB.pull()" style="padding:11px;background:var(--s3);color:var(--txt);border:1px solid var(--border);border-radius:10px;font-size:.9rem;cursor:pointer">
+            ⬇️ Restaurar da nuvem
+          </button>
+          <button onclick="SB.signOut()" style="padding:11px;background:none;color:var(--red);border:1px solid var(--red);border-radius:10px;font-size:.9rem;cursor:pointer">
+            Terminar sessão
+          </button>
+        </div>`;
+    } else {
+      body.innerHTML = `
+        <p style="font-size:.82rem;color:var(--txt2);margin-bottom:16px;line-height:1.5">Cria uma conta para guardar os teus dados na nuvem e sincronizar entre dispositivos.</p>
+        <div id="sb-tabs" style="display:flex;gap:0;background:var(--s3);border-radius:8px;padding:3px;margin-bottom:16px">
+          <button id="sb-tab-in" onclick="SB._showTab('in')" style="flex:1;padding:7px;border:none;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer;background:var(--acc);color:#fff;transition:.15s">Entrar</button>
+          <button id="sb-tab-up" onclick="SB._showTab('up')" style="flex:1;padding:7px;border:none;border-radius:6px;font-size:.82rem;cursor:pointer;background:none;color:var(--txt2);transition:.15s">Criar conta</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <input id="sb-email" type="email" placeholder="Email" autocomplete="email" style="padding:11px 14px;background:var(--s3);border:1px solid var(--border);border-radius:10px;color:var(--txt);font-size:.9rem;outline:none;width:100%;box-sizing:border-box">
+          <input id="sb-pw" type="password" placeholder="Password" autocomplete="current-password" style="padding:11px 14px;background:var(--s3);border:1px solid var(--border);border-radius:10px;color:var(--txt);font-size:.9rem;outline:none;width:100%;box-sizing:border-box">
+          <div id="sb-error" style="font-size:.8rem;color:var(--red);min-height:18px"></div>
+          <button id="sb-submit-btn" onclick="SB._submit()" style="padding:12px;background:var(--acc);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">Entrar</button>
+        </div>`;
+      this._sbMode = 'in';
+    }
+  },
+  _sbMode: 'in',
+  _showTab(mode) {
+    this._sbMode = mode;
+    const inBtn = document.getElementById('sb-tab-in');
+    const upBtn = document.getElementById('sb-tab-up');
+    const sub   = document.getElementById('sb-submit-btn');
+    if (!inBtn) return;
+    if (mode === 'in') {
+      inBtn.style.background='var(--acc)'; inBtn.style.color='#fff';
+      upBtn.style.background='none'; upBtn.style.color='var(--txt2)';
+      if(sub) sub.textContent='Entrar';
+    } else {
+      upBtn.style.background='var(--acc)'; upBtn.style.color='#fff';
+      inBtn.style.background='none'; inBtn.style.color='var(--txt2)';
+      if(sub) sub.textContent='Criar conta';
+    }
+    const errEl = document.getElementById('sb-error');
+    if(errEl) errEl.textContent='';
+  },
+  async _submit() {
+    const email = (document.getElementById('sb-email')?.value||'').trim();
+    const pw    = (document.getElementById('sb-pw')?.value||'').trim();
+    const errEl = document.getElementById('sb-error');
+    const btn   = document.getElementById('sb-submit-btn');
+    if (!email || !pw) { if(errEl) errEl.textContent='Preenche email e password.'; return; }
+    if(btn){ btn.disabled=true; btn.textContent='...'; }
+    try {
+      if (this._sbMode === 'in') {
+        await this.signIn(email, pw);
+        this.closeModal();
+        toast('✅ Sessão iniciada!', 'ok');
+      } else {
+        await this.signUp(email, pw);
+        this.closeModal();
+        toast('✅ Conta criada! Verifica o email.', 'ok');
+      }
+    } catch(e) {
+      const msg = e.message||'Erro';
+      const pt = msg.includes('Invalid login') ? 'Email ou password incorrectos.' :
+                 msg.includes('already registered') ? 'Email já registado. Entra em vez de criar conta.' :
+                 msg.includes('Password should') ? 'Password demasiado fraca (mín. 6 caracteres).' : msg;
+      if(errEl) errEl.textContent = pt;
+    } finally {
+      if(btn){ btn.disabled=false; btn.textContent = this._sbMode==='in'?'Entrar':'Criar conta'; }
+    }
+  },
+};
+
 function init(){
   // ── Aplicar tema antes de qualquer render ──
   loadThemeSettings();
@@ -8344,6 +8585,20 @@ function init(){
 
   // ── Auto-sync periódico (a cada hora) ──
   setInterval(()=>ghAutoSyncPeriodic(), 60 * 60 * 1000);
+
+  // ── Supabase ──────────────────────────────────────────────────
+  SB.init();
+  // Interceptar DB.push para agendar sync automático
+  (function(){
+    const _prevPush = DB.push.bind(DB);
+    DB.push = function(k, item) {
+      const result = _prevPush(k, item);
+      SB.schedulePush();
+      return result;
+    };
+    // Sync periódico a cada 5 minutos se sessão activa
+    setInterval(() => { if (SB.user) SB.push(); }, 5 * 60 * 1000);
+  })();
 }
 
 init();
