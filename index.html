@@ -8102,6 +8102,170 @@ function notifCheckOnOpen() {
 // ── Hook no navigate para abrir painel Notificações ──
 const _origNavigate = typeof navigate !== 'undefined' ? navigate : null;
 
+// ══════════════════════════════════════════════════════
+// 📱 CAPACITOR BRIDGE — Widget + Notificações nativas
+// ══════════════════════════════════════════════════════
+
+// Sincronizar widget Android com estado actual dos módulos
+async function widgetSync() {
+  if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return;
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const activeMods = DB.getObj('cfg_modules') || {};
+    const items = NOTIF_MODS
+      .filter(m => activeMods[m.id] !== false)
+      .map(m => ({
+        id: m.id,
+        label: m.label,
+        done: notifModHasToday(m.id)
+      }));
+    const json = JSON.stringify({ date: today, items });
+    await window.Capacitor.Plugins.HaccpShare.setWidget({ json });
+  } catch(e) { console.warn('widgetSync error:', e); }
+}
+
+// Overrides de notificação para Android nativo (Capacitor LocalNotifications)
+(function() {
+  if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return;
+  const LN = window.Capacitor.Plugins.LocalNotifications;
+  if (!LN) return;
+
+  // Estado da permissão via Capacitor
+  notifUpdateStatus = async function() {
+    const bar  = document.getElementById('notif-status-bar');
+    const icon = document.getElementById('notif-status-icon');
+    const txt  = document.getElementById('notif-status-txt');
+    if (!bar) return;
+    try {
+      const r = await LN.checkPermissions();
+      if (r.display === 'granted') {
+        icon.textContent = '✅'; txt.textContent = 'Notificações autorizadas.';
+        bar.style.background = '#14532d22';
+      } else if (r.display === 'denied') {
+        icon.textContent = '🚫'; txt.textContent = 'Notificações bloqueadas. Activa nas definições do sistema.';
+        bar.style.background = '#7f1d1d22';
+      } else {
+        icon.textContent = '❓'; txt.textContent = 'Permissão não solicitada ainda. Activa para receber lembretes.';
+        bar.style.background = 'var(--card-bg)';
+      }
+    } catch(e) {
+      icon.textContent = '❌'; txt.textContent = 'Erro ao verificar permissões.';
+      bar.style.background = '#7f1d1d22';
+    }
+  };
+
+  // Pedir permissão via Capacitor
+  notifToggle = async function(enabled) {
+    if (enabled) {
+      try {
+        const r = await LN.requestPermissions();
+        if (r.display !== 'granted') {
+          document.getElementById('notif-enabled').checked = false;
+          showAlert('Permissão negada. Activa nas definições do sistema.', 'error');
+          return;
+        }
+      } catch(e) {
+        document.getElementById('notif-enabled').checked = false;
+        showAlert('Erro ao pedir permissão.', 'error');
+        return;
+      }
+    }
+    const prefs = notifGetPrefs();
+    prefs.enabled = enabled;
+    notifSavePrefs(prefs);
+    notifUpdateStatus();
+    notifSaveSettings();
+    showAlert(enabled ? '🔔 Lembretes activados!' : '🔕 Lembretes desactivados.', 'success');
+  };
+
+  // Mostrar notificação via Capacitor LocalNotifications
+  notifShow = async function(title, body, tag) {
+    try {
+      const r = await LN.checkPermissions();
+      if (r.display !== 'granted') return;
+      await LN.schedule({ notifications: [{
+        title,
+        body,
+        id: Math.floor(Math.random() * 2147483647),
+        schedule: { at: new Date(Date.now() + 500) },
+        smallIcon: 'ic_stat_haccp',
+        iconColor: '#1a7f4b'
+      }]});
+      const hist = JSON.parse(localStorage.getItem('h2_notif_hist') || '[]');
+      hist.unshift({ ts: new Date().toISOString(), title, body });
+      if (hist.length > 10) hist.pop();
+      localStorage.setItem('h2_notif_hist', JSON.stringify(hist));
+      notifRenderHistory();
+    } catch(e) { console.warn('Capacitor notif error:', e); }
+  };
+
+  // Testar notificação — pede permissão primeiro
+  notifTestNow = async function() {
+    try {
+      const r = await LN.requestPermissions();
+      if (r.display !== 'granted') { showAlert('Permissão negada.', 'error'); return; }
+      const prefs   = notifGetPrefs();
+      const missing = notifMissingModsToday();
+      const bodyTxt = missing.length > 0
+        ? `Módulos por preencher: ${missing.map(id => NOTIF_MODS.find(m=>m.id===id)?.label||id).join(', ')}`
+        : (prefs.msg || 'Todos os registos de hoje estão preenchidos! ✅');
+      await notifShow('🛡️ HACCP Pro — Lembrete Diário', bodyTxt, 'haccp-test');
+      showAlert('Notificação enviada!', 'success');
+    } catch(e) { showAlert('Erro ao enviar notificação.', 'error'); }
+  };
+
+  // Verificador periódico — sem depender de Notification.permission
+  notifDailyCheck = function() {
+    const prefs = notifGetPrefs();
+    if (!prefs.enabled) return;
+    const now    = new Date();
+    const today  = now.toISOString().slice(0,10);
+    const hhmm   = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    const target = prefs.time || '08:00';
+    if (_notifCheckedToday === today) return;
+    if (hhmm !== target) return;
+    _notifCheckedToday = today;
+    localStorage.setItem('h2_notif_last', now.toISOString());
+    const missing = notifMissingModsToday();
+    if (missing.length === 0) { widgetSync(); return; }
+    const labels = missing.slice(0,4).map(id => NOTIF_MODS.find(m=>m.id===id)?.label||id).join(', ');
+    const extra  = missing.length > 4 ? ` e mais ${missing.length-4}...` : '';
+    const body   = (prefs.msg || '') + (prefs.msg ? '\n' : '') + `Por preencher: ${labels}${extra}`;
+    notifShow('🛡️ HACCP Pro — Registo Diário', body, 'haccp-daily');
+    widgetSync();
+  };
+
+  // Sincronizar widget após qualquer guardação de registo
+  const _origDbPush = DB.push.bind(DB);
+  DB.push = function(k, item) {
+    const result = _origDbPush(k, item);
+    setTimeout(widgetSync, 200); // Após o save, actualizar widget
+    return result;
+  };
+
+  // Verificar ao abrir — sem depender de Notification.permission
+  notifCheckOnOpen = function() {
+    const prefs = notifGetPrefs();
+    if (!prefs.enabled) { widgetSync(); return; }
+    const now   = new Date();
+    const today = now.toISOString().slice(0,10);
+    const last  = localStorage.getItem('h2_notif_last') || '';
+    if (last.slice(0,10) === today) { widgetSync(); return; }
+    const [h, m] = (prefs.time || '08:00').split(':').map(Number);
+    const tgt    = new Date(now); tgt.setHours(h, m, 0, 0);
+    if (now < tgt) { widgetSync(); return; }
+    _notifCheckedToday = today;
+    localStorage.setItem('h2_notif_last', now.toISOString());
+    const missing = notifMissingModsToday();
+    if (missing.length === 0) { widgetSync(); return; }
+    const labels = missing.slice(0,4).map(id => NOTIF_MODS.find(m=>m.id===id)?.label||id).join(', ');
+    const extra  = missing.length > 4 ? ` e mais ${missing.length-4}` : '';
+    const body   = (prefs.msg || '') + (prefs.msg ? ' ' : '') + `Por preencher: ${labels}${extra}`;
+    notifShow('🛡️ HACCP Pro — Registo Diário', body, 'haccp-daily');
+    widgetSync();
+  };
+})();
+
 function init(){
   // ── Aplicar tema antes de qualquer render ──
   loadThemeSettings();
@@ -8175,6 +8339,7 @@ function init(){
     notifRegisterSW();
   }
   setTimeout(notifCheckOnOpen, 3000); // Verificar 3s após abrir
+  setTimeout(widgetSync, 4000);       // Sincronizar widget Android
   setInterval(notifDailyCheck, 60000); // Verificar a cada minuto
 
   // ── Auto-sync periódico (a cada hora) ──
