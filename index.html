@@ -8358,9 +8358,17 @@ const SB = {
         .maybeSingle();
       if (error) throw error;
       if (!data?.data) {
-        // Primeira vez — guardar dados locais na nuvem
-        await this.push();
-        toast('☁️ Dados guardados na nuvem!', 'ok');
+        // Conta nova — sem dados na nuvem
+        // Verificar se há dados locais de outra empresa/sessão
+        const cfg = DB.getObj('config');
+        if (cfg && cfg.nome) {
+          // Perguntar o que fazer com os dados locais existentes
+          this._showFirstSyncModal(cfg.nome);
+        } else {
+          // Nada relevante localmente — começar limpo
+          await this.push();
+          toast('☁️ Conta ligada!', 'ok');
+        }
         return;
       }
       const remote = data.data;
@@ -8376,6 +8384,43 @@ const SB = {
     } catch(e) {
       console.warn('SB pull error:', e.message);
     }
+  },
+
+  // ── FIRST SYNC MODAL ─────────────────────
+  _showFirstSyncModal(nomeEmpresa) {
+    const overlay = document.getElementById('sb-modal-overlay');
+    const body    = document.getElementById('sb-modal-body');
+    if (!overlay || !body) return;
+    overlay.style.display = 'flex';
+    body.innerHTML = `
+      <div style="text-align:center;padding:8px 0 14px">
+        <div style="font-size:1.8rem;margin-bottom:8px">☁️</div>
+        <div style="font-size:.9rem;font-weight:600">Conta nova criada</div>
+        <div style="font-size:.78rem;color:var(--txt2);margin-top:6px;line-height:1.5">
+          Existem dados de <strong>${nomeEmpresa}</strong> neste dispositivo.<br>O que queres fazer?
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button onclick="SB._keepLocalData()" style="padding:12px;background:var(--acc);color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer">
+          ☁️ Guardar estes dados na minha conta
+        </button>
+        <button onclick="SB._startFresh()" style="padding:12px;background:none;color:var(--red);border:1px solid var(--red);border-radius:10px;font-size:.85rem;cursor:pointer">
+          🗑️ Apagar e começar do zero
+        </button>
+      </div>`;
+  },
+  async _keepLocalData() {
+    await this.push();
+    this.closeModal();
+    toast('☁️ Dados guardados na tua conta!', 'ok');
+  },
+  async _startFresh() {
+    // Limpar todos os dados locais
+    DATA_KEYS.forEach(k => localStorage.removeItem('h2_' + k));
+    await this.push(); // push vazio — registo limpo na nuvem
+    this.closeModal();
+    toast('✅ Conta pronta — dados limpos!', 'ok');
+    setTimeout(() => location.reload(), 800);
   },
 
   // ── UI ────────────────────────────────────
