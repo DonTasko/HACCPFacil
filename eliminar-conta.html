@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eliminar Conta – HACCP Pro</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --fg: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --accent: #16a34a;
+    --accent-light: #dcfce7;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --fg: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #334155;
+      --accent: #22c55e;
+      --accent-light: #14532d;
+      --danger: #f87171;
+      --danger-light: #450a0a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --fg: #f1f5f9;
+    --muted: #94a3b8;
+    --border: #334155;
+    --accent: #22c55e;
+    --accent-light: #14532d;
+    --danger: #f87171;
+    --danger-light: #450a0a;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+  }
+
+  .wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+
+  .logo-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fg);
+  }
+
+  .logo-tagline {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .step {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .step-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+
+  .step-text strong {
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .step-text p {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .email-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    font-family: monospace;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .copy-btn:hover {
+    background: var(--border);
+  }
+
+  .warning {
+    background: var(--danger-light);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .warning-title {
+    font-weight: 700;
+    color: var(--danger);
+    margin-bottom: 0.4rem;
+  }
+
+  .warning ul {
+    padding-left: 1.25rem;
+    color: var(--fg);
+  }
+
+  .warning ul li {
+    margin-bottom: 0.2rem;
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div>
+      <div class="logo-name">HACCP Pro</div>
+      <div class="logo-tagline">Segurança Alimentar Digital</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h1>Eliminar Conta e Dados</h1>
+    <p class="subtitle">Pode solicitar a eliminação da sua conta e de todos os dados associados a qualquer momento.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Envie um email de pedido</strong>
+        <p>Envie um email para o endereço abaixo com o assunto <strong>"Eliminar conta HACCP Pro"</strong>.</p>
+        <div class="email-box">
+          <span id="email-addr">suporte@haccpdigital.online</span>
+          <button class="copy-btn" onclick="copyEmail()">Copiar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Inclua no email</strong>
+        <p>O email utilizado no registo da conta HACCP Pro, para que possamos identificar e eliminar os dados corretos.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Confirmação em até 7 dias</strong>
+        <p>Receberá confirmação por email após a eliminação completa da conta e dados.</p>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="warning-title">⚠️ Esta ação é irreversível</div>
+      <ul>
+        <li>Conta e credenciais de acesso</li>
+        <li>Todos os registos HACCP (temperaturas, limpeza, óleos, etc.)</li>
+        <li>Histórico de não conformidades e relatórios</li>
+        <li>Configurações e dados da empresa</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://haccpdigital.online">← Voltar ao HACCP Pro</a>
+    &nbsp;·&nbsp;
+    <a href="https://haccpdigital.online/privacidade">Política de Privacidade</a>
+  </div>
+</div>
+
+<script>
+function copyEmail() {
+  const email = document.getElementById('email-addr').textContent;
+  navigator.clipboard.writeText(email).catch(() => {
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById('email-addr'));
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+  const btn = document.querySelector('.copy-btn');
+  btn.textContent = 'Copiado!';
+  setTimeout(() => btn.textContent = 'Copiar', 2000);
+}
+</script>
+</body>
+</html>
