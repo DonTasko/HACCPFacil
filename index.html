@@ -1237,6 +1237,11 @@ input[type=range]::-webkit-slider-thumb{
           ⏳ Período de Teste
           <div style="font-size:10px;font-weight:400;opacity:0.7;margin-top:2px">Free trial — no license needed</div>
         </button>
+        <button onclick="licTab('gplay')" id="lic-tab-gplay"
+          style="flex:1;padding:10px;border-radius:8px;border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--txt2);display:none">
+          💳 Google Play
+          <div style="font-size:10px;font-weight:400;opacity:0.7;margin-top:2px">Subscribe</div>
+        </button>
       </div>
 
       <!-- PAINEL ACTIVAR -->
@@ -1307,6 +1312,25 @@ input[type=range]::-webkit-slider-thumb{
             🌍 <strong>No license key needed</strong> — just tap the button above to start your free 14-day trial.
           </div>
         </div>
+      </div>
+
+      <!-- PAINEL GOOGLE PLAY -->
+      <div id="lic-panel-gplay" style="display:none">
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:20px;text-align:center;margin-bottom:20px">
+          <div style="font-size:40px;margin-bottom:12px">🛒</div>
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:8px">Subscrever via Google Play</div>
+          <div style="font-size:13px;color:var(--txt2);line-height:1.6">Pagamento seguro pelo Google Play.<br>Cancela quando quiseres.</div>
+        </div>
+        <button class="btn btn-primary" id="rc-btn-monthly" onclick="purchaseRC('monthly')" style="font-size:15px;margin-bottom:12px;width:100%">
+          💳 €9,99 / mês
+        </button>
+        <button class="btn btn-secondary" id="rc-btn-annual" onclick="purchaseRC('annual')" style="font-size:15px;margin-bottom:16px;width:100%">
+          💰 €79,99 / ano — poupa 33%
+        </button>
+        <div style="font-size:11px;color:var(--txt3);text-align:center;line-height:1.5">
+          Gerido pela Google Play. Os teus dados ficam guardados.
+        </div>
+        <div id="rc-error" style="display:none;margin-top:12px;padding:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;font-size:12px;color:#ef4444;text-align:center"></div>
       </div>
 
       <!-- Rodapé -->
@@ -7487,6 +7511,13 @@ function showLicenseScreen(){
   const el = document.getElementById('license-screen');
   if(el) el.style.display = 'block';
 
+  // Mostrar tab Google Play se estiver em app nativa
+  if(window.Capacitor && window.Capacitor.isNativePlatform()){
+    const gpTab = document.getElementById('lic-tab-gplay');
+    if(gpTab) gpTab.style.display = '';
+    licTab('gplay');
+  }
+
   // Ver se tem dados guardados — mostrar aviso tranquilizador no painel de activação
   const total = ['temp','limp','oleo','val','sob','rec','chk','nc']
     .reduce((s,k)=>s+DB.get(k).length,0);
@@ -7560,10 +7591,14 @@ function hideLicenseScreen(){
 function licTab(tab){
   document.getElementById('lic-panel-activate').style.display = tab==='activate' ? '' : 'none';
   document.getElementById('lic-panel-trial').style.display    = tab==='trial'    ? '' : 'none';
+  const gpEl = document.getElementById('lic-panel-gplay');
+  if(gpEl) gpEl.style.display = tab==='gplay' ? '' : 'none';
   const aBtn = document.getElementById('lic-tab-activate');
   const tBtn = document.getElementById('lic-tab-trial');
+  const gBtn = document.getElementById('lic-tab-gplay');
   if(aBtn){ aBtn.style.background = tab==='activate' ? 'linear-gradient(135deg,var(--acc),var(--acc2))' : 'transparent'; aBtn.style.color = tab==='activate' ? '#fff' : 'var(--txt2)'; aBtn.style.boxShadow = tab==='activate' ? '0 2px 8px rgba(59,130,246,.3)' : 'none'; }
   if(tBtn){ tBtn.style.background = tab==='trial'    ? 'var(--s3)' : 'transparent'; tBtn.style.color = tab==='trial' ? 'var(--txt)' : 'var(--txt2)'; }
+  if(gBtn){ gBtn.style.background = tab==='gplay'   ? 'linear-gradient(135deg,#10b981,#059669)' : 'transparent'; gBtn.style.color = tab==='gplay' ? '#fff' : 'var(--txt2)'; gBtn.style.boxShadow = tab==='gplay' ? '0 2px 8px rgba(16,185,129,.3)' : 'none'; }
 }
 
 function toggleGhRestore(){
@@ -8632,7 +8667,63 @@ const SB = {
   },
 };
 
-function init(){
+// ── RevenueCat ──────────────────────────────────────────────────────
+async function rcInit(){
+  if(!window.Capacitor || !window.Capacitor.isNativePlatform()) return false;
+  // Carregar rc.js dinamicamente se ainda não estiver carregado
+  if(!window.RC){
+    await new Promise(resolve => {
+      const s = document.createElement('script');
+      s.src = 'rc.js';
+      s.onload = resolve;
+      s.onerror = () => { console.log('[RC] rc.js não encontrado — a saltar billing nativo'); resolve(); };
+      document.head.appendChild(s);
+    });
+  }
+  if(!window.RC) return false;
+  try{
+    await window.RC.Purchases.configure({ apiKey: 'test_qvFaLaPetLcYSqZtJHrhhEwYpyh' });
+    return true;
+  }catch(e){ console.log('[RC] configure falhou:', e); return false; }
+}
+
+async function rcEntitlementCheck(){
+  if(!window.RC) return false;
+  try{
+    const { customerInfo } = await window.RC.Purchases.getCustomerInfo();
+    return Object.keys(customerInfo.entitlements.active).length > 0;
+  }catch(e){ console.log('[RC] entitlement check falhou:', e); return false; }
+}
+
+async function purchaseRC(planType){
+  const btn = document.getElementById('rc-btn-' + planType);
+  const errEl = document.getElementById('rc-error');
+  const origText = btn ? btn.textContent : '';
+  try{
+    if(btn){ btn.disabled = true; btn.textContent = '⏳ A processar...'; }
+    if(errEl) errEl.style.display = 'none';
+    if(!window.RC) throw new Error('Billing não disponível. Reinicia a app.');
+    const { offerings } = await window.RC.Purchases.getOfferings();
+    if(!offerings.current) throw new Error('Produto não disponível de momento. Tenta mais tarde.');
+    const pkg = offerings.current.availablePackages.find(p =>
+      planType === 'monthly' ? p.packageType === 'MONTHLY' : p.packageType === 'ANNUAL'
+    );
+    if(!pkg) throw new Error('Plano não encontrado. Tenta mais tarde.');
+    await window.RC.Purchases.purchasePackage({ aPackage: pkg });
+    // Compra com sucesso — recarregar para validar entitlement
+    location.reload();
+  }catch(e){
+    if(btn){ btn.disabled = false; btn.textContent = origText; }
+    if(e.code !== 'PURCHASE_CANCELLED' && errEl){
+      errEl.style.display = 'block';
+      errEl.textContent = e.userInfo?.readableErrorCode === 'PURCHASE_CANCELLED'
+        ? '' : (e.message || 'Erro na compra. Tenta novamente.');
+    }
+  }
+}
+// ── /RevenueCat ─────────────────────────────────────────────────────
+
+async function init(){
   // ── Aplicar tema antes de qualquer render ──
   loadThemeSettings();
   // ── Logo do parceiro ──
@@ -8640,16 +8731,22 @@ function init(){
   // ── Aplicar módulos activos ──
   applyModules();
 
-  // ── Verificar licença / trial ──
-  const licStatus = licCheck();
-  if(licStatus.type === 'none' || licStatus.type === 'expired'){
-    // Sem dados anteriores e sem licença/trial → bloquear completamente
-    navigate('dash');
-    setTimeout(()=>showLicenseScreen(), 200);
-    return;
+  // ── Verificar subscrição RevenueCat (só app nativa) ──
+  const rcInited = await rcInit();
+  const rcActive = rcInited ? await rcEntitlementCheck() : false;
+
+  // ── Verificar licença / trial (web + fallback nativo) ──
+  if(!rcActive){
+    const licStatus = licCheck();
+    if(licStatus.type === 'none' || licStatus.type === 'expired'){
+      // Sem dados anteriores e sem licença/trial → bloquear completamente
+      navigate('dash');
+      setTimeout(()=>showLicenseScreen(), 200);
+      return;
+    }
+    // Aviso se a expirar (licença, trial ou grace)
+    licShowExpiryWarning(licStatus);
   }
-  // Aviso se a expirar (licença, trial ou grace)
-  licShowExpiryWarning(licStatus);
   // ── Prevent pull-to-refresh & overscroll in WebView ──
   document.body.addEventListener('touchmove', function(e){
     // Allow scrolling only inside .scroll-area; block everywhere else
