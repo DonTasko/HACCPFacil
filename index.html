@@ -8702,6 +8702,7 @@ async function purchaseRC(planType){
   try{
     if(btn){ btn.disabled = true; btn.textContent = '⏳ A processar...'; }
     if(errEl) errEl.style.display = 'none';
+    if(!window.RC) await rcInit();
     if(!window.RC) throw new Error('Billing não disponível. Reinicia a app.');
     const { offerings } = await window.RC.Purchases.getOfferings();
     if(!offerings.current) throw new Error('Produto não disponível de momento. Tenta mais tarde.');
