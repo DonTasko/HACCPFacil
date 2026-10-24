@@ -8691,8 +8691,8 @@ async function rcEntitlementCheck(){
   const RC = getRCPlugin();
   if(!RC) return false;
   try{
-    const { customerInfo } = await RC.getCustomerInfo();
-    return Object.keys(customerInfo.entitlements.active).length > 0;
+    const customerInfo = await RC.getCustomerInfo();
+    return customerInfo && Object.keys(customerInfo.entitlements.active).length > 0;
   }catch(e){ console.log('[RC] entitlement check falhou:', e); return false; }
 }
 
@@ -8705,8 +8705,8 @@ async function purchaseRC(planType){
     if(errEl) errEl.style.display = 'none';
     const RC = getRCPlugin();
     if(!RC) throw new Error('Billing não disponível. Reinicia a app.');
-    const { offerings } = await RC.getOfferings();
-    if(!offerings.current) throw new Error('Produto não disponível de momento. Tenta mais tarde.');
+    const offerings = await RC.getOfferings();
+    if(!offerings || !offerings.current) throw new Error('Produto não disponível de momento. Tenta mais tarde.');
     const pkg = offerings.current.availablePackages.find(p =>
       planType === 'monthly' ? p.packageType === 'MONTHLY' : p.packageType === 'ANNUAL'
     );
