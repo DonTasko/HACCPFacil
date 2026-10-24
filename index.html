@@ -8668,29 +8668,30 @@ const SB = {
 };
 
 // ── RevenueCat ──────────────────────────────────────────────────────
+function getRCPlugin(){
+  // O plugin Capacitor regista-se em window.Capacitor.Plugins.Purchases
+  return window.Capacitor &&
+         window.Capacitor.Plugins &&
+         window.Capacitor.Plugins.Purchases
+         ? window.Capacitor.Plugins.Purchases : null;
+}
+
 async function rcInit(){
   if(!window.Capacitor || !window.Capacitor.isNativePlatform()) return false;
-  // Carregar rc.js dinamicamente se ainda não estiver carregado
-  if(!window.RC){
-    await new Promise(resolve => {
-      const s = document.createElement('script');
-      s.src = 'rc.js';
-      s.onload = resolve;
-      s.onerror = () => { console.log('[RC] rc.js não encontrado — a saltar billing nativo'); resolve(); };
-      document.head.appendChild(s);
-    });
-  }
-  if(!window.RC) return false;
+  const RC = getRCPlugin();
+  if(!RC){ console.log('[RC] plugin Purchases não encontrado'); return false; }
   try{
-    await window.RC.Purchases.configure({ apiKey: 'goog_OjAwsIxDFiPfCvkdWQGphRxohTf' });
+    await RC.configure({ apiKey: 'goog_OjAwsIxDFiPfCvkdWQGphRxohTf' });
+    console.log('[RC] configurado com sucesso');
     return true;
   }catch(e){ console.log('[RC] configure falhou:', e); return false; }
 }
 
 async function rcEntitlementCheck(){
-  if(!window.RC) return false;
+  const RC = getRCPlugin();
+  if(!RC) return false;
   try{
-    const { customerInfo } = await window.RC.Purchases.getCustomerInfo();
+    const { customerInfo } = await RC.getCustomerInfo();
     return Object.keys(customerInfo.entitlements.active).length > 0;
   }catch(e){ console.log('[RC] entitlement check falhou:', e); return false; }
 }
@@ -8702,15 +8703,15 @@ async function purchaseRC(planType){
   try{
     if(btn){ btn.disabled = true; btn.textContent = '⏳ A processar...'; }
     if(errEl) errEl.style.display = 'none';
-    if(!window.RC) await rcInit();
-    if(!window.RC) throw new Error('Billing não disponível. Reinicia a app.');
-    const { offerings } = await window.RC.Purchases.getOfferings();
+    const RC = getRCPlugin();
+    if(!RC) throw new Error('Billing não disponível. Reinicia a app.');
+    const { offerings } = await RC.getOfferings();
     if(!offerings.current) throw new Error('Produto não disponível de momento. Tenta mais tarde.');
     const pkg = offerings.current.availablePackages.find(p =>
       planType === 'monthly' ? p.packageType === 'MONTHLY' : p.packageType === 'ANNUAL'
     );
     if(!pkg) throw new Error('Plano não encontrado. Tenta mais tarde.');
-    await window.RC.Purchases.purchasePackage({ aPackage: pkg });
+    await RC.purchasePackage({ aPackage: pkg });
     // Compra com sucesso — recarregar para validar entitlement
     location.reload();
   }catch(e){
