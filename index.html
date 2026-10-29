@@ -4038,6 +4038,8 @@ function updateDashStats(){
     ncEl.textContent=nNcAb>0?`${nNcAb} abertas`:(DB.get('nc').length>0?`${DB.get('nc').length} total`:'0');
     ncEl.classList.toggle('lnch-count-nc', nNcAb>0);
   }
+  // Widget Android — enviar contagens de hoje
+  if(window.HaccpAndroid) try { window.HaccpAndroid.atualizarContagens(nTemp, nLimp); } catch(e){}
 }
 
 // ═══════════════════════════════════════════
