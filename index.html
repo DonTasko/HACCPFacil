@@ -4040,6 +4040,12 @@ function updateDashStats(){
   }
   // Widget Android — enviar contagens de hoje
   if(window.HaccpAndroid) try { window.HaccpAndroid.atualizarContagens(nTemp, nLimp, nVal); } catch(e){}
+  // Widget Android — passar sessão Supabase para sync em background
+  if(window.HaccpAndroid && window.HaccpAndroid.definirSessao && typeof Sync!=='undefined' && Sync.client) {
+    Sync.client.auth.getSession().then(({data:{session}})=>{
+      if(session) try { window.HaccpAndroid.definirSessao(session.user.id, session.access_token); } catch(e){}
+    }).catch(()=>{});
+  }
 }
 
 // ═══════════════════════════════════════════
