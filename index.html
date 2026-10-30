@@ -1578,7 +1578,7 @@ input[type=range]::-webkit-slider-thumb{
           <label class="form-label">Observações</label>
           <textarea class="form-textarea" id="t-obs" placeholder="Notas..."></textarea>
         </div>
-        <button class="btn btn-primary" onclick="saveTemp()">💾 Guardar Temperatura</button>
+        <button class="btn btn-primary" id="t-save-btn" onclick="saveTemp()">💾 Guardar Temperatura</button>
       </div>
       <div class="card">
         <div class="card-hd">
@@ -1665,7 +1665,7 @@ input[type=range]::-webkit-slider-thumb{
           <label class="form-label">Observações</label>
           <textarea class="form-textarea" id="l-obs" placeholder="Notas, desvios..."></textarea>
         </div>
-        <button class="btn btn-primary" onclick="saveLimp()">💾 Guardar Limpeza</button>
+        <button class="btn btn-primary" id="l-save-btn" onclick="saveLimp()">💾 Guardar Limpeza</button>
       </div>
       <div class="card">
         <div class="card-hd">
@@ -1731,7 +1731,7 @@ input[type=range]::-webkit-slider-thumb{
           <label class="form-label">Observações</label>
           <textarea class="form-textarea" id="o-obs" placeholder="Lote do óleo, notas..."></textarea>
         </div>
-        <button class="btn btn-primary" onclick="saveOleo()">💾 Guardar Registo</button>
+        <button class="btn btn-primary" id="o-save-btn" onclick="saveOleo()">💾 Guardar Registo</button>
       </div>
       <div class="card">
         <div class="card-title" style="margin-bottom:12px">Histórico</div>
@@ -1801,7 +1801,7 @@ input[type=range]::-webkit-slider-thumb{
           <label class="form-label">Observações</label>
           <textarea class="form-textarea" id="v-obs" placeholder="Acções tomadas..."></textarea>
         </div>
-        <button class="btn btn-primary" onclick="saveVal()">💾 Guardar Validade</button>
+        <button class="btn btn-primary" id="v-save-btn" onclick="saveVal()">💾 Guardar Validade</button>
       </div>
       <div class="card">
         <div class="card-hd">
@@ -1876,7 +1876,7 @@ input[type=range]::-webkit-slider-thumb{
           <label class="form-label">Observações</label>
           <textarea class="form-textarea" id="sb-obs" placeholder="Ingredientes, lotes, notas..."></textarea>
         </div>
-        <button class="btn btn-primary" onclick="saveSob()">💾 Guardar Registo</button>
+        <button class="btn btn-primary" id="sb-save-btn" onclick="saveSob()">💾 Guardar Registo</button>
       </div>
       <div class="card">
         <div class="card-title" style="margin-bottom:12px">Histórico</div>
@@ -1943,7 +1943,7 @@ input[type=range]::-webkit-slider-thumb{
           <label class="form-label">Observações</label>
           <textarea class="form-textarea" id="rc-obs" placeholder="Motivo de rejeição, notas..."></textarea>
         </div>
-        <button class="btn btn-primary" onclick="saveRec()">💾 Guardar Recepção</button>
+        <button class="btn btn-primary" id="rc-save-btn" onclick="saveRec()">💾 Guardar Recepção</button>
       </div>
       <div class="card">
         <div class="card-title" style="margin-bottom:12px">Histórico</div>
@@ -2462,7 +2462,7 @@ input[type=range]::-webkit-slider-thumb{
           <label class="form-label">Estado</label>
           <select class="form-select" id="nc-est">
             <option value="aberta">🔴 Aberta</option>
-            <option value="em-curso">🟡 Em Resolução</option>
+            <option value="em-curso">🟡 Em Tratamento</option>
             <option value="fechada">✅ Fechada</option>
           </select>
         </div>
@@ -2482,7 +2482,7 @@ input[type=range]::-webkit-slider-thumb{
           <div class="photo-grid" id="nc-photo-grid" style="display:none"></div>
         </div>
 
-        <button class="btn btn-primary" onclick="saveNC()">💾 Guardar NC</button>
+        <button class="btn btn-primary" id="nc-save-btn" onclick="saveNC()">💾 Guardar NC</button>
       </div>
       <div class="card">
         <div class="card-hd">
@@ -2490,7 +2490,7 @@ input[type=range]::-webkit-slider-thumb{
           <select class="form-select" id="nc-flt" style="width:auto" onchange="renderNcTbl()">
             <option value="all">Todas</option>
             <option value="aberta">Abertas</option>
-            <option value="em-curso">Em curso</option>
+            <option value="em-curso">Em tratamento</option>
             <option value="fechada">Fechadas</option>
           </select>
         </div>
@@ -3313,6 +3313,7 @@ const DB = {
     arr.unshift(item);this.set(k,arr);return item;
   },
   del(k,id){this.set(k,this.get(k).filter(x=>x.id!==id))},
+  update(k,id,ch){const a=this.get(k);const i=a.findIndex(x=>x.id===id);if(i<0)return null;a[i]={...a[i],...ch,updatedAt:new Date().toISOString()};this.set(k,a);return a[i]},
   all(){
     const ks=['temp','limp','oleo','val','sob','rec','chk','prag','nc'];
     const r={config:this.getObj('config')};
@@ -3401,6 +3402,131 @@ function fd(dt){if(!dt)return'—';try{return new Date(dt).toLocaleString('pt-PT
 function fdo(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('pt-PT')}catch{return d}}
 function delBtn(k,id){return`<button class="btn-icon" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2);color:var(--red);width:32px;height:32px;font-size:14px" onclick="delRec('${k}','${id}')">🗑</button>`}
 function delRec(k,id){if(!confirm('Apagar registo?'))return;DB.del(k,id);toast('Apagado','warn');navigate(currentPage)}
+function editBtn(k,id){return`<button class="btn-icon" style="background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.2);color:#3b82f6;width:32px;height:32px;font-size:14px" onclick="openEdit('${k}','${id}')">✏️</button>`}
+
+// ── EDIT MODE ──
+let _editMode=null;
+
+function cancelEdit(){
+  _editMode=null;
+  document.querySelectorAll('.edit-mode-banner').forEach(e=>e.remove());
+  const btns={temp:'t-save-btn',limp:'l-save-btn',oleo:'o-save-btn',val:'v-save-btn',sob:'sb-save-btn',rec:'rc-save-btn',nc:'nc-save-btn'};
+  Object.values(btns).forEach(id=>{const b=document.getElementById(id);if(b)b.textContent=b.dataset.orig||b.textContent});
+  navigate(currentPage);
+}
+
+function showEditBanner(pageKey,label){
+  document.querySelectorAll('.edit-mode-banner').forEach(e=>e.remove());
+  const btnId={temp:'t-save-btn',limp:'l-save-btn',oleo:'o-save-btn',val:'v-save-btn',sob:'sb-save-btn',rec:'rc-save-btn',nc:'nc-save-btn'}[pageKey];
+  const btn=document.getElementById(btnId);
+  if(!btn)return;
+  btn.dataset.orig=btn.dataset.orig||btn.textContent;
+  btn.textContent='💾 Actualizar registo';
+  const b=document.createElement('div');
+  b.className='edit-mode-banner';
+  b.style.cssText='background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px';
+  b.innerHTML=`<span style="color:#3b82f6;font-size:13px;font-weight:500">✏️ A editar: ${label}</span><button onclick="cancelEdit()" style="background:none;border:1px solid rgba(59,130,246,.3);border-radius:6px;padding:4px 10px;color:#3b82f6;font-size:12px;cursor:pointer">✕ Cancelar</button>`;
+  btn.parentNode.insertBefore(b,btn);
+}
+
+function openEdit(k,id){
+  const rec=DB.get(k).find(r=>r.id===id);
+  if(!rec){toast('Registo não encontrado','err');return}
+  _editMode={key:k,id};
+  navigate(k==='prag'?'pragas':k);
+  setTimeout(()=>_fillEditForm(k,rec),80);
+}
+
+function _fillEditForm(k,rec){
+  const sv=id=>document.getElementById(id);
+  if(k==='temp'){
+    sv('t-dt').value=rec.datetime||'';
+    sv('t-equip').value=rec.equipamento||'';
+    sv('t-val').value=rec.temperatura||'';
+    if(sv('t-sl'))sv('t-sl').value=rec.temperatura||'';
+    if(sv('t-disp'))sv('t-disp').textContent=(rec.temperatura||'')+'°C';
+    sv('t-min').value=rec.tmin||'';sv('t-max').value=rec.tmax||'';
+    sv('t-tipo').value=rec.tipo||'';sv('t-acc').value=rec.accao||'';
+    sv('t-obs').value=rec.obs||'';sv('t-colab').value=rec.colaborador||'';
+    showEditBanner('temp',(rec.equipamento||'?')+' — '+(rec.temperatura||'')+'°C');
+  } else if(k==='limp'){
+    sv('l-dt').value=rec.datetime||'';sv('l-tipo').value=rec.tipo||'';
+    sv('l-conf').value=rec.conformidade||'ok';sv('l-colab').value=rec.colaborador||'';
+    sv('l-verif').value=rec.verificador||'';sv('l-obs').value=rec.obs||'';
+    if(rec.local){
+      const locais=DB.get('cfg_locais');
+      DB.get('cfg_locais').forEach(l=>{const el=sv('ll-'+l.id);if(el&&el.dataset.sel==='1')toggleLocalChk(l.id)});
+      _zonasSeleccionadas={};
+      const lobj=locais.find(l=>l.nome===rec.local);
+      if(lobj){toggleLocalChk(lobj.id);if(rec.zonas&&rec.zonas.length)_zonasSeleccionadas[lobj.id]=rec.zonas}
+    }
+    showEditBanner('limp',(rec.local||'?')+' — '+(rec.tipo||''));
+  } else if(k==='oleo'){
+    sv('o-data').value=rec.data||'';sv('o-equip').value=rec.equipamento||'';
+    sv('o-polar').value=rec.polar||'';sv('o-temp').value=rec.temperatura||'';
+    sv('o-metodo').value=rec.metodo||'';sv('o-decisao').value=rec.decisao||'';
+    sv('o-colab').value=rec.colaborador||'';sv('o-obs').value=rec.obs||'';
+    showEditBanner('oleo',(rec.equipamento||'?')+' — '+rec.polar+'%');
+  } else if(k==='val'){
+    sv('v-data').value=rec.data||'';sv('v-prod').value=rec.produto||'';
+    sv('v-lote').value=rec.lote||'';sv('v-val').value=rec.validade||'';
+    sv('v-local').value=rec.local||'';sv('v-est').value=rec.estado||'ok';
+    sv('v-qtd').value=rec.qtd||'';sv('v-colab').value=rec.colaborador||'';
+    sv('v-obs').value=rec.obs||'';
+    showEditBanner('val',rec.produto||'?');
+  } else if(k==='sob'){
+    sv('sb-dt').value=rec.datetime||'';sv('sb-tipo').value=rec.tipo||'';
+    sv('sb-qtd').value=rec.qtd||'';sv('sb-tc').value=rec.tempConf||'';
+    sv('sb-ta').value=rec.tempArm||'';sv('sb-val').value=rec.validade||'';
+    sv('sb-aleg').value=rec.alergenios||'';sv('sb-conf').value=rec.conformidade||'ok';
+    sv('sb-colab').value=rec.colaborador||'';sv('sb-obs').value=rec.obs||'';
+    showEditBanner('sob',rec.tipo||'?');
+  } else if(k==='rec'){
+    sv('rc-dt').value=rec.datetime||'';sv('rc-forn').value=rec.fornecedor||'';
+    sv('rc-prod').value=rec.produto||'';sv('rc-qtd').value=rec.qtd||'';
+    sv('rc-temp').value=rec.temperatura||'';
+    if(rec.checks){sv('rc-emb').checked=!!rec.checks.emb;sv('rc-rot').checked=!!rec.checks.rot;sv('rc-val').checked=!!rec.checks.val;sv('rc-org').checked=!!rec.checks.org;sv('rc-veic').checked=!!rec.checks.veic}
+    sv('rc-dec').value=rec.decisao||'';sv('rc-colab').value=rec.colaborador||'';sv('rc-obs').value=rec.obs||'';
+    showEditBanner('rec',(rec.fornecedor||'?')+' — '+(rec.produto||''));
+  } else if(k==='nc'){
+    sv('nc-dt').value=rec.datetime||'';sv('nc-area').value=rec.area||'';
+    sv('nc-grav').value=rec.gravidade||'menor';sv('nc-colab').value=rec.colaborador||'';
+    sv('nc-desc').value=rec.descricao||'';sv('nc-causa').value=rec.causa||'';
+    sv('nc-aci').value=rec.accaoImediata||'';sv('nc-ap').value=rec.accaoPreventiva||'';
+    sv('nc-prazo').value=rec.prazo||'';sv('nc-est').value=rec.estado||'aberta';
+    ncPendingPhotos=[];renderPhotoGrid('nc',ncPendingPhotos);
+    showEditBanner('nc',rec.area||'?');
+  }
+  document.getElementById('scroll-area').scrollTop=0;
+}
+
+// ── NC WORKFLOW ──
+function advanceNcEstado(id){
+  const r=DB.get('nc').find(x=>x.id===id);if(!r)return;
+  const next={aberta:'em-curso','em-curso':'fechada'};
+  if(!next[r.estado])return;
+  DB.update('nc',id,{estado:next[r.estado]});
+  renderNcTbl();toast('Estado actualizado');
+}
+function advanceRecNcEstado(k,id){
+  const r=DB.get(k).find(x=>x.id===id);if(!r)return;
+  const next={aberta:'em_tratamento',em_tratamento:'fechada'};
+  const cur=r.nc_estado||'aberta';
+  if(!next[cur])return;
+  DB.update(k,id,{nc_estado:next[cur]});
+  const fn={temp:renderTempTbl,limp:renderLimpTbl,oleo:renderOleoTbl,sob:renderSobTbl,rec:renderRecTbl};
+  if(fn[k])fn[k]();
+  toast('Estado NC actualizado');
+}
+function ncEstadoCell(k,r){
+  const isNc=(k==='temp'&&r.conforme===false)||(k==='limp'&&r.conformidade==='nc')||(k==='oleo'&&r.conforme===false)||(k==='sob'&&r.conformidade==='nc')||(k==='rec'&&r.decisao==='rejeitado');
+  if(!isNc)return'';
+  const e=r.nc_estado||'aberta';
+  const cfg={aberta:{lbl:'🔴 Aberta',suf:'→',col:'var(--red)'},em_tratamento:{lbl:'🟡 Em tratamento',suf:'→',col:'var(--yellow)'},fechada:{lbl:'✅ Fechada',suf:'',col:'var(--green)'}};
+  const c=cfg[e]||cfg.aberta;
+  const arrow=c.suf?` <span style="opacity:.6">${c.suf}</span>`:'';
+  return`<button onclick="advanceRecNcEstado('${k}','${r.id}')" style="background:none;border:1px solid currentColor;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;color:${c.col};white-space:nowrap">${c.lbl}${arrow}</button>`;
+}
 
 function populateColabs(id){
   const el=document.getElementById(id);if(!el)return;
@@ -3642,8 +3768,17 @@ function saveTemp(){
   const mn=parseFloat(document.getElementById('t-min').value);
   const mx=parseFloat(document.getElementById('t-max').value);
   const conf=!isNaN(mn)&&!isNaN(mx)?temp>=mn&&temp<=mx:null;
-  const r=DB.push('temp',{datetime:document.getElementById('t-dt').value,equipamento:equip,temperatura:temp,tmin:mn,tmax:mx,tipo:document.getElementById('t-tipo').value,conforme:conf,accao:document.getElementById('t-acc').value,obs:document.getElementById('t-obs').value,colaborador:document.getElementById('t-colab').value});
-  toast('Temperatura guardada!');
+  const data={datetime:document.getElementById('t-dt').value,equipamento:equip,temperatura:temp,tmin:mn,tmax:mx,tipo:document.getElementById('t-tipo').value,conforme:conf,accao:document.getElementById('t-acc').value,obs:document.getElementById('t-obs').value,colaborador:document.getElementById('t-colab').value};
+  let r;
+  if(_editMode&&_editMode.key==='temp'){
+    r=DB.update('temp',_editMode.id,data);_editMode=null;
+    document.querySelectorAll('.edit-mode-banner').forEach(e=>e.remove());
+    const b=document.getElementById('t-save-btn');if(b)b.textContent=b.dataset.orig||'💾 Guardar Temperatura';
+    toast('Temperatura actualizada!');
+  } else {
+    if(conf===false)data.nc_estado='aberta';
+    r=DB.push('temp',data);toast('Temperatura guardada!');
+  }
   renderTempTbl();
   document.getElementById('t-acc').value='';document.getElementById('t-obs').value='';
   setNow('t-dt');updateDashStats();
@@ -3656,9 +3791,6 @@ function saveTemp(){
 }
 
 function saveLimp(){
-  const locais = getSelectedLocaisComZonas();
-  if(!locais.length){toast('Seleccione pelo menos um local','warn');return}
-
   const tipo        = document.getElementById('l-tipo').value;
   const produto     = getSelectedProdutos();
   const conformidade= document.getElementById('l-conf').value;
@@ -3667,15 +3799,25 @@ function saveLimp(){
   const obs         = document.getElementById('l-obs').value;
   const datetime    = document.getElementById('l-dt').value;
 
-  // Guardar um registo por local seleccionado (com zonas)
-  locais.forEach(({local, zonas}) => {
-    DB.push('limp',{datetime, local, zonas, tipo, produto, conformidade, colaborador, verificador, obs});
-  });
-
-  const msg = locais.length > 1
-    ? `${locais.length} limpezas guardadas! (${locais.map(l=>l.local).join(', ')})`
-    : 'Limpeza guardada!';
-  toast(msg);
+  if(_editMode&&_editMode.key==='limp'){
+    const locais=getSelectedLocaisComZonas();
+    const localData=locais.length?{local:locais[0].local,zonas:locais[0].zonas}:{};
+    DB.update('limp',_editMode.id,{datetime,tipo,produto,conformidade,colaborador,verificador,obs,...localData});
+    _editMode=null;document.querySelectorAll('.edit-mode-banner').forEach(e=>e.remove());
+    const b=document.getElementById('l-save-btn');if(b)b.textContent=b.dataset.orig||'💾 Guardar Limpeza';
+    toast('Limpeza actualizada!');
+  } else {
+    const locais = getSelectedLocaisComZonas();
+    if(!locais.length){toast('Seleccione pelo menos um local','warn');return}
+    // Guardar um registo por local seleccionado (com zonas)
+    locais.forEach(({local, zonas}) => {
+      const d={datetime, local, zonas, tipo, produto, conformidade, colaborador, verificador, obs};
+      if(conformidade==='nc')d.nc_estado='aberta';
+      DB.push('limp',d);
+    });
+    const msg=locais.length>1?`${locais.length} limpezas guardadas! (${locais.map(l=>l.local).join(', ')})`:'Limpeza guardada!';
+    toast(msg);
+  }
 
   // Reset form
   document.getElementById('l-prod-manual').value = '';
@@ -3700,28 +3842,66 @@ function saveOleo(){
   const p=document.getElementById('o-polar').value;
   if(!p){toast('Introduza o valor polar','warn');return}
   const pv=parseFloat(p);const conf=pv<=25;
-  const r=DB.push('oleo',{data:document.getElementById('o-data').value,equipamento:document.getElementById('o-equip').value,polar:pv,temperatura:document.getElementById('o-temp').value,metodo:document.getElementById('o-metodo').value,decisao:document.getElementById('o-decisao').value,conforme:conf,colaborador:document.getElementById('o-colab').value,obs:document.getElementById('o-obs').value});
-  toast('Óleo registado!');renderOleoTbl();document.getElementById('o-polar').value='';document.getElementById('o-obs').value='';
+  const data={data:document.getElementById('o-data').value,equipamento:document.getElementById('o-equip').value,polar:pv,temperatura:document.getElementById('o-temp').value,metodo:document.getElementById('o-metodo').value,decisao:document.getElementById('o-decisao').value,conforme:conf,colaborador:document.getElementById('o-colab').value,obs:document.getElementById('o-obs').value};
+  let r;
+  if(_editMode&&_editMode.key==='oleo'){
+    r=DB.update('oleo',_editMode.id,data);_editMode=null;
+    document.querySelectorAll('.edit-mode-banner').forEach(e=>e.remove());
+    const b=document.getElementById('o-save-btn');if(b)b.textContent=b.dataset.orig||'💾 Guardar Registo';
+    toast('Óleo actualizado!');
+  } else {
+    if(!conf)data.nc_estado='aberta';
+    r=DB.push('oleo',data);toast('Óleo registado!');
+  }
+  renderOleoTbl();document.getElementById('o-polar').value='';document.getElementById('o-obs').value='';
   const cfg=DB.getObj('config');
   if(!conf&&cfg.emOleoNc&&cfg.emPrincipal) triggerEmailAlert('oleo_nc',{equipamento:r.equipamento,polar:pv,data:r.data});
 }
 
 function saveVal(){
   if(!document.getElementById('v-prod').value){toast('Introduza o produto','warn');return}
-  DB.push('val',{data:document.getElementById('v-data').value,produto:document.getElementById('v-prod').value,lote:document.getElementById('v-lote').value,validade:document.getElementById('v-val').value,local:document.getElementById('v-local').value,estado:document.getElementById('v-est').value,qtd:document.getElementById('v-qtd').value,colaborador:document.getElementById('v-colab').value,obs:document.getElementById('v-obs').value});
-  toast('Validade guardada!');renderValTbl();document.getElementById('v-prod').value='';document.getElementById('v-lote').value='';document.getElementById('v-obs').value='';updateDashStats();
+  const data={data:document.getElementById('v-data').value,produto:document.getElementById('v-prod').value,lote:document.getElementById('v-lote').value,validade:document.getElementById('v-val').value,local:document.getElementById('v-local').value,estado:document.getElementById('v-est').value,qtd:document.getElementById('v-qtd').value,colaborador:document.getElementById('v-colab').value,obs:document.getElementById('v-obs').value};
+  if(_editMode&&_editMode.key==='val'){
+    DB.update('val',_editMode.id,data);_editMode=null;
+    document.querySelectorAll('.edit-mode-banner').forEach(e=>e.remove());
+    const b=document.getElementById('v-save-btn');if(b)b.textContent=b.dataset.orig||'💾 Guardar Validade';
+    toast('Validade actualizada!');
+  } else {
+    DB.push('val',data);toast('Validade guardada!');
+  }
+  renderValTbl();document.getElementById('v-prod').value='';document.getElementById('v-lote').value='';document.getElementById('v-obs').value='';updateDashStats();
 }
 
 function saveSob(){
   if(!document.getElementById('sb-tipo').value){toast('Seleccione a sobremesa','warn');return}
-  DB.push('sob',{datetime:document.getElementById('sb-dt').value,tipo:document.getElementById('sb-tipo').value,qtd:document.getElementById('sb-qtd').value,tempConf:document.getElementById('sb-tc').value,tempArm:document.getElementById('sb-ta').value,validade:document.getElementById('sb-val').value,alergenios:document.getElementById('sb-aleg').value,conformidade:document.getElementById('sb-conf').value,colaborador:document.getElementById('sb-colab').value,obs:document.getElementById('sb-obs').value});
-  toast('Sobremesa guardada!');renderSobTbl();document.getElementById('sb-qtd').value='';document.getElementById('sb-obs').value='';setNow('sb-dt');
+  const conf=document.getElementById('sb-conf').value;
+  const data={datetime:document.getElementById('sb-dt').value,tipo:document.getElementById('sb-tipo').value,qtd:document.getElementById('sb-qtd').value,tempConf:document.getElementById('sb-tc').value,tempArm:document.getElementById('sb-ta').value,validade:document.getElementById('sb-val').value,alergenios:document.getElementById('sb-aleg').value,conformidade:conf,colaborador:document.getElementById('sb-colab').value,obs:document.getElementById('sb-obs').value};
+  if(_editMode&&_editMode.key==='sob'){
+    DB.update('sob',_editMode.id,data);_editMode=null;
+    document.querySelectorAll('.edit-mode-banner').forEach(e=>e.remove());
+    const b=document.getElementById('sb-save-btn');if(b)b.textContent=b.dataset.orig||'💾 Guardar Registo';
+    toast('Sobremesa actualizada!');
+  } else {
+    if(conf==='nc')data.nc_estado='aberta';
+    DB.push('sob',data);toast('Sobremesa guardada!');
+  }
+  renderSobTbl();document.getElementById('sb-qtd').value='';document.getElementById('sb-obs').value='';setNow('sb-dt');
 }
 
 function saveRec(){
   if(!document.getElementById('rc-forn').value){toast('Introduza o fornecedor','warn');return}
-  DB.push('rec',{datetime:document.getElementById('rc-dt').value,fornecedor:document.getElementById('rc-forn').value,produto:document.getElementById('rc-prod').value,qtd:document.getElementById('rc-qtd').value,temperatura:document.getElementById('rc-temp').value,checks:{emb:document.getElementById('rc-emb').checked,rot:document.getElementById('rc-rot').checked,val:document.getElementById('rc-val').checked,org:document.getElementById('rc-org').checked,veic:document.getElementById('rc-veic').checked},decisao:document.getElementById('rc-dec').value,colaborador:document.getElementById('rc-colab').value,obs:document.getElementById('rc-obs').value});
-  toast('Recepção guardada!');renderRecTbl();document.getElementById('rc-forn').value='';document.getElementById('rc-prod').value='';document.getElementById('rc-obs').value='';setNow('rc-dt');
+  const dec=document.getElementById('rc-dec').value;
+  const data={datetime:document.getElementById('rc-dt').value,fornecedor:document.getElementById('rc-forn').value,produto:document.getElementById('rc-prod').value,qtd:document.getElementById('rc-qtd').value,temperatura:document.getElementById('rc-temp').value,checks:{emb:document.getElementById('rc-emb').checked,rot:document.getElementById('rc-rot').checked,val:document.getElementById('rc-val').checked,org:document.getElementById('rc-org').checked,veic:document.getElementById('rc-veic').checked},decisao:dec,colaborador:document.getElementById('rc-colab').value,obs:document.getElementById('rc-obs').value};
+  if(_editMode&&_editMode.key==='rec'){
+    DB.update('rec',_editMode.id,data);_editMode=null;
+    document.querySelectorAll('.edit-mode-banner').forEach(e=>e.remove());
+    const b=document.getElementById('rc-save-btn');if(b)b.textContent=b.dataset.orig||'💾 Guardar Recepção';
+    toast('Recepção actualizada!');
+  } else {
+    if(dec==='rejeitado')data.nc_estado='aberta';
+    DB.push('rec',data);toast('Recepção guardada!');
+  }
+  renderRecTbl();document.getElementById('rc-forn').value='';document.getElementById('rc-prod').value='';document.getElementById('rc-obs').value='';setNow('rc-dt');
 }
 
 function saveNC(){
@@ -3750,8 +3930,16 @@ function saveNC(){
   const _doSave=(withFotos)=>{
     if(!withFotos) ncData.fotos=[];
     try {
-      const r=DB.push('nc',ncData);
-      toast('NC guardada!'+(withFotos&&fotos.length?` · ${fotos.length} foto(s)`:'')+(withFotos?'':' (sem fotos — armazenamento cheio)'));
+      let r;
+      if(_editMode&&_editMode.key==='nc'){
+        r=DB.update('nc',_editMode.id,ncData);_editMode=null;
+        document.querySelectorAll('.edit-mode-banner').forEach(e=>e.remove());
+        const b=document.getElementById('nc-save-btn');if(b)b.textContent=b.dataset.orig||'💾 Guardar NC';
+        toast('NC actualizada!');
+      } else {
+        r=DB.push('nc',ncData);
+        toast('NC guardada!'+(withFotos&&fotos.length?` · ${fotos.length} foto(s)`:'')+(withFotos?'':' (sem fotos — armazenamento cheio)'));
+      }
       renderNcTbl();
       document.getElementById('nc-desc').value='';
       document.getElementById('nc-causa').value='';
@@ -3890,8 +4078,8 @@ function renderTempTbl(){
   el.innerHTML=d.length?d.map(r=>`<tr>
     <td>${fd(r.datetime)}</td><td>${r.equipamento||'—'}</td>
     <td class="${r.conforme===true?'t-ok':r.conforme===false?'t-bad':'t-na'}">${r.temperatura}°C</td>
-    <td>${r.conforme===true?'<span class="badge b-ok">✓</span>':r.conforme===false?'<span class="badge b-fail">NC</span>':'<span class="badge b-pend">—</span>'}</td>
-    <td>${delBtn('temp',r.id)}</td>
+    <td>${r.conforme===true?'<span class="badge b-ok">✓</span>':r.conforme===false?ncEstadoCell('temp',r)||'<span class="badge b-fail">NC</span>':'<span class="badge b-pend">—</span>'}</td>
+    <td style="white-space:nowrap">${editBtn('temp',r.id)}${delBtn('temp',r.id)}</td>
   </tr>`).join(''):`<tr><td colspan="5" class="empty" style="padding:24px;text-align:center">Sem registos</td></tr>`;
 }
 function renderLimpTbl(){
@@ -3904,8 +4092,8 @@ function renderLimpTbl(){
     return `<tr>
       <td>${fd(r.datetime)}</td>
       <td>${r.local||'—'}${zonasTxt&&zonasTxt!=='—'?`<br><span style="font-size:10px;color:var(--txt3)">${zonasTxt}</span>`:''}</td>
-      <td>${r.tipo||'—'}</td><td>${cm[r.conformidade]||'—'}</td>
-      <td>${delBtn('limp',r.id)}</td>
+      <td>${r.tipo||'—'}</td><td>${r.conformidade==='nc'?ncEstadoCell('limp',r)||cm[r.conformidade]:cm[r.conformidade]||'—'}</td>
+      <td style="white-space:nowrap">${editBtn('limp',r.id)}${delBtn('limp',r.id)}</td>
     </tr>`;
   }).join(''):`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
 }
@@ -3914,7 +4102,7 @@ function renderOleoTbl(){
   el.innerHTML=d.length?d.map(r=>`<tr>
     <td>${fdo(r.data)}</td><td>${r.equipamento||'—'}</td>
     <td class="${r.conforme?'t-ok':'t-bad'}">${r.polar}%</td>
-    <td>${r.decisao}</td><td>${delBtn('oleo',r.id)}</td>
+    <td>${r.conforme?r.decisao:ncEstadoCell('oleo',r)||r.decisao}</td><td style="white-space:nowrap">${editBtn('oleo',r.id)}${delBtn('oleo',r.id)}</td>
   </tr>`).join(''):`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
 }
 function renderValTbl(){
@@ -3924,7 +4112,7 @@ function renderValTbl(){
   const el=document.getElementById('v-tbody');if(!el)return;
   el.innerHTML=d.length?d.map(r=>`<tr>
     <td>${r.produto||'—'}</td><td>${fdo(r.validade)}</td><td>${r.local||'—'}</td>
-    <td>${em[r.estado]||r.estado}</td><td>${delBtn('val',r.id)}</td>
+    <td>${em[r.estado]||r.estado}</td><td style="white-space:nowrap">${editBtn('val',r.id)}${delBtn('val',r.id)}</td>
   </tr>`).join(''):`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
 }
 function renderSobTbl(){
@@ -3933,7 +4121,7 @@ function renderSobTbl(){
   el.innerHTML=d.length?d.map(r=>`<tr>
     <td>${fd(r.datetime)}</td><td>${r.tipo||'—'}</td>
     <td>${r.tempArm?r.tempArm+'°C':'—'}</td><td>${fd(r.validade)}</td>
-    <td>${cm[r.conformidade]||'—'}</td><td>${delBtn('sob',r.id)}</td>
+    <td>${r.conformidade==='nc'?ncEstadoCell('sob',r)||cm[r.conformidade]:cm[r.conformidade]||'—'}</td><td style="white-space:nowrap">${editBtn('sob',r.id)}${delBtn('sob',r.id)}</td>
   </tr>`).join(''):`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
 }
 function renderRecTbl(){
@@ -3941,7 +4129,7 @@ function renderRecTbl(){
   const dm={aceite:'<span class="badge b-ok">✅</span>',rejeitado:'<span class="badge b-fail">❌</span>',cond:'<span class="badge b-warn">⚠️</span>'};
   el.innerHTML=d.length?d.map(r=>`<tr>
     <td>${fd(r.datetime)}</td><td>${r.fornecedor||'—'}</td><td>${r.produto||'—'}</td>
-    <td>${dm[r.decisao]||r.decisao}</td><td>${delBtn('rec',r.id)}</td>
+    <td>${r.decisao==='rejeitado'?ncEstadoCell('rec',r)||dm[r.decisao]:dm[r.decisao]||r.decisao}</td><td style="white-space:nowrap">${editBtn('rec',r.id)}${delBtn('rec',r.id)}</td>
   </tr>`).join(''):`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
 }
 function renderChkTbl(){
@@ -3949,23 +4137,24 @@ function renderChkTbl(){
   el.innerHTML=d.length?d.map(r=>`<tr>
     <td>${fdo(r.data)}</td><td>${r.colaborador||'—'}</td>
     <td><span class="badge ${r.score>=90?'b-ok':r.score>=70?'b-warn':'b-fail'}">${r.score}%</span></td>
-    <td>${r.nc}</td><td>${delBtn('chk',r.id)}</td>
+    <td>${r.nc}</td><td style="white-space:nowrap">${delBtn('chk',r.id)}</td>
   </tr>`).join(''):`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
 }
 function renderNcTbl(){
   const flt=document.getElementById('nc-flt')?.value||'all';
   let d=DB.get('nc');if(flt!=='all')d=d.filter(r=>r.estado===flt);
   const gm={menor:'<span class="badge b-warn">🟡</span>',maior:'<span class="badge b-orange">🟠</span>',critica:'<span class="badge b-fail">🔴</span>'};
-  const em={aberta:'<span class="badge b-fail">Aberta</span>','em-curso':'<span class="badge b-warn">Em curso</span>',fechada:'<span class="badge b-ok">Fechada</span>'};
+  const em={aberta:`<button onclick="advanceNcEstado('__ID__')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;color:var(--red)">🔴 Aberta →</button>`,'em-curso':`<button onclick="advanceNcEstado('__ID__')" style="background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;color:var(--yellow)">🟡 Em tratamento →</button>`,fechada:'<span class="badge b-ok">✅ Fechada</span>'};
   const el=document.getElementById('nc-tbody');if(!el)return;
   el.innerHTML=d.length?d.map(r=>{
     const nf=(r.fotos||[]).length;
     const photoBtn=nf>0?`<button class="btn-icon" style="width:32px;height:32px;font-size:13px;color:var(--acc)" onclick="viewNcPhotos('${r.id}')">📸<span style="font-size:9px;display:block;margin-top:-2px">${nf}</span></button>`:'<span style="color:var(--txt3);font-size:12px">—</span>';
+    const estadoHtml=(em[r.estado]||r.estado||'').replace(/__ID__/g,r.id);
     return`<tr>
     <td>${fd(r.datetime)}</td><td>${r.area||'—'}</td>
-    <td>${gm[r.gravidade]||'—'}</td><td>${em[r.estado]||r.estado}</td>
+    <td>${gm[r.gravidade]||'—'}</td><td>${estadoHtml}</td>
     <td style="text-align:center">${photoBtn}</td>
-    <td>${delBtn('nc',r.id)}</td>
+    <td style="white-space:nowrap">${editBtn('nc',r.id)}${delBtn('nc',r.id)}</td>
   </tr>`}).join(''):`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt3)">Sem registos</td></tr>`;
 }
 
