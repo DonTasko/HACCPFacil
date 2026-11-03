@@ -1590,6 +1590,18 @@ input[type=range]::-webkit-slider-thumb{
           <tbody id="t-tbody"></tbody>
         </table></div>
       </div>
+      <!-- Registos remotos (Supabase / QR) -->
+      <div class="card" id="t-sb-card" style="display:none">
+        <div class="card-hd">
+          <div class="card-title">📲 Funcionários <span id="t-sb-badge" style="background:rgba(59,130,246,.2);color:var(--acc2);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;margin-left:6px"></span></div>
+          <input type="date" class="form-input" id="t-sb-flt" style="width:auto" onchange="renderSBTemp()">
+        </div>
+        <div id="t-sb-loading" style="text-align:center;padding:16px;color:var(--txt3);font-size:13px">⏳</div>
+        <div class="table-wrap" id="t-sb-wrap" style="display:none"><table>
+          <thead><tr><th>Data/Hora</th><th>Colaborador</th><th>Equipamento</th><th>Temp.</th></tr></thead>
+          <tbody id="t-sb-tbody"></tbody>
+        </table></div>
+      </div>
     </div>
 
     <!-- ══════════ LIMPEZA ══════════ -->
@@ -1675,6 +1687,18 @@ input[type=range]::-webkit-slider-thumb{
         <div class="table-wrap"><table>
           <thead><tr><th>Data/Hora</th><th>Local</th><th>Tipo</th><th>Conform.</th><th></th></tr></thead>
           <tbody id="l-tbody"></tbody>
+        </table></div>
+      </div>
+      <!-- Registos remotos (Supabase / QR) -->
+      <div class="card" id="l-sb-card" style="display:none">
+        <div class="card-hd">
+          <div class="card-title">📲 Funcionários <span id="l-sb-badge" style="background:rgba(34,197,94,.15);color:var(--green);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;margin-left:6px"></span></div>
+          <input type="date" class="form-input" id="l-sb-flt" style="width:auto" onchange="renderSBLimp()">
+        </div>
+        <div id="l-sb-loading" style="text-align:center;padding:16px;color:var(--txt3);font-size:13px">⏳</div>
+        <div class="table-wrap" id="l-sb-wrap" style="display:none"><table>
+          <thead><tr><th>Data/Hora</th><th>Colaborador</th><th>Área</th><th>Tipo Limp.</th></tr></thead>
+          <tbody id="l-sb-tbody"></tbody>
         </table></div>
       </div>
     </div>
@@ -3403,8 +3427,8 @@ function navigate(page){
 
   // Init
   if(page==='dash') renderDash();
-  if(page==='temp'){setNow('t-dt');populateColabs('t-colab');populateEquips();setToday('t-flt');renderTempTbl()}
-  if(page==='limp'){setNow('l-dt');populateColabs('l-colab');populateColabs('l-verif');populateLocais();populateProdutos();setToday('l-flt');renderLimpTbl()}
+  if(page==='temp'){setNow('t-dt');populateColabs('t-colab');populateEquips();setToday('t-flt');renderTempTbl();setToday('t-sb-flt');renderSBTemp()}
+  if(page==='limp'){setNow('l-dt');populateColabs('l-colab');populateColabs('l-verif');populateLocais();populateProdutos();setToday('l-flt');renderLimpTbl();setToday('l-sb-flt');renderSBLimp()}
   if(page==='oleo'){setToday('o-data');populateColabs('o-colab');renderOleoTbl()}
   if(page==='val'){setToday('v-data');populateColabs('v-colab');renderValTbl()}
   if(page==='sob'){setNow('sb-dt');populateSobs();populateColabs('sb-colab');renderSobTbl()}
@@ -4153,6 +4177,77 @@ function saveChk(){
 // ═══════════════════════════════════════════
 // RENDER TABLES
 // ═══════════════════════════════════════════
+// ── REGISTOS REMOTOS (SUPABASE / QR) ──
+async function renderSBTemp(){
+  const card = document.getElementById('t-sb-card');
+  if(!SB.user||!SB.client){ card.style.display='none'; return; }
+  card.style.display='';
+  const loading = document.getElementById('t-sb-loading');
+  const wrap    = document.getElementById('t-sb-wrap');
+  const tbody   = document.getElementById('t-sb-tbody');
+  const badge   = document.getElementById('t-sb-badge');
+  const flt     = document.getElementById('t-sb-flt')?.value;
+
+  loading.style.display='block'; wrap.style.display='none';
+  try{
+    let q = SB.client.from('haccp_registos')
+      .select('data,hora,funcionario,equipamento,temperatura,turno,acao,observacoes')
+      .eq('restaurante_id', SB.user.id)
+      .eq('tipo','temperaturas')
+      .order('data',{ascending:false})
+      .order('hora',{ascending:false})
+      .limit(100);
+    if(flt) q = q.eq('data', flt);
+    const {data, error} = await q;
+    if(error) throw error;
+    badge.textContent = data.length ? data.length + ' registo' + (data.length!==1?'s':'') : '0';
+    tbody.innerHTML = data.length ? data.map(r=>`<tr>
+      <td>${r.data||'—'} ${r.hora?r.hora.substring(0,5):''}</td>
+      <td>${r.funcionario||'—'}</td>
+      <td>${r.equipamento||'—'}</td>
+      <td><strong>${r.temperatura!=null?r.temperatura+'°C':'—'}</strong></td>
+    </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--txt3)">Sem registos de funcionários</td></tr>';
+    loading.style.display='none'; wrap.style.display='';
+  } catch(e){
+    loading.textContent='⚠️ Erro: '+e.message;
+  }
+}
+
+async function renderSBLimp(){
+  const card = document.getElementById('l-sb-card');
+  if(!SB.user||!SB.client){ card.style.display='none'; return; }
+  card.style.display='';
+  const loading = document.getElementById('l-sb-loading');
+  const wrap    = document.getElementById('l-sb-wrap');
+  const tbody   = document.getElementById('l-sb-tbody');
+  const badge   = document.getElementById('l-sb-badge');
+  const flt     = document.getElementById('l-sb-flt')?.value;
+
+  loading.style.display='block'; wrap.style.display='none';
+  try{
+    let q = SB.client.from('haccp_registos')
+      .select('data,hora,funcionario,area,tipo_limpeza,produtos,observacoes')
+      .eq('restaurante_id', SB.user.id)
+      .eq('tipo','limpeza')
+      .order('data',{ascending:false})
+      .order('hora',{ascending:false})
+      .limit(100);
+    if(flt) q = q.eq('data', flt);
+    const {data, error} = await q;
+    if(error) throw error;
+    badge.textContent = data.length ? data.length + ' registo' + (data.length!==1?'s':'') : '0';
+    tbody.innerHTML = data.length ? data.map(r=>`<tr>
+      <td>${r.data||'—'} ${r.hora?r.hora.substring(0,5):''}</td>
+      <td>${r.funcionario||'—'}</td>
+      <td>${r.area||'—'}</td>
+      <td>${r.tipo_limpeza||'—'}</td>
+    </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--txt3)">Sem registos de funcionários</td></tr>';
+    loading.style.display='none'; wrap.style.display='';
+  } catch(e){
+    loading.textContent='⚠️ Erro: '+e.message;
+  }
+}
+
 function renderTempTbl(){
   const fd2=document.getElementById('t-flt')?.value;
   let d=DB.get('temp');if(fd2)d=d.filter(r=>r.datetime?.startsWith(fd2));
