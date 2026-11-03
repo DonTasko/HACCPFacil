@@ -6766,6 +6766,7 @@ function addProduto(){
   document.getElementById('np-notas').value = '';
   renderProdutosList();
   populateProdutos();
+  SB._syncProdutosToSB(DB.get('cfg_produtos'));
   toast('✅ Produto adicionado!');
 }
 
@@ -6793,6 +6794,7 @@ function removeProduto(id){
   DB.set('cfg_produtos', DB.get('cfg_produtos').filter(p=>p.id!==id));
   renderProdutosList();
   populateProdutos();
+  SB._syncProdutosToSB(DB.get('cfg_produtos'));
   toast('Produto removido');
 }
 
@@ -8809,6 +8811,15 @@ const SB = {
       const { data } = await this.client.from('restaurantes').select('id').single();
       if (data?.id) this.restauranteId = data.id;
     } catch(e) { /* silencioso — fallback usa user.id */ }
+  },
+
+  async _syncProdutosToSB(cfgProdutos) {
+    if (!this.restauranteId || !this.client) return;
+    // Buscar settings actuais para não sobrescrever outras chaves
+    const { data } = await this.client.from('restaurantes').select('settings').eq('id', this.restauranteId).single();
+    const settings = { ...(data?.settings || {}), cfg_produtos: cfgProdutos };
+    this.client.from('restaurantes').update({ settings }).eq('id', this.restauranteId)
+      .then(({ error }) => { if (error) console.warn('SB sync produtos:', error.message); });
   },
 
   // ── AUTH ──────────────────────────────────
