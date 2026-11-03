@@ -113,7 +113,8 @@ body{padding:env(safe-area-inset-top,0) 16px env(safe-area-inset-bottom,24px);ma
 
     <div class="form-group">
       <label class="form-label">Área / Local</label>
-      <input type="text" class="form-input" id="f-area" placeholder="Ex: Cozinha, Balcão, Casas de banho...">
+      <select class="form-select" id="f-area" style="display:none"></select>
+      <input type="text" class="form-input" id="f-area-txt" placeholder="Ex: Cozinha, Balcão, Casas de banho...">
     </div>
 
     <div class="form-group">
@@ -208,6 +209,33 @@ async function init(){
       ).join('');
     }
 
+    // Locais configurados — select dinâmico ou fallback para texto
+    if(d.locais && d.locais.length){
+      const sel = document.getElementById('f-area');
+      const txt = document.getElementById('f-area-txt');
+      sel.innerHTML = '<option value="">-- Seleccionar --</option>';
+      d.locais.forEach(l=>{
+        if(l.zonas && l.zonas.length){
+          const grp = document.createElement('optgroup');
+          grp.label = l.nome;
+          l.zonas.forEach(z=>{
+            const o = document.createElement('option');
+            o.value = l.nome+' — '+z;
+            o.textContent = z;
+            grp.appendChild(o);
+          });
+          sel.appendChild(grp);
+        } else {
+          const o = document.createElement('option');
+          o.value = l.nome;
+          o.textContent = l.nome;
+          sel.appendChild(o);
+        }
+      });
+      sel.style.display = '';
+      txt.style.display = 'none';
+    }
+
     setNow();
     document.getElementById('loading').style.display='none';
     document.getElementById('main').style.display='block';
@@ -226,7 +254,9 @@ async function guardar(){
   const data = document.getElementById('f-data').value;
   const hora = document.getElementById('f-hora').value;
   const colab = document.getElementById('f-colab').value;
-  const area = document.getElementById('f-area').value.trim();
+  const areaSel = document.getElementById('f-area');
+  const areaTxt = document.getElementById('f-area-txt');
+  const area = (areaSel.style.display !== 'none' ? areaSel.value : areaTxt.value).trim();
   const obs = document.getElementById('f-obs').value.trim();
   const tipo_limp = document.querySelector('#tipo-chips .chip.sel')?.dataset.v || 'corrente';
   const produtos = getProdutos();
@@ -257,7 +287,9 @@ async function guardar(){
     alerta.className='alert ok';
     alerta.textContent='✅ Registo de limpeza guardado!';
     // Reset
-    document.getElementById('f-area').value='';
+    const _areaSel = document.getElementById('f-area');
+    const _areaTxt = document.getElementById('f-area-txt');
+    if(_areaSel.style.display !== 'none') _areaSel.value=''; else _areaTxt.value='';
     document.getElementById('f-obs').value='';
     document.getElementById('f-prod-outro').value='';
     document.querySelectorAll('#prod-chips .chip').forEach(c=>c.classList.remove('sel'));

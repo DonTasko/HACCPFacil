@@ -5099,7 +5099,7 @@ function addCfgItem(type){
   arr.push({id:Date.now().toString(36),nome,...extra});
   DB.set('cfg_'+type,arr);
   // Clear inputs
-  if(type==='locais'){document.getElementById('nl-nome').value='';if(document.getElementById('nl-zonas'))document.getElementById('nl-zonas').value='';}
+  if(type==='locais'){document.getElementById('nl-nome').value='';if(document.getElementById('nl-zonas'))document.getElementById('nl-zonas').value='';SB._syncLocaisToSB(DB.get('cfg_locais'));}
   if(type==='equipamentos'){document.getElementById('ne-nome').value='';document.getElementById('ne-tmin').value='';document.getElementById('ne-tmax').value=''}
   if(type==='colaboradores')document.getElementById('nc2-nome').value='';
   if(type==='sobremesas'){document.getElementById('ns-nome').value='';document.getElementById('ns-aleg').value=''}
@@ -5109,6 +5109,8 @@ function addCfgItem(type){
 
 function rmCfgItem(type,id){
   DB.set('cfg_'+type,DB.get('cfg_'+type).filter(x=>x.id!==id));
+  if(type==='locais') SB._syncLocaisToSB(DB.get('cfg_locais'));
+  if(type==='produtos') SB._syncProdutosToSB(DB.get('cfg_produtos'));
   renderCfgList(type);
 }
 
@@ -5172,6 +5174,7 @@ function addZona(localId){
   if(locais[idx].zonas.includes(nome)){toast('Zona já existe','warn');return;}
   locais[idx].zonas.push(nome);
   DB.set('cfg_locais',locais);
+  SB._syncLocaisToSB(locais);
   inp.value='';
   renderCfgList('locais');
   toast('Zona adicionada!');
@@ -5184,6 +5187,7 @@ function rmZona(localId, zonaIdx){
   if(!locais[idx].zonas) return;
   locais[idx].zonas.splice(zonaIdx,1);
   DB.set('cfg_locais',locais);
+  SB._syncLocaisToSB(locais);
   renderCfgList('locais');
 }
 
@@ -8813,14 +8817,15 @@ const SB = {
     } catch(e) { /* silencioso — fallback usa user.id */ }
   },
 
-  async _syncProdutosToSB(cfgProdutos) {
+  async _syncSettingsToSB(key, value) {
     if (!this.restauranteId || !this.client) return;
-    // Buscar settings actuais para não sobrescrever outras chaves
     const { data } = await this.client.from('restaurantes').select('settings').eq('id', this.restauranteId).single();
-    const settings = { ...(data?.settings || {}), cfg_produtos: cfgProdutos };
+    const settings = { ...(data?.settings || {}), [key]: value };
     this.client.from('restaurantes').update({ settings }).eq('id', this.restauranteId)
-      .then(({ error }) => { if (error) console.warn('SB sync produtos:', error.message); });
+      .then(({ error }) => { if (error) console.warn('SB sync settings['+key+']:', error.message); });
   },
+  _syncProdutosToSB(cfg) { this._syncSettingsToSB('cfg_produtos', cfg); },
+  _syncLocaisToSB(cfg)   { this._syncSettingsToSB('cfg_locais',   cfg); },
 
   // ── AUTH ──────────────────────────────────
   async signIn(email, pw) {
