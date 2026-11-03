@@ -3857,7 +3857,7 @@ function saveTemp(){
     if(SB.user&&SB.client){
       const[dp,tp]=(data.datetime||'').split('T');
       SB.client.from('haccp_registos').insert({
-        restaurante_id: SB.user.id,
+        restaurante_id: SB.restauranteId || SB.user.id,
         tipo: 'temperaturas',
         data: dp||null,
         hora: tp?tp.substring(0,8):null,
@@ -3909,7 +3909,7 @@ function saveLimp(){
       if(SB.user&&SB.client){
         const[dp,tp]=(d.datetime||'').split('T');
         SB.client.from('haccp_registos').insert({
-          restaurante_id: SB.user.id,
+          restaurante_id: SB.restauranteId || SB.user.id,
           tipo: 'limpeza',
           data: dp||null,
           hora: tp?tp.substring(0,8):null,
@@ -4192,7 +4192,6 @@ async function renderSBTemp(){
   try{
     let q = SB.client.from('haccp_registos')
       .select('data,hora,funcionario,equipamento,temperatura,turno,acao,observacoes')
-      .eq('restaurante_id', SB.user.id)
       .eq('tipo','temperaturas')
       .order('data',{ascending:false})
       .order('hora',{ascending:false})
@@ -4227,7 +4226,6 @@ async function renderSBLimp(){
   try{
     let q = SB.client.from('haccp_registos')
       .select('data,hora,funcionario,area,tipo_limpeza,produtos,observacoes')
-      .eq('restaurante_id', SB.user.id)
       .eq('tipo','limpeza')
       .order('data',{ascending:false})
       .order('hora',{ascending:false})
@@ -4437,12 +4435,12 @@ async function loadFormQR(){
   try{
     const {data,error} = await SB.client
       .from('restaurantes')
-      .select('form_token')
-      .eq('id', SB.user.id)
+      .select('id,form_token')
       .single();
 
     if(error || !data || !data.form_token) throw new Error(error?.message || 'Token não encontrado');
 
+    if(data.id) SB.restauranteId = data.id;
     const token = data.form_token;
     const base  = location.origin; // haccpdigital.online
     const urlTemp = base + '/registo-temp.html?token=' + token;
@@ -8780,6 +8778,7 @@ const DATA_KEYS = ['config','cfg_locais','cfg_equipamentos','cfg_colaboradores',
 const SB = {
   client: null,
   user: null,
+  restauranteId: null,
   _syncTimer: null,
   _syncing: false,
 
@@ -8794,12 +8793,22 @@ const SB = {
         setTimeout(() => this._showPasswordUpdateModal(), 400);
       } else if (event === 'SIGNED_IN') {
         setTimeout(() => this.pull(), 800);
+        this._loadRestauranteId();
       }
     });
     this.client.auth.getSession().then(({ data: { session } }) => {
       this.user = session?.user || null;
       this._updateTopbar();
+      if (this.user) this._loadRestauranteId();
     });
+  },
+
+  async _loadRestauranteId() {
+    if (!this.client) return;
+    try {
+      const { data } = await this.client.from('restaurantes').select('id').single();
+      if (data?.id) this.restauranteId = data.id;
+    } catch(e) { /* silencioso — fallback usa user.id */ }
   },
 
   // ── AUTH ──────────────────────────────────
