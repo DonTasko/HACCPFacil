@@ -9272,6 +9272,17 @@ async function init(){
 
   // ── Supabase ──────────────────────────────────────────────────
   SB.init();
+  // Supabase v2 PKCE: link de reset/magic-link chega com ?code= — trocar por sessão
+  (async function(){
+    const code = new URLSearchParams(location.search).get('code');
+    if(code && window.supabase && SB.client){
+      try{
+        await SB.client.auth.exchangeCodeForSession(code);
+        // Limpar o ?code= do URL sem recarregar a página
+        history.replaceState(null, '', location.pathname + location.hash);
+      } catch(e){ console.warn('exchangeCodeForSession:', e.message); }
+    }
+  })();
   // Interceptar DB.push para agendar sync automático
   (function(){
     const _prevPush = DB.push.bind(DB);
