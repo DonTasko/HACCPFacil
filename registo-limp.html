@@ -113,8 +113,13 @@ body{padding:env(safe-area-inset-top,0) 16px env(safe-area-inset-bottom,24px);ma
 
     <div class="form-group">
       <label class="form-label">Área / Local</label>
-      <select class="form-select" id="f-area" style="display:none"></select>
+      <div class="chips-wrap" id="local-chips" style="display:none"></div>
       <input type="text" class="form-input" id="f-area-txt" placeholder="Ex: Cozinha, Balcão, Casas de banho...">
+    </div>
+
+    <div class="form-group" id="zonas-group" style="display:none">
+      <label class="form-label">Zonas</label>
+      <div class="chips-wrap multi-chips" id="zonas-chips"></div>
     </div>
 
     <div class="form-group">
@@ -170,6 +175,30 @@ function toggleProd(el){
   el.classList.toggle('sel');
 }
 
+function selLocal(el){
+  document.querySelectorAll('#local-chips .chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  // Mostrar zonas do local selecionado
+  const localNome = el.dataset.v;
+  const local = (window._locaisData||[]).find(l=>l.nome===localNome);
+  const zonas = local?.zonas || [];
+  const grupo = document.getElementById('zonas-group');
+  const wrap = document.getElementById('zonas-chips');
+  if(zonas.length){
+    wrap.innerHTML = zonas.map(z=>
+      `<div class="chip" data-v="${z}" onclick="toggleZona(this)">${z}</div>`
+    ).join('');
+    grupo.style.display='';
+  } else {
+    wrap.innerHTML='';
+    grupo.style.display='none';
+  }
+}
+
+function toggleZona(el){
+  el.classList.toggle('sel');
+}
+
 function getProdutos(){
   const selecionados = [...document.querySelectorAll('#prod-chips .chip.sel')].map(c=>c.dataset.v);
   const outro = document.getElementById('f-prod-outro').value.trim();
@@ -209,31 +238,16 @@ async function init(){
       ).join('');
     }
 
-    // Locais configurados — select dinâmico ou fallback para texto
+    // Locais configurados — chips dinâmicos ou fallback para texto
     if(d.locais && d.locais.length){
-      const sel = document.getElementById('f-area');
+      window._locaisData = d.locais;
+      const wrap = document.getElementById('local-chips');
       const txt = document.getElementById('f-area-txt');
-      sel.innerHTML = '<option value="">-- Seleccionar --</option>';
-      d.locais.forEach(l=>{
-        if(l.zonas && l.zonas.length){
-          const grp = document.createElement('optgroup');
-          grp.label = l.nome;
-          l.zonas.forEach(z=>{
-            const o = document.createElement('option');
-            o.value = l.nome+' — '+z;
-            o.textContent = z;
-            grp.appendChild(o);
-          });
-          sel.appendChild(grp);
-        } else {
-          const o = document.createElement('option');
-          o.value = l.nome;
-          o.textContent = l.nome;
-          sel.appendChild(o);
-        }
-      });
-      sel.style.display = '';
-      txt.style.display = 'none';
+      wrap.innerHTML = d.locais.map(l=>
+        `<div class="chip" data-v="${l.nome}" onclick="selLocal(this)">${l.nome}</div>`
+      ).join('');
+      wrap.style.display='';
+      txt.style.display='none';
     }
 
     setNow();
@@ -254,9 +268,18 @@ async function guardar(){
   const data = document.getElementById('f-data').value;
   const hora = document.getElementById('f-hora').value;
   const colab = document.getElementById('f-colab').value;
-  const areaSel = document.getElementById('f-area');
+  const localChips = document.getElementById('local-chips');
   const areaTxt = document.getElementById('f-area-txt');
-  const area = (areaSel.style.display !== 'none' ? areaSel.value : areaTxt.value).trim();
+  let area = '';
+  if(localChips.style.display !== 'none'){
+    const localSel = document.querySelector('#local-chips .chip.sel');
+    if(localSel){
+      const zonasSel = [...document.querySelectorAll('#zonas-chips .chip.sel')].map(c=>c.dataset.v);
+      area = localSel.dataset.v + (zonasSel.length ? ' — '+zonasSel.join(', ') : '');
+    }
+  } else {
+    area = areaTxt.value.trim();
+  }
   const obs = document.getElementById('f-obs').value.trim();
   const tipo_limp = document.querySelector('#tipo-chips .chip.sel')?.dataset.v || 'corrente';
   const produtos = getProdutos();
@@ -286,10 +309,10 @@ async function guardar(){
     if(!d.ok) throw new Error(d.error||'Erro ao guardar');
     alerta.className='alert ok';
     alerta.textContent='✅ Registo de limpeza guardado!';
-    // Reset
-    const _areaSel = document.getElementById('f-area');
-    const _areaTxt = document.getElementById('f-area-txt');
-    if(_areaSel.style.display !== 'none') _areaSel.value=''; else _areaTxt.value='';
+    // Reset área
+    document.querySelectorAll('#local-chips .chip, #zonas-chips .chip').forEach(c=>c.classList.remove('sel'));
+    document.getElementById('zonas-group').style.display='none';
+    document.getElementById('f-area-txt').value='';
     document.getElementById('f-obs').value='';
     document.getElementById('f-prod-outro').value='';
     document.querySelectorAll('#prod-chips .chip').forEach(c=>c.classList.remove('sel'));
