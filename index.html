@@ -2759,7 +2759,8 @@ input[type=range]::-webkit-slider-thumb{
         <button class="cfg-tab" onclick="switchCfgTab('visual')">🎨<br><span>Visual</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('modulos')">🧩<br><span>Módulos</span></button>
         <button class="cfg-tab" onclick="switchCfgTab('notif')">🔔<br><span>Alertas</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('github')" style="grid-column:1/4">🐙<br><span>GitHub</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('github')">🐙<br><span>GitHub</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('qr')">📲<br><span>QR Codes</span></button>
       </div>
 
       <!-- EMPRESA -->
@@ -3218,6 +3219,56 @@ input[type=range]::-webkit-slider-thumb{
             <div style="margin-top:12px;font-size:12px;color:var(--txt3);line-height:1.6">
               Os dados são guardados em:<br>
               <code style="background:var(--s2);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--acc)">[owner]/haccp-data/data/<span id="gh-nif-preview">[NIF]</span>/db.json</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR CODES / FORMULÁRIOS FUNCIONÁRIOS -->
+      <div id="cfg-qr" style="display:none">
+        <div class="cfg-section">
+          <div class="cfg-section-hd">📲 Formulários para Funcionários</div>
+          <div class="cfg-section-body">
+            <div class="alert alert-info" style="margin-bottom:14px">
+              <span>ℹ️</span>
+              <div>Os funcionários podem registar temperaturas e limpezas através destes links — <strong>sem necessidade de login</strong>. Partilhe o QR Code ou o link direto.</div>
+            </div>
+            <div id="qr-loading" style="text-align:center;padding:24px;color:var(--txt2);font-size:13px">⏳ A carregar token...</div>
+            <div id="qr-content" style="display:none">
+              <!-- Temp card -->
+              <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r3);padding:16px;margin-bottom:14px">
+                <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+                  🌡️ Registo de Temperatura
+                </div>
+                <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+                  <img id="qr-img-temp" src="" alt="QR Temperatura" width="130" height="130" style="border-radius:8px;background:#fff;padding:4px;flex-shrink:0">
+                  <div style="flex:1;min-width:160px">
+                    <div style="font-size:11px;color:var(--txt3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Link direto</div>
+                    <div id="qr-url-temp" style="font-size:11px;color:var(--acc2);word-break:break-all;line-height:1.5;margin-bottom:10px"></div>
+                    <button class="btn btn-secondary" onclick="copiarLink('temp')" style="font-size:12px;padding:8px 12px">📋 Copiar Link</button>
+                  </div>
+                </div>
+              </div>
+              <!-- Limp card -->
+              <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r3);padding:16px;margin-bottom:14px">
+                <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+                  🧹 Registo de Limpeza
+                </div>
+                <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+                  <img id="qr-img-limp" src="" alt="QR Limpeza" width="130" height="130" style="border-radius:8px;background:#fff;padding:4px;flex-shrink:0">
+                  <div style="flex:1;min-width:160px">
+                    <div style="font-size:11px;color:var(--txt3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Link direto</div>
+                    <div id="qr-url-limp" style="font-size:11px;color:var(--green);word-break:break-all;line-height:1.5;margin-bottom:10px"></div>
+                    <button class="btn btn-secondary" onclick="copiarLink('limp')" style="font-size:12px;padding:8px 12px">📋 Copiar Link</button>
+                  </div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--txt3);line-height:1.6;border-top:1px solid var(--border);padding-top:12px">
+                💡 Imprima os QR Codes e coloque-os em locais estratégicos: cozinha, câmaras, vestiários. Os registos ficam guardados no Supabase e visíveis no dashboard.
+              </div>
+            </div>
+            <div id="qr-error" style="display:none;font-size:13px;color:var(--txt2);text-align:center;padding:16px">
+              ⚠️ Não foi possível carregar o token. Certifique-se que está com sessão iniciada.
             </div>
           </div>
         </div>
@@ -3778,6 +3829,22 @@ function saveTemp(){
   } else {
     if(conf===false)data.nc_estado='aberta';
     r=DB.push('temp',data);toast('Temperatura guardada!');
+    // Dual-write → Supabase haccp_registos
+    if(SB.user&&SB.client){
+      const[dp,tp]=(data.datetime||'').split('T');
+      SB.client.from('haccp_registos').insert({
+        restaurante_id: SB.user.id,
+        tipo: 'temperaturas',
+        data: dp||null,
+        hora: tp?tp.substring(0,8):null,
+        funcionario: data.colaborador||null,
+        equipamento: data.equipamento||null,
+        temperatura: isNaN(data.temperatura)?null:data.temperatura,
+        turno: data.tipo||null,
+        acao: data.accao||null,
+        observacoes: data.obs||null
+      }).then(({error})=>{if(error)console.warn('SB temp insert:',error.message);});
+    }
   }
   renderTempTbl();
   document.getElementById('t-acc').value='';document.getElementById('t-obs').value='';
@@ -3814,6 +3881,21 @@ function saveLimp(){
       const d={datetime, local, zonas, tipo, produto, conformidade, colaborador, verificador, obs};
       if(conformidade==='nc')d.nc_estado='aberta';
       DB.push('limp',d);
+      // Dual-write → Supabase haccp_registos
+      if(SB.user&&SB.client){
+        const[dp,tp]=(d.datetime||'').split('T');
+        SB.client.from('haccp_registos').insert({
+          restaurante_id: SB.user.id,
+          tipo: 'limpeza',
+          data: dp||null,
+          hora: tp?tp.substring(0,8):null,
+          funcionario: d.colaborador||null,
+          area: d.local||null,
+          tipo_limpeza: d.tipo||null,
+          produtos: Array.isArray(d.produto)?d.produto.join(', '):(d.produto||null),
+          observacoes: d.obs||null
+        }).then(({error})=>{if(error)console.warn('SB limp insert:',error.message);});
+      }
     });
     const msg=locais.length>1?`${locais.length} limpezas guardadas! (${locais.map(l=>l.local).join(', ')})`:'Limpeza guardada!';
     toast(msg);
@@ -4240,7 +4322,72 @@ function updateDashStats(){
 // ═══════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════
-const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','produtos','email','visual','modulos','notif','github'];
+const CFG_TABS=['empresa','locais','equipamentos','colaboradores','sobremesas','produtos','email','visual','modulos','notif','github','qr'];
+
+// ── QR CODES / FORMULÁRIOS FUNCIONÁRIOS ──
+let _qrLoaded = false;
+async function loadFormQR(){
+  if(_qrLoaded) return;
+  const loading = document.getElementById('qr-loading');
+  const content = document.getElementById('qr-content');
+  const errEl   = document.getElementById('qr-error');
+
+  if(!SB.user || !SB.client){
+    loading.style.display='none';
+    errEl.style.display='block';
+    errEl.textContent='⚠️ Inicie sessão para aceder aos links dos formulários.';
+    return;
+  }
+
+  try{
+    const {data,error} = await SB.client
+      .from('restaurantes')
+      .select('form_token')
+      .eq('id', SB.user.id)
+      .single();
+
+    if(error || !data || !data.form_token) throw new Error(error?.message || 'Token não encontrado');
+
+    const token = data.form_token;
+    const base  = location.origin; // haccpdigital.online
+    const urlTemp = base + '/registo-temp.html?token=' + token;
+    const urlLimp = base + '/registo-limp.html?token=' + token;
+    const qrApi   = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&color=3b82f6&bgcolor=131726&data=';
+
+    document.getElementById('qr-url-temp').textContent = urlTemp;
+    document.getElementById('qr-url-limp').textContent = urlLimp;
+    document.getElementById('qr-img-temp').src = qrApi + encodeURIComponent(urlTemp);
+    document.getElementById('qr-img-limp').src = qrApi + encodeURIComponent(urlLimp);
+
+    // store for copy
+    window._qrUrls = { temp: urlTemp, limp: urlLimp };
+
+    loading.style.display='none';
+    content.style.display='block';
+    _qrLoaded = true;
+  } catch(e){
+    loading.style.display='none';
+    errEl.style.display='block';
+    errEl.textContent='⚠️ Erro: ' + e.message;
+  }
+}
+
+async function copiarLink(tipo){
+  const url = window._qrUrls?.[tipo];
+  if(!url) return;
+  try{
+    await navigator.clipboard.writeText(url);
+    toast('📋 Link copiado!');
+  } catch(e){
+    // fallback — seleccionar texto
+    const el = document.getElementById('qr-url-'+tipo);
+    const r  = document.createRange();
+    r.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+    toast('Seleccione e copie o link','warn');
+  }
+}
 
 function switchCfgTab(tab){
   CFG_TABS.forEach(t=>{const e=document.getElementById('cfg-'+t);if(e)e.style.display=t===tab?'':'none'});
@@ -4253,6 +4400,7 @@ function switchCfgTab(tab){
   if(tab==='produtos')renderProdutosList();
   if(tab==='visual'){ renderThemeGrid(); updateFontSizeBtns(localStorage.getItem('h2_fontsize')||'normal'); }
   if(tab==='modulos'){ renderModulesCfg(); }
+  if(tab==='qr'){ loadFormQR(); }
 }
 
 function loadCfg(){

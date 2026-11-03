@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0c0f1a">
+<title>Registo de Limpeza</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0f1a;--s1:#131726;--s2:#1b2035;--s3:#232840;
+  --border:#2a3050;--acc:#22c55e;--acc-glow:rgba(34,197,94,.15);
+  --acc2:#3b82f6;--green:#22c55e;--yellow:#eab308;--red:#ef4444;
+  --txt:#e2e8f8;--txt2:#8b92b0;--txt3:#4b5270;
+  --r:14px;--r2:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;font-size:15px}
+body{padding:env(safe-area-inset-top,0) 16px env(safe-area-inset-bottom,24px);max-width:480px;margin:0 auto}
+
+.topbar{
+  position:sticky;top:0;background:var(--bg);
+  padding:16px 0 12px;margin:0 -16px;padding-left:16px;padding-right:16px;
+  border-bottom:1px solid var(--border);margin-bottom:20px;z-index:10;
+  display:flex;align-items:center;gap:12px;
+}
+.logo{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;letter-spacing:2px;color:var(--acc);text-transform:uppercase}
+.topbar-name{font-size:14px;color:var(--txt2);flex:1}
+.page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--txt2);margin-bottom:24px}
+
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--txt2);margin-bottom:8px}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);
+  color:var(--txt);font-family:'Inter',sans-serif;font-size:15px;
+  padding:12px 14px;outline:none;transition:border-color .2s;
+  -webkit-appearance:none;appearance:none;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--acc)}
+.form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b92b0' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.form-textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{
+  background:var(--s2);border:1px solid var(--border);border-radius:20px;
+  padding:8px 14px;font-size:13px;cursor:pointer;
+  transition:all .15s;user-select:none;white-space:nowrap;
+}
+.chip.sel{background:var(--acc-glow);border-color:var(--acc);color:var(--acc);font-weight:600}
+
+.multi-chips .chip{border-radius:var(--r2);padding:9px 12px}
+
+.btn{
+  width:100%;padding:15px;border:none;border-radius:var(--r);
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  letter-spacing:.5px;cursor:pointer;transition:opacity .2s,transform .1s;
+}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--acc);color:#1a1a1a}
+.btn-primary:disabled{opacity:.5;cursor:default}
+
+.alert{padding:14px 16px;border-radius:var(--r2);font-size:14px;margin-bottom:16px;display:none}
+.alert.ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);display:block}
+.alert.err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:var(--red);display:block}
+
+.loading-screen{text-align:center;padding:60px 20px;color:var(--txt2);font-size:14px}
+.error-screen{text-align:center;padding:60px 20px}
+.error-screen .icon{font-size:3rem;margin-bottom:12px}
+.error-screen p{color:var(--txt2);font-size:14px}
+
+.section-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);margin-bottom:12px;margin-top:4px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">HACCP Pro</div>
+  <div class="topbar-name" id="rest-nome">🧹 Limpeza</div>
+</div>
+
+<div id="loading" class="loading-screen">⏳ A carregar...</div>
+<div id="error-screen" class="error-screen" style="display:none">
+  <div class="icon">⚠️</div>
+  <p id="error-msg">Link inválido ou expirado.</p>
+</div>
+
+<div id="main" style="display:none">
+  <div class="page-title">🧹 Limpeza</div>
+  <div class="page-sub" id="rest-sub">Registo de controlo de limpeza</div>
+
+  <div id="alert" class="alert"></div>
+
+  <div class="card">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Data</label>
+        <input type="date" class="form-input" id="f-data">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hora</label>
+        <input type="time" class="form-input" id="f-hora">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Colaborador</label>
+      <select class="form-select" id="f-colab"></select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Área / Local</label>
+      <input type="text" class="form-input" id="f-area" placeholder="Ex: Cozinha, Balcão, Casas de banho...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Tipo de Limpeza</label>
+      <div class="chips-wrap" id="tipo-chips">
+        <div class="chip sel" data-v="corrente" onclick="selTipo(this)">🧽 Corrente</div>
+        <div class="chip" data-v="profunda" onclick="selTipo(this)">🪣 Profunda</div>
+        <div class="chip" data-v="desinfeção" onclick="selTipo(this)">🦠 Desinfeção</div>
+        <div class="chip" data-v="semanal" onclick="selTipo(this)">📅 Semanal</div>
+        <div class="chip" data-v="mensal" onclick="selTipo(this)">🗓️ Mensal</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Produtos Utilizados</label>
+      <div class="chips-wrap multi-chips" id="prod-chips">
+        <div class="chip" data-v="Detergente" onclick="toggleProd(this)">🧴 Detergente</div>
+        <div class="chip" data-v="Desinfetante" onclick="toggleProd(this)">🧪 Desinfetante</div>
+        <div class="chip" data-v="Lixívia" onclick="toggleProd(this)">⚗️ Lixívia</div>
+        <div class="chip" data-v="Álcool" onclick="toggleProd(this)">💧 Álcool</div>
+        <div class="chip" data-v="Desincrustante" onclick="toggleProd(this)">🔩 Desincrustante</div>
+        <div class="chip" data-v="Desengordurante" onclick="toggleProd(this)">🛢️ Desengordurante</div>
+      </div>
+      <input type="text" class="form-input" id="f-prod-outro" placeholder="Outro produto (opcional)..." style="margin-top:10px">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Observações</label>
+      <textarea class="form-textarea" id="f-obs" placeholder="Notas, anomalias encontradas..."></textarea>
+    </div>
+
+    <button class="btn btn-primary" id="save-btn" onclick="guardar()">💾 Guardar Registo</button>
+  </div>
+</div>
+
+<script>
+const EDGE = 'https://pqrqxvpzxqwblhxtmdns.supabase.co/functions/v1/public-record';
+const params = new URLSearchParams(location.search);
+const TOKEN = params.get('token') || '';
+
+function setNow(){
+  const now = new Date();
+  document.getElementById('f-data').value = now.toISOString().split('T')[0];
+  document.getElementById('f-hora').value = now.toTimeString().substring(0,5);
+}
+
+function selTipo(el){
+  document.querySelectorAll('#tipo-chips .chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function toggleProd(el){
+  el.classList.toggle('sel');
+}
+
+function getProdutos(){
+  const selecionados = [...document.querySelectorAll('#prod-chips .chip.sel')].map(c=>c.dataset.v);
+  const outro = document.getElementById('f-prod-outro').value.trim();
+  if(outro) selecionados.push(outro);
+  return selecionados;
+}
+
+async function init(){
+  if(!TOKEN){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('error-screen').style.display='block';
+    document.getElementById('error-msg').textContent='Link sem token. Peça ao responsável o link correto.';
+    return;
+  }
+  try{
+    const r = await fetch(EDGE+'?token='+TOKEN);
+    const d = await r.json();
+    if(!d.ok){ throw new Error(d.error||'Token inválido'); }
+
+    document.getElementById('rest-nome').textContent = d.nome || '🧹 Limpeza';
+    document.getElementById('rest-sub').textContent = 'Registo de limpeza — ' + (d.nome||'');
+
+    const sel = document.getElementById('f-colab');
+    sel.innerHTML = '<option value="">-- Seleccionar --</option>';
+    (d.funcionarios||[]).forEach(n=>{
+      const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);
+    });
+    if(!d.funcionarios||!d.funcionarios.length){
+      sel.outerHTML = '<input type="text" class="form-input" id="f-colab" placeholder="O seu nome">';
+    }
+
+    setNow();
+    document.getElementById('loading').style.display='none';
+    document.getElementById('main').style.display='block';
+  } catch(e){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('error-screen').style.display='block';
+    document.getElementById('error-msg').textContent = e.message;
+  }
+}
+
+async function guardar(){
+  const btn = document.getElementById('save-btn');
+  const alerta = document.getElementById('alert');
+  alerta.className='alert';alerta.textContent='';
+
+  const data = document.getElementById('f-data').value;
+  const hora = document.getElementById('f-hora').value;
+  const colab = document.getElementById('f-colab').value;
+  const area = document.getElementById('f-area').value.trim();
+  const obs = document.getElementById('f-obs').value.trim();
+  const tipo_limp = document.querySelector('#tipo-chips .chip.sel')?.dataset.v || 'corrente';
+  const produtos = getProdutos();
+
+  if(!data||!hora){alerta.className='alert err';alerta.textContent='Preencha a data e hora.';return}
+  if(!area){alerta.className='alert err';alerta.textContent='Indique a área ou local.';return}
+  if(!colab){alerta.className='alert err';alerta.textContent='Seleccione ou indique o colaborador.';return}
+
+  btn.disabled=true;btn.textContent='A guardar...';
+  try{
+    const r = await fetch(EDGE, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        token: TOKEN,
+        tipo: 'limpeza',
+        data,
+        hora: hora+':00',
+        funcionario: colab,
+        area,
+        tipo_limpeza: tipo_limp,
+        produtos: produtos.join(', '),
+        observacoes: obs
+      })
+    });
+    const d = await r.json();
+    if(!d.ok) throw new Error(d.error||'Erro ao guardar');
+    alerta.className='alert ok';
+    alerta.textContent='✅ Registo de limpeza guardado!';
+    // Reset
+    document.getElementById('f-area').value='';
+    document.getElementById('f-obs').value='';
+    document.getElementById('f-prod-outro').value='';
+    document.querySelectorAll('#prod-chips .chip').forEach(c=>c.classList.remove('sel'));
+    document.querySelectorAll('#tipo-chips .chip').forEach(c=>c.classList.remove('sel'));
+    document.querySelector('#tipo-chips .chip[data-v="corrente"]').classList.add('sel');
+    setNow();
+    window.scrollTo({top:0,behavior:'smooth'});
+  } catch(e){
+    alerta.className='alert err';alerta.textContent='❌ '+e.message;
+  } finally{
+    btn.disabled=false;btn.textContent='💾 Guardar Registo';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
