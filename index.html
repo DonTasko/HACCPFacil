@@ -3556,7 +3556,10 @@ function _fillEditForm(k,rec){
     sv('sb-dt').value=rec.datetime||'';sv('sb-tipo').value=rec.tipo||'';
     sv('sb-qtd').value=rec.qtd||'';sv('sb-tc').value=rec.tempConf||'';
     sv('sb-ta').value=rec.tempArm||'';sv('sb-val').value=rec.validade||'';
-    sv('sb-aleg').value=rec.alergenios||'';sv('sb-conf').value=rec.conformidade||'ok';
+    // Alergénios: usar do registo ou auto-preencher da config
+    const cfgSob = DB.get('cfg_sobremesas').find(s=>s.nome===rec.tipo);
+    sv('sb-aleg').value=rec.alergenios||(cfgSob?.alergenios||'');
+    sv('sb-conf').value=rec.conformidade||'ok';
     sv('sb-colab').value=rec.colaborador||'';sv('sb-obs').value=rec.obs||'';
     showEditBanner('sob',rec.tipo||'?');
   } else if(k==='rec'){
@@ -3816,7 +3819,19 @@ function updateLocalSelText(){
 function populateSobs(){
   const el=document.getElementById('sb-tipo');if(!el)return;
   el.innerHTML='<option value="">— sobremesa —</option>'+
-    DB.get('cfg_sobremesas').map(s=>`<option value="${s.nome}">${s.nome}</option>`).join('');
+    DB.get('cfg_sobremesas').map(s=>`<option value="${s.nome}" data-aleg="${s.alergenios||''}">${s.nome}</option>`).join('');
+  // Garantir que o handler de auto-fill está ligado
+  el.onchange = sobTipoChanged;
+}
+
+function sobTipoChanged(){
+  const sel = document.getElementById('sb-tipo');
+  const alegEl = document.getElementById('sb-aleg');
+  if(!sel || !alegEl) return;
+  const opt = sel.options[sel.selectedIndex];
+  const cfgAleg = opt ? (opt.dataset.aleg || '') : '';
+  // Preenche automaticamente; o utilizador pode editar depois
+  if(cfgAleg) alegEl.value = cfgAleg;
 }
 
 // ═══════════════════════════════════════════
@@ -5730,6 +5745,10 @@ function buildValSection(data, summary){
 function buildSobSection(data, summary){
   if(!data.length) return emptySection();
   const cm={ok:BADGE.confOk,obs:'<span class="b-warn">⚠️ Obs.</span>',nc:BADGE.confNc};
+  // Mapa de alergénios configurados por sobremesa — fallback para registos antigos
+  const cfgSobMap = {};
+  (DB.get('cfg_sobremesas')||[]).forEach(s=>{ if(s.nome) cfgSobMap[s.nome]=s.alergenios||''; });
+
   let html=`<div class="stats-row">
     <div class="stat-box"><div class="n">${data.length}</div><div class="l">Confecções</div></div>
     <div class="stat-box"><div class="n ok">${data.filter(r=>r.conformidade==='ok').length}</div><div class="l">Conformes</div></div>
@@ -5737,7 +5756,47 @@ function buildSobSection(data, summary){
   </div>`;
   if(!summary){
     html+=`<table><thead><tr><th>Data / Hora</th><th>Sobremesa</th><th>Qtd.</th><th>T°Conf.</th><th>T°Arm.</th><th>Consumir até</th><th>Alergénios</th><th>Conform.</th><th>Colaborador</th></tr></thead><tbody>`;
-    data.forEach(r=>{html+=`<tr><td>${fd(r.datetime)}</td><td>${r.tipo||'—'}</td><td>${r.qtd||'—'}</td><td>${r.tempConf?r.tempConf+'°C':'—'}</td><td>${r.tempArm?r.tempArm+'°C':'—'}</td><td>${fd(r.validade)}</td><td style="font-size:8.5pt">${r.alergenios||'—'}</td><td>${cm[r.conformidade]||'—'}</td><td>${r.colaborador||'—'}</td></tr>`});
+    data.forEach(r=>{
+      // Alergénios: usar do registo ou fallback da config
+      const aleg = r.alergenios || cfgSobMap[r.tipo] || '';
+      const alegHtml = aleg
+        ? `<span style="font-size:7.5pt;background:#fef9c3;padding:1px 5px;border-radius:3px;color:#78350f;font-weight:600">${aleg}</span>`
+        : '<span style="color:#94a3b8">—</span>';
+      html+=`<tr><td>${fd(r.datetime)}</td><td>${r.tipo||'—'}</td><td>${r.qtd||'—'}</td><td>${r.tempConf?r.tempConf+'°C':'—'}</td><td>${r.tempArm?r.tempArm+'°C':'—'}</td><td>${fd(r.validade)}</td><td>${alegHtml}</td><td>${cm[r.conformidade]||'—'}</td><td>${r.colaborador||'—'}</td></tr>`;
+    });
+    html+='</tbody></table>';
+
+    // Painel de alergénios único por sobremesa (resumo no final da secção)
+    const alegByTipo = {};
+    data.forEach(r=>{
+      if(!alegByTipo[r.tipo]) alegByTipo[r.tipo] = r.alergenios || cfgSobMap[r.tipo] || '';
+    });
+    const tiposComAleg = Object.entries(alegByTipo).filter(([,v])=>v);
+    if(tiposComAleg.length){
+      html+=`<div style="margin-top:8px;padding:7px 10px;background:#fefce8;border:1px solid #fde68a;border-radius:5px;page-break-inside:avoid">
+        <div style="font-size:7pt;font-weight:700;color:#78350f;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">⚠️ Mapa de Alergénios</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${tiposComAleg.map(([nome,aleg])=>`<div style="font-size:7pt;color:#1e293b"><strong>${nome}:</strong> ${aleg}</div>`).join('')}
+        </div>
+      </div>`;
+    }
+  } else {
+    // Resumo: tabela simplificada com alergénios por tipo
+    html+=`<table><thead><tr><th>Sobremesa</th><th>Registos</th><th>Conformes</th><th>NC</th><th>Alergénios</th></tr></thead><tbody>`;
+    const byTipo = {};
+    data.forEach(r=>{
+      if(!byTipo[r.tipo]) byTipo[r.tipo]={n:0,ok:0,nc:0,aleg:r.alergenios||cfgSobMap[r.tipo]||''};
+      byTipo[r.tipo].n++;
+      if(r.conformidade==='ok') byTipo[r.tipo].ok++;
+      if(r.conformidade==='nc') byTipo[r.tipo].nc++;
+      if(!byTipo[r.tipo].aleg) byTipo[r.tipo].aleg=r.alergenios||cfgSobMap[r.tipo]||'';
+    });
+    Object.entries(byTipo).forEach(([nome,v])=>{
+      const alegHtml = v.aleg
+        ? `<span style="font-size:7pt;background:#fef9c3;padding:1px 4px;border-radius:3px;color:#78350f;font-weight:600">${v.aleg}</span>`
+        : '<span style="color:#94a3b8">—</span>';
+      html+=`<tr><td>${nome}</td><td>${v.n}</td><td class="t-ok">${v.ok}</td><td class="${v.nc>0?'t-err':'t-ok'}">${v.nc}</td><td>${alegHtml}</td></tr>`;
+    });
     html+='</tbody></table>';
   }
   return html;
