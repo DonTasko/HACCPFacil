@@ -847,24 +847,31 @@ input[type=range]::-webkit-slider-thumb{
    LAUNCHER DASHBOARD
 ════════════════════════════════ */
 .kpi-strip{
-  display:flex;align-items:stretch;
+  display:grid;grid-template-columns:repeat(5,1fr);
   background:var(--s1);border:1px solid var(--border);
   border-radius:var(--r);overflow:hidden;
   margin-bottom:14px;
 }
 .kpi-item{
-  flex:1;padding:12px 6px;text-align:center;
+  padding:10px 4px;text-align:center;
+  border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
 }
-.kpi-sep{width:1px;background:var(--border);flex-shrink:0}
+.kpi-item:nth-child(5n){border-right:none}
+.kpi-item:nth-last-child(-n+5){border-bottom:none}
 .kpi-val{
   font-family:'JetBrains Mono',monospace;
-  font-size:22px;font-weight:700;line-height:1;
+  font-size:18px;font-weight:700;line-height:1;
 }
 .kpi-item.c-blue .kpi-val{color:var(--acc)}
 .kpi-item.c-green .kpi-val{color:var(--green)}
 .kpi-item.c-yellow .kpi-val{color:var(--yellow)}
 .kpi-item.c-red .kpi-val{color:var(--red)}
-.kpi-lbl{font-size:10px;color:var(--txt3);margin-top:4px;line-height:1.2}
+.kpi-item.c-orange .kpi-val{color:#f97316}
+.kpi-item.c-purple .kpi-val{color:#a855f7}
+.kpi-item.c-cyan .kpi-val{color:#06b6d4}
+.kpi-item.c-teal .kpi-val{color:#10b981}
+.kpi-lbl{font-size:9px;color:var(--txt3);margin-top:3px;line-height:1.2}
 
 .launcher-grid{
   display:grid;
@@ -929,7 +936,7 @@ input[type=range]::-webkit-slider-thumb{
 }
 @media(min-width:640px){
   .launcher-grid{grid-template-columns:repeat(4,1fr)}
-  .kpi-val{font-size:26px}
+  .kpi-val{font-size:22px}
 }
 
 /* ════════════════════════════════
@@ -1383,20 +1390,41 @@ input[type=range]::-webkit-slider-thumb{
           <div class="kpi-val" id="s-temp">0</div>
           <div class="kpi-lbl">🌡️ Temp.</div>
         </div>
-        <div class="kpi-sep"></div>
         <div class="kpi-item c-green">
           <div class="kpi-val" id="s-limp">0</div>
           <div class="kpi-lbl">🧹 Limpeza</div>
         </div>
-        <div class="kpi-sep"></div>
+        <div class="kpi-item c-orange">
+          <div class="kpi-val" id="s-oleo">0</div>
+          <div class="kpi-lbl">🫙 Óleos</div>
+        </div>
+        <div class="kpi-item c-purple">
+          <div class="kpi-val" id="s-sob">0</div>
+          <div class="kpi-lbl">🍮 Sobrems.</div>
+        </div>
+        <div class="kpi-item c-cyan">
+          <div class="kpi-val" id="s-rec">0</div>
+          <div class="kpi-lbl">📦 Recepção</div>
+        </div>
+        <div class="kpi-item c-green">
+          <div class="kpi-val" id="s-hort">0</div>
+          <div class="kpi-lbl">🥬 Hortíc.</div>
+        </div>
+        <div class="kpi-item c-red">
+          <div class="kpi-val" id="s-tconf">0</div>
+          <div class="kpi-lbl">🔥 T°Conf.</div>
+        </div>
+        <div class="kpi-item c-teal">
+          <div class="kpi-val" id="s-chk">0</div>
+          <div class="kpi-lbl">✅ Checks</div>
+        </div>
         <div class="kpi-item c-yellow">
           <div class="kpi-val" id="s-nc">0</div>
           <div class="kpi-lbl">⚠️ NC aber.</div>
         </div>
-        <div class="kpi-sep"></div>
         <div class="kpi-item c-red">
           <div class="kpi-val" id="s-val">0</div>
-          <div class="kpi-lbl">📅 Validades</div>
+          <div class="kpi-lbl">📅 Alertas</div>
         </div>
       </div>
 
@@ -4389,8 +4417,20 @@ function updateDashStats(){
   const nLimp=DB.get('limp').filter(r=>r.datetime?.startsWith(today)).length;
   const nNcAb=DB.get('nc').filter(r=>r.estado!=='fechada').length;
   const nVal=DB.get('val').filter(r=>{if(!r.validade)return false;const d=(new Date(r.validade)-new Date())/86400000;return d>=0&&d<=7}).length;
+  const nOleo=DB.get('oleo').filter(r=>r.datetime?.startsWith(today)).length;
+  const nSob=DB.get('sob').filter(r=>r.datetime?.startsWith(today)).length;
+  const nRec=DB.get('rec').filter(r=>r.datetime?.startsWith(today)).length;
+  const nHort=DB.get('hort').filter(r=>r.datetime?.startsWith(today)).length;
+  const nTconf=DB.get('tconf').filter(r=>r.datetime?.startsWith(today)).length;
+  const nChk=DB.get('chk').filter(r=>r.datetime?.startsWith(today)).length;
   document.getElementById('s-temp').textContent=nTemp;
   document.getElementById('s-limp').textContent=nLimp;
+  document.getElementById('s-oleo').textContent=nOleo;
+  document.getElementById('s-sob').textContent=nSob;
+  document.getElementById('s-rec').textContent=nRec;
+  document.getElementById('s-hort').textContent=nHort;
+  document.getElementById('s-tconf').textContent=nTconf;
+  document.getElementById('s-chk').textContent=nChk;
   document.getElementById('s-nc').textContent=nNcAb;
   document.getElementById('s-val').textContent=nVal;
 
