@@ -9580,10 +9580,11 @@ init();
   let taps=0,timer=null;
   const pill=document.getElementById('logo-pill-tap');
   if(!pill) return;
-  pill.addEventListener('click',function(){
+  function handleTap(e){
+    e.preventDefault();
     taps++;
     if(timer) clearTimeout(timer);
-    timer=setTimeout(()=>{ taps=0; },600);
+    timer=setTimeout(()=>{ taps=0; },900);
     if(taps>=3){
       taps=0;
       clearTimeout(timer);
@@ -9597,7 +9598,10 @@ init();
         toast('🤝 Secção parceiro desbloqueada','info');
       }
     }
-  });
+  }
+  let touched=false;
+  pill.addEventListener('touchend',function(e){ touched=true; handleTap(e); setTimeout(()=>{touched=false;},400); },{passive:false});
+  pill.addEventListener('click',function(e){ if(!touched) handleTap(e); });
 })();
 </script>
 <!-- ══ CHAT WIDGET IA ══ -->
