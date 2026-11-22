@@ -1351,7 +1351,7 @@ input[type=range]::-webkit-slider-thumb{
   <!-- ── TOP BAR ── -->
   <div class="topbar">
     <div class="topbar-logo">
-      <div class="logo-pill">🛡️</div>
+      <div class="logo-pill" id="logo-pill-tap">🛡️</div>
       <div>
         <div class="topbar-name" id="tb-name" onclick="navigate('cfg');setTimeout(()=>switchCfgTab('empresa'),100)" style="cursor:pointer" title="Clique para editar empresa">HACCP Pro</div>
         <div class="topbar-sub" id="tb-sub">Segurança Alimentar</div>
@@ -2871,7 +2871,7 @@ input[type=range]::-webkit-slider-thumb{
             </div>
           </div>
         </div>
-        <div class="cfg-section" style="margin-top:14px">
+        <div id="cfg-parceiro-section" class="cfg-section" style="margin-top:14px;display:none">
           <div class="cfg-section-hd">🤝 Empresa Parceira / Distribuidora</div>
           <div class="cfg-section-body">
             <div class="form-row">
@@ -9574,6 +9574,31 @@ async function init(){
 }
 
 init();
+
+// ── Triple tap no logo para revelar secção parceiro ──
+(function(){
+  let taps=0,timer=null;
+  const pill=document.getElementById('logo-pill-tap');
+  if(!pill) return;
+  pill.addEventListener('click',function(){
+    taps++;
+    if(timer) clearTimeout(timer);
+    timer=setTimeout(()=>{ taps=0; },600);
+    if(taps>=3){
+      taps=0;
+      clearTimeout(timer);
+      const sec=document.getElementById('cfg-parceiro-section');
+      if(!sec) return;
+      const hidden=sec.style.display==='none';
+      sec.style.display=hidden?'block':'none';
+      if(hidden){
+        navigate('cfg');
+        setTimeout(()=>switchCfgTab('empresa'),120);
+        toast('🤝 Secção parceiro desbloqueada','info');
+      }
+    }
+  });
+})();
 </script>
 <!-- ══ CHAT WIDGET IA ══ -->
 <script>
