@@ -8956,7 +8956,11 @@ async function widgetSync() {
         label: m.label,
         done: notifModHasToday(m.id)
       }));
-    const json = JSON.stringify({ date: today, items });
+    // Incluir dados do parceiro (logo URL e nome) no widget
+    const cfg = DB.getObj('config') || {};
+    const parceiroLogo = cfg.parceiroLogo || '';
+    const parceiroNome = cfg.parceiroNome || '';
+    const json = JSON.stringify({ date: today, items, parceiroLogo, parceiroNome });
     await window.Capacitor.Plugins.HaccpShare.setWidget({ json });
   } catch(e) { console.warn('widgetSync error:', e); }
 }
