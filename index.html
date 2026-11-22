@@ -37,7 +37,7 @@
   --r2:        10px;
   --r3:        8px;
   --nav-h:     64px;
-  --top-h:     56px;
+  --top-h:     62px;
 }
 
 /* ── TEMA: CLARO ── */
@@ -559,14 +559,14 @@ input[type=range]::-webkit-slider-thumb{
 ════════════════════════════════ */
 .cfg-tab{
   background:var(--s2);border:1.5px solid var(--border);
-  border-radius:var(--r2);padding:10px 6px 8px;
+  border-radius:var(--r2);padding:7px 4px 6px;
   color:var(--txt2);cursor:pointer;
-  font-family:'Inter',sans-serif;font-size:11px;font-weight:600;
+  font-family:'Inter',sans-serif;font-size:10px;font-weight:600;
   text-align:center;line-height:1.3;
   -webkit-tap-highlight-color:transparent;
   transition:all .15s;
 }
-.cfg-tab span{display:block;margin-top:4px}
+.cfg-tab span{display:block;margin-top:3px}
 .cfg-tab:first-line{font-size:20px}
 .cfg-tab:active{transform:scale(.95)}
 .cfg-tab.active{
@@ -1359,8 +1359,8 @@ input[type=range]::-webkit-slider-thumb{
     </div>
     <div class="topbar-right">
       <!-- Logo do parceiro — visível só se configurado -->
-      <div id="partner-logo-wrap" style="display:none;padding-right:4px;border-right:1px solid var(--border2);align-items:center">
-        <img id="partner-logo-img" src="" alt="" style="height:22px;width:auto;max-width:72px;object-fit:contain;border-radius:3px">
+      <div id="partner-logo-wrap" style="display:none;align-items:center;padding:3px 8px 3px 0;border-right:1px solid var(--border2);margin-right:0">
+        <img id="partner-logo-img" src="" alt="" style="height:26px;width:auto;max-width:64px;object-fit:contain;border-radius:4px">
         <span id="partner-logo-nome" style="display:none"></span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
@@ -2803,19 +2803,19 @@ input[type=range]::-webkit-slider-thumb{
       <div class="section-hd"><h2>⚙️ Configurações</h2><p>Personalização do sistema HACCP</p></div>
 
       <!-- Tab grid — 3 colunas, sem scroll -->
-      <div id="cfg-tabs" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
-        <button class="cfg-tab active" onclick="switchCfgTab('empresa')">🏢<br><span>Empresa</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('locais')">📍<br><span>Locais</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('equipamentos')">🔧<br><span>Equipamentos</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('colaboradores')">👥<br><span>Colaboradores</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('sobremesas')">🍮<br><span>Sobremesas</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('produtos')">🧴<br><span>Produtos</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('email')">📧<br><span>Email</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('visual')">🎨<br><span>Visual</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('modulos')">🧩<br><span>Módulos</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('notif')">🔔<br><span>Alertas</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('github')">🐙<br><span>GitHub</span></button>
-        <button class="cfg-tab" onclick="switchCfgTab('qr')">📲<br><span>QR Codes</span></button>
+      <div id="cfg-tabs" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px">
+        <button class="cfg-tab active" onclick="switchCfgTab('empresa')"><span style="font-size:18px">🏢</span><br><span>Empresa</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('locais')"><span style="font-size:18px">📍</span><br><span>Locais</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('equipamentos')"><span style="font-size:18px">🔧</span><br><span>Equipamentos</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('colaboradores')"><span style="font-size:18px">👥</span><br><span>Colaboradores</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('sobremesas')"><span style="font-size:18px">🍮</span><br><span>Sobremesas</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('produtos')"><span style="font-size:18px">🧴</span><br><span>Produtos</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('email')"><span style="font-size:18px">📧</span><br><span>Email</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('visual')"><span style="font-size:18px">🎨</span><br><span>Visual</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('modulos')"><span style="font-size:18px">🧩</span><br><span>Módulos</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('notif')"><span style="font-size:18px">🔔</span><br><span>Alertas</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('github')"><span style="font-size:18px">🐙</span><br><span>GitHub</span></button>
+        <button class="cfg-tab" onclick="switchCfgTab('qr')"><span style="font-size:18px">📲</span><br><span>QR Codes</span></button>
       </div>
 
       <!-- EMPRESA -->
