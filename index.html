@@ -1356,13 +1356,13 @@ input[type=range]::-webkit-slider-thumb{
         <div class="topbar-name" id="tb-name" onclick="navigate('cfg');setTimeout(()=>switchCfgTab('empresa'),100)" style="cursor:pointer" title="Clique para editar empresa">HACCP Pro</div>
         <div class="topbar-sub" id="tb-sub">Segurança Alimentar</div>
       </div>
-      <!-- Logo do parceiro — visível só se configurado -->
-      <div id="partner-logo-wrap" style="display:none;margin-left:10px;padding-left:10px;border-left:1px solid var(--border2);align-items:center;gap:6px">
-        <img id="partner-logo-img" src="" alt="" style="height:24px;width:auto;object-fit:contain;border-radius:4px">
-        <span id="partner-logo-nome" style="font-size:10px;color:var(--txt3);max-width:70px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical"></span>
-      </div>
     </div>
     <div class="topbar-right">
+      <!-- Logo do parceiro — visível só se configurado -->
+      <div id="partner-logo-wrap" style="display:none;padding-right:4px;border-right:1px solid var(--border2);align-items:center">
+        <img id="partner-logo-img" src="" alt="" style="height:22px;width:auto;max-width:72px;object-fit:contain;border-radius:3px">
+        <span id="partner-logo-nome" style="display:none"></span>
+      </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div id="gh-auto-indicator" style="font-size:11px;color:var(--txt3);transition:color .3s"></div>
         <div class="date-chip" id="date-chip"></div>
