@@ -1357,7 +1357,7 @@ input[type=range]::-webkit-slider-thumb{
         <div class="topbar-sub" id="tb-sub">Segurança Alimentar</div>
       </div>
       <!-- Logo do parceiro — visível só se configurado -->
-      <div id="partner-logo-wrap" style="display:none;margin-left:10px;padding-left:10px;border-left:1px solid var(--border2);display:flex;align-items:center;gap:6px">
+      <div id="partner-logo-wrap" style="display:none;margin-left:10px;padding-left:10px;border-left:1px solid var(--border2);align-items:center;gap:6px">
         <img id="partner-logo-img" src="" alt="" style="height:24px;width:auto;object-fit:contain;border-radius:4px">
         <span id="partner-logo-nome" style="font-size:10px;color:var(--txt3);max-width:70px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical"></span>
       </div>
@@ -2871,6 +2871,26 @@ input[type=range]::-webkit-slider-thumb{
                 <label class="form-label">Consultoria HACCP</label>
                 <input type="text" class="form-input" id="c-cons" placeholder="Empresa consultora">
               </div>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-section" style="margin-top:14px">
+          <div class="cfg-section-hd">🤝 Empresa Parceira / Distribuidora</div>
+          <div class="cfg-section-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nome do Parceiro</label>
+                <input type="text" class="form-input" id="c-parceiro-nome" placeholder="Ex: Quality Control Lda">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL do Logo <span style="color:var(--txt3);font-weight:400">(link direto para imagem)</span></label>
+              <input type="url" class="form-input" id="c-parceiro-logo" placeholder="https://empresa.pt/logo.png" oninput="previewParceiroLogo()">
+              <div id="c-parceiro-preview" style="display:none;margin-top:10px;padding:10px;background:var(--s2);border:1px solid var(--border);border-radius:8px;text-align:center">
+                <img id="c-parceiro-preview-img" src="" alt="Logo parceiro" style="max-height:40px;max-width:160px;object-fit:contain;border-radius:4px">
+                <div style="font-size:10px;color:var(--txt3);margin-top:6px">Pré-visualização</div>
+              </div>
+              <div style="font-size:11px;color:var(--txt3);margin-top:6px">O logo aparece no cabeçalho da app ao lado do nome do estabelecimento.</div>
             </div>
             <button class="btn btn-primary" onclick="saveCfg('empresa')">💾 Guardar Empresa</button>
             <button class="btn btn-secondary" onclick="loadDemoData()" style="margin-top:8px;width:100%;background:rgba(139,92,246,.15);border-color:rgba(139,92,246,.3);color:#a78bfa">🎬 Carregar dados de demonstração</button>
@@ -4387,6 +4407,7 @@ function renderDash(){
   const cfg=DB.getObj('config');
   document.getElementById('tb-name').textContent=cfg.nome||'HACCP Pro';
   document.getElementById('tb-sub').textContent=cfg.nome?'Segurança Alimentar':'A configurar...';
+  applyParceiroLogo(cfg);
 
   // Check for welcome
   const alertEl=document.getElementById('dash-alert');
@@ -4554,10 +4575,41 @@ function switchCfgTab(tab){
   if(tab==='qr'){ loadFormQR(); }
 }
 
+function applyParceiroLogo(cfg){
+  const wrap=document.getElementById('partner-logo-wrap');
+  const img=document.getElementById('partner-logo-img');
+  const nome=document.getElementById('partner-logo-nome');
+  if(!wrap||!img||!nome) return;
+  if(cfg.parceiroLogo){
+    img.src=cfg.parceiroLogo;
+    img.onerror=()=>{wrap.style.display='none'};
+    nome.textContent=cfg.parceiroNome||'';
+    wrap.style.display='flex';
+  } else {
+    wrap.style.display='none';
+  }
+}
+function previewParceiroLogo(){
+  const url=(document.getElementById('c-parceiro-logo')?.value||'').trim();
+  const prev=document.getElementById('c-parceiro-preview');
+  const img=document.getElementById('c-parceiro-preview-img');
+  if(!prev||!img) return;
+  if(url){
+    img.src=url;
+    img.onerror=()=>{prev.style.display='none'};
+    img.onload=()=>{prev.style.display='block'};
+  } else {
+    prev.style.display='none';
+  }
+}
 function loadCfg(){
   const c=DB.getObj('config');
   const map={nome:'c-nome',nif:'c-nif',tipo:'c-tipo',responsavel:'c-resp',morada:'c-morada',telefone:'c-tel',email:'c-email',licenca:'c-lic',consultoria:'c-cons'};
   Object.entries(map).forEach(([k,id])=>{const e=document.getElementById(id);if(e&&c[k])e.value=c[k]});
+  const pNome=document.getElementById('c-parceiro-nome');
+  const pLogo=document.getElementById('c-parceiro-logo');
+  if(pNome) pNome.value=c.parceiroNome||'';
+  if(pLogo){ pLogo.value=c.parceiroLogo||''; previewParceiroLogo(); }
   if(document.getElementById('em-principal')) document.getElementById('em-principal').value=c.emPrincipal||'';
   if(document.getElementById('em-cc')) document.getElementById('em-cc').value=c.emCc||'';
   if(document.getElementById('em-cons')) document.getElementById('em-cons').value=c.emConsultor||'';
@@ -4598,7 +4650,10 @@ function saveCfg(tab){
     c.email=document.getElementById('c-email').value;
     c.licenca=document.getElementById('c-lic').value;
     c.consultoria=document.getElementById('c-cons').value;
+    c.parceiroNome=(document.getElementById('c-parceiro-nome')?.value||'').trim();
+    c.parceiroLogo=(document.getElementById('c-parceiro-logo')?.value||'').trim();
     document.getElementById('tb-name').textContent=c.nome||'HACCP Pro';
+    applyParceiroLogo(c);
     const nifPrev=document.getElementById('gh-nif-preview');
     if(nifPrev) nifPrev.textContent=c.nif||'[NIF não configurado]';
     DB.set('config',c);
