@@ -1363,15 +1363,12 @@ input[type=range]::-webkit-slider-thumb{
         <img id="partner-logo-img" src="" alt="" style="height:26px;width:auto;max-width:64px;object-fit:contain;border-radius:4px">
         <span id="partner-logo-nome" style="display:none"></span>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div id="gh-auto-indicator" style="font-size:11px;color:var(--txt3);transition:color .3s"></div>
-        <div class="date-chip" id="date-chip"></div>
-      </div>
+      <div id="gh-auto-indicator" style="display:none"></div>
+      <div class="date-chip" id="date-chip" style="display:none"></div>
       <button id="sb-cloud-btn" onclick="SB.openModal()" title="Conta / Sincronização nuvem" style="background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:8px;font-size:18px;line-height:1;color:var(--txt2);transition:color .2s,background .2s;position:relative" onmouseenter="this.style.background='var(--s3)'" onmouseleave="this.style.background='none'">
         <span id="sb-cloud-icon">☁️</span>
         <span id="sb-sync-dot" style="display:none;position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:var(--green)"></span>
       </button>
-      <button class="btn-plus" onclick="openMore()" title="Novo registo">＋</button>
     </div>
   </div>
 
