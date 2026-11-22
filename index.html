@@ -575,6 +575,26 @@ input[type=range]::-webkit-slider-thumb{
 }
 
 /* ════════════════════════════════
+   PIN MODAL
+════════════════════════════════ */
+.pin-dot{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--border);border:2px solid var(--border2);
+  transition:background .15s;
+}
+.pin-dot.filled{background:var(--acc);border-color:var(--acc)}
+.pin-dot.error{background:#e74c3c;border-color:#e74c3c}
+.pin-key{
+  background:var(--s2);border:1.5px solid var(--border);
+  border-radius:12px;padding:14px 8px;
+  font-family:'Inter',sans-serif;font-size:18px;font-weight:600;
+  color:var(--txt);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:all .12s;
+}
+.pin-key:active{transform:scale(.92);background:var(--acc);color:#fff;border-color:var(--acc)}
+
+/* ════════════════════════════════
    CONFIG SECTION BOX
 ════════════════════════════════ */
 .cfg-section{
@@ -1140,6 +1160,41 @@ input[type=range]::-webkit-slider-thumb{
     </div>
   </div>
   <!-- ══ /ONBOARDING ══ -->
+
+  <!-- ══ MODAL PIN PARCEIRO ══ -->
+  <div id="pin-modal" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.65);align-items:center;justify-content:center" onclick="if(event.target===this)closePinModal()">
+    <div style="background:var(--s1);border-radius:20px;padding:28px 24px 20px;width:280px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.35)" onclick="event.stopPropagation()">
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:28px;margin-bottom:6px">🔑</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--txt)">Acesso Restrito</div>
+        <div style="font-size:12px;color:var(--txt3);margin-top:4px">Introduza o PIN de parceiro</div>
+      </div>
+      <!-- display dos dígitos -->
+      <div style="display:flex;justify-content:center;gap:10px;margin-bottom:20px">
+        <div class="pin-dot" id="pin-d0"></div>
+        <div class="pin-dot" id="pin-d1"></div>
+        <div class="pin-dot" id="pin-d2"></div>
+        <div class="pin-dot" id="pin-d3"></div>
+      </div>
+      <!-- teclado numérico -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <button class="pin-key" onclick="pinKey('1')">1</button>
+        <button class="pin-key" onclick="pinKey('2')">2</button>
+        <button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button>
+        <button class="pin-key" onclick="pinKey('5')">5</button>
+        <button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button>
+        <button class="pin-key" onclick="pinKey('8')">8</button>
+        <button class="pin-key" onclick="pinKey('9')">9</button>
+        <button class="pin-key" onclick="pinKey('C')" style="font-size:13px;color:var(--txt3)">⌫</button>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <button class="pin-key" onclick="closePinModal()" style="font-size:12px;color:var(--txt3)">✕</button>
+      </div>
+      <div id="pin-error" style="text-align:center;font-size:12px;color:#e74c3c;margin-top:12px;min-height:16px"></div>
+    </div>
+  </div>
+  <!-- ══ /MODAL PIN PARCEIRO ══ -->
 
   <!-- ══ POPUP ZONAS DE LIMPEZA ══ -->
   <div id="zona-popup" style="display:none;position:fixed;inset:0;z-index:8700;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeZonaPopup()">
@@ -2871,7 +2926,10 @@ input[type=range]::-webkit-slider-thumb{
             </div>
           </div>
         </div>
-        <div id="cfg-parceiro-section" class="cfg-section" style="margin-top:14px;display:none">
+        <div style="text-align:right;margin-top:8px">
+          <button onclick="openPinModal()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--txt3);padding:4px 2px;opacity:.5">🔑</button>
+        </div>
+        <div id="cfg-parceiro-section" class="cfg-section" style="margin-top:6px;display:none">
           <div class="cfg-section-hd">🤝 Empresa Parceira / Distribuidora</div>
           <div class="cfg-section-body">
             <div class="form-row">
@@ -9575,34 +9633,69 @@ async function init(){
 
 init();
 
-// ── Triple tap no logo para revelar secção parceiro ──
-(function(){
-  let taps=0,timer=null;
-  const pill=document.getElementById('logo-pill-tap');
-  if(!pill) return;
-  function handleTap(e){
-    e.preventDefault();
-    taps++;
-    if(timer) clearTimeout(timer);
-    timer=setTimeout(()=>{ taps=0; },900);
-    if(taps>=3){
-      taps=0;
-      clearTimeout(timer);
-      const sec=document.getElementById('cfg-parceiro-section');
-      if(!sec) return;
-      const hidden=sec.style.display==='none';
-      sec.style.display=hidden?'block':'none';
-      if(hidden){
-        navigate('cfg');
-        setTimeout(()=>switchCfgTab('empresa'),120);
-        toast('🤝 Secção parceiro desbloqueada','info');
-      }
-    }
+// ── PIN Modal – acesso à secção parceiro ──
+var _pinBuffer='';
+
+function openPinModal(){
+  _pinBuffer='';
+  _updatePinDots();
+  document.getElementById('pin-error').textContent='';
+  const m=document.getElementById('pin-modal');
+  m.style.display='flex';
+}
+
+function closePinModal(){
+  _pinBuffer='';
+  _updatePinDots();
+  document.getElementById('pin-modal').style.display='none';
+}
+
+function pinKey(k){
+  const errEl=document.getElementById('pin-error');
+  if(k==='C'){
+    _pinBuffer=_pinBuffer.slice(0,-1);
+    errEl.textContent='';
+    _updatePinDots();
+    return;
   }
-  let touched=false;
-  pill.addEventListener('touchend',function(e){ touched=true; handleTap(e); setTimeout(()=>{touched=false;},400); },{passive:false});
-  pill.addEventListener('click',function(e){ if(!touched) handleTap(e); });
-})();
+  if(_pinBuffer.length>=4) return;
+  _pinBuffer+=k;
+  _updatePinDots();
+  if(_pinBuffer.length===4) _checkPin();
+}
+
+function _updatePinDots(){
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('pin-d'+i);
+    if(!d) continue;
+    d.classList.toggle('filled',i<_pinBuffer.length);
+    d.classList.remove('error');
+  }
+}
+
+function _checkPin(){
+  const correct=localStorage.getItem('h2_admin_pin')||'1234';
+  if(_pinBuffer===correct){
+    closePinModal();
+    const sec=document.getElementById('cfg-parceiro-section');
+    if(sec){ sec.style.display='block'; }
+    navigate('cfg');
+    setTimeout(()=>switchCfgTab('empresa'),120);
+    setTimeout(()=>{ if(sec) sec.scrollIntoView({behavior:'smooth',block:'nearest'}); },200);
+    toast('🤝 Secção parceiro desbloqueada','info');
+  } else {
+    for(let i=0;i<4;i++){
+      const d=document.getElementById('pin-d'+i);
+      if(d){ d.classList.remove('filled'); d.classList.add('error'); }
+    }
+    document.getElementById('pin-error').textContent='PIN incorreto';
+    setTimeout(()=>{
+      _pinBuffer='';
+      _updatePinDots();
+      document.getElementById('pin-error').textContent='';
+    },900);
+  }
+}
 </script>
 <!-- ══ CHAT WIDGET IA ══ -->
 <script>
