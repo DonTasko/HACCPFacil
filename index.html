@@ -8962,6 +8962,10 @@ async function widgetSync() {
     const parceiroNome = cfg.parceiroNome || '';
     const json = JSON.stringify({ date: today, items, parceiroLogo, parceiroNome });
     await window.Capacitor.Plugins.HaccpShare.setWidget({ json });
+    // Enviar logo do parceiro para o widget nativo via bridge directo
+    if (window.HaccpAndroid && typeof window.HaccpAndroid.definirParceiro === 'function') {
+      window.HaccpAndroid.definirParceiro(parceiroLogo, parceiroNome);
+    }
   } catch(e) { console.warn('widgetSync error:', e); }
 }
 
